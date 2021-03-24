@@ -1,6 +1,7 @@
 ﻿#include "SessionManager.hh"
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
+#include "out.hh"
 
 #include <sstream>
 
@@ -18,7 +19,8 @@ int main(int argc, char** argv)
     // ------ START of user inits ------
 
     //We should change the run mode here:
-    SM.runMode = SessionManager::ScintPosTest;
+    SM.runMode = SessionManager::GUI; //GUI, ScintPosTest, Main, ShowEvent
+    int iShowEvent = 9338;
 
     SM.Seed = 0;
 
@@ -57,18 +59,17 @@ int main(int argc, char** argv)
     switch (SM.runMode)
     {
     case SessionManager::GUI:
-        SM.runGUI(UImanager, ui, visManager);
+        SM.setupGUI(UImanager, ui, visManager);
         break;
 
     case SessionManager::ShowEvent :
-        SM.runSimulation(5263);
-        SM.runGUI(UImanager, ui, visManager);
+        SM.runSimulation(iShowEvent);
+        SM.setupGUI(UImanager, ui, visManager);
         break;
 
     case SessionManager::ScintPosTest:
+        SM.NumParticles = 10000;
         SM.bScintPositionTestMode = true;
-        SM.Hits = 0;
-        SM.Errors = 0;
 
         UImanager->ApplyCommand("/run/beamOn");
         break;

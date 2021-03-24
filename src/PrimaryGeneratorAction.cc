@@ -11,7 +11,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction()
 {

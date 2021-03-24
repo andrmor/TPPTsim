@@ -35,14 +35,9 @@ class SessionManager
         void endSession();
 
         bool needGui() const;
-
         void runSimulation(int NumRuns);
-
         void testCoordinates();
-
-        //bool bGuiMode     = false;
-
-        void runGUI(G4UImanager* UImanager, G4UIExecutive * ui, G4VisManager * visManager);
+        void setupGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager);
 
         RunModeEnum runMode = GUI;
 
@@ -85,16 +80,15 @@ class SessionManager
         std::vector<G4ThreeVector> ScintPositions;
 
         //Tests (Stepping Action):
-
-        bool bScintPositionTestMode = false;
-        int Hits = 0;
-        int Errors = 0;
+        bool   bScintPositionTestMode = false;
+        bool   bVerbose = false;
+        double MaxDelta = 0;
+        int    Hits = 0;
+        double SumDelta = 0;
 
         //Scintillators Data:
-
         std::vector<G4ThreeVector> ScintData;
         std::string FileName_Output;
-
 
         double NumParticles = 1;
 

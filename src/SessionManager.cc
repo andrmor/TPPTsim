@@ -16,14 +16,27 @@ SessionManager & SessionManager::getInstance()
     return instance;
 }
 
-SessionManager::SessionManager()
-{
-
-}
+SessionManager::SessionManager(){}
 
 SessionManager::~SessionManager()
 {
     delete outStream;
+}
+
+#include "G4UIExecutive.hh"
+#include "G4VisManager.hh"
+void SessionManager::setupGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager)
+{
+    UImanager->ApplyCommand("/hits/verbose 2");
+    UImanager->ApplyCommand("/tracking/verbose 2");
+    UImanager->ApplyCommand("/control/saveHistory");
+    visManager->Initialize();
+    UImanager->ApplyCommand("/control/execute vis.mac");
+    UImanager->ApplyCommand("/hits/verbose 2");
+    UImanager->ApplyCommand("/tracking/verbose 2");
+    UImanager->ApplyCommand("/control/saveHistory");
+    UImanager->ApplyCommand("/control/execute vis.mac");
+    ui->SessionStart();
 }
 
 void SessionManager::startSession()
@@ -49,7 +62,10 @@ void SessionManager::endSession()
     G4cout.flush();
 
     if (runMode == ScintPosTest)
-        out("\nTotal scintillator hits:", Hits, "Errors:", Errors);
+    {
+        if (Hits > 1) SumDelta /= Hits;
+        out("\nTotal scintillator hits:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta);
+    }
 
     if (outStream) outStream->close();
     else if (runMode == Main)
@@ -61,14 +77,13 @@ bool SessionManager::needGui() const
     return (runMode == GUI || runMode == ShowEvent);
 }
 
-#include <QDebug>
 void SessionManager::runSimulation(int NumRuns)
 {
     const double EnergyThreshold = 0.500*MeV;
 
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-    const int NumScint = NumScintX * NumScintY * NumRows * NumSegments;
+    const int NumScint = NumScintX * NumScintY * NumRows * NumSegments * 2;
     for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
     std::vector<int> hits;
 
@@ -105,20 +120,3 @@ void SessionManager::runSimulation(int NumRuns)
         for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
     }
 }
-
-#include "G4UIExecutive.hh"
-#include "G4VisManager.hh"
-void SessionManager::runGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager)
-{
-    UImanager->ApplyCommand("/hits/verbose 2");
-    UImanager->ApplyCommand("/tracking/verbose 2");
-    UImanager->ApplyCommand("/control/saveHistory");
-    visManager->Initialize();
-    UImanager->ApplyCommand("/control/execute vis.mac");
-    UImanager->ApplyCommand("/hits/verbose 2");
-    UImanager->ApplyCommand("/tracking/verbose 2");
-    UImanager->ApplyCommand("/control/saveHistory");
-    UImanager->ApplyCommand("/control/execute vis.mac");
-    ui->SessionStart();
-}
-

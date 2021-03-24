@@ -9,10 +9,7 @@ void outHelper(Arg&& arg)
     std::cout << arg << " ";
 }
 
-void out()
-{
-    std::cout << std::endl;
-}
+void out();
 
 template <typename Arg, typename... Args>
 void out(Arg&& arg, Args&&... rest)

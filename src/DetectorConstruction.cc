@@ -18,7 +18,6 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Navigator.hh"
 #include "G4SDManager.hh"
-#include <QDebug>
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
@@ -47,7 +46,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     SM.ScintMat = matLYSO;
 
-    EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
+    //EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
+    EncapsMat = matPMMA;
 
     // Sensitive Detector
     SensitiveDetectorScint * pSD_Scint = new SensitiveDetectorScint("Scint");
@@ -68,7 +68,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint");
-    logicScint->SetSensitiveDetector(pSD_Scint);
     logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
     solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
@@ -95,6 +94,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         }
     }
 
+    if (SM.runMode == SessionManager::Main)
+        logicScint->SetSensitiveDetector(pSD_Scint);
+
     return physWorld;
 }
 
@@ -113,16 +115,10 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             G4ThreeVector ScintPos(X, Y, 0);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "TT", logicEncaps, true, iScint++);
 
-            //qDebug() << "Assembly position:"<< AssemblyPos[0] << AssemblyPos[1] << AssemblyPos[2];
-            //qDebug() << "Local:" << ScintPos[0] << ScintPos[1] << ScintPos[2];
             G4ThreeVector glob = (*AssemblyRot).inverse()(ScintPos);
-            //qDebug() << "Glob before shift:" << glob[0] << glob[1] << glob[2];
             glob[0] += AssemblyPos[0];
             glob[1] += AssemblyPos[1];
             glob[2] += AssemblyPos[2];
-            //qDebug() << "Glob:" << glob[0] << glob[1] << glob[2];
-            //qDebug() << "----";
-
             SM.ScintPositions.push_back(glob);
         }
 
