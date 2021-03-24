@@ -34,6 +34,8 @@ class SessionManager
         void startSession();
         void endSession();
 
+        bool needGui() const;
+
         void runSimulation(int NumRuns);
 
         void testCoordinates();

@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "out.hh"
 
 #include <iostream>
 #include <sstream>
@@ -27,14 +28,14 @@ SessionManager::~SessionManager()
 
 void SessionManager::startSession()
 {
-
+    out("\n\n---------");
     outStream = new std::ofstream();
     outStream->open(WorkingDirectory + "/" + BaseFileName);
 
     if (!outStream->is_open())
     {
-        std::cerr << "Cannot open file to store data" << std::endl;
-        exit(1);
+        out("Cannot open file to store output data, not saving to file!");
+        delete outStream; outStream = nullptr;
     }
 
     randGen = new CLHEP::RanecuEngine();
@@ -44,71 +45,70 @@ void SessionManager::startSession()
 
 void SessionManager::endSession()
 {
-    outStream->close();
+    std::cout.flush();
+    G4cout.flush();
+
+    if (runMode == ScintPosTest)
+        out("\nTotal scintillator hits:", Hits, "Errors:", Errors);
+
+    if (outStream) outStream->close();
+    else if (runMode == Main)
+        out("\nOutput stream was not created, nothing was saved");
+}
+
+bool SessionManager::needGui() const
+{
+    return (runMode == GUI || runMode == ShowEvent);
 }
 
 #include <QDebug>
 void SessionManager::runSimulation(int NumRuns)
 {
+    const double EnergyThreshold = 0.500*MeV;
+
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-    if (!bScintPositionTestMode)
+    const int NumScint = NumScintX * NumScintY * NumRows * NumSegments;
+    for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
+    std::vector<int> hits;
+
+    for (int iRun = 0; iRun < NumRuns; iRun++)
     {
-        int NumScint = NumScintX * NumScintY * NumRows * NumSegments;
-        ScintData.clear();
-        std::vector<int> Hits;
-        std::stringstream ss;
+        UImanager->ApplyCommand("/run/beamOn");
 
-        for(int i=0; i<NumScint;i++) ScintData.push_back({0,0,0});
+        hits.clear();
+        for (int iScint = 0; iScint < NumScint; iScint++)
+            if (ScintData[iScint][1] > EnergyThreshold)
+                hits.push_back(iScint);
 
-
-        for(int irun=0; irun<NumRuns;irun++)
+        if (hits.size() == 2)
         {
-            UImanager->ApplyCommand("/run/beamOn");
-            Hits.clear();
-
-            for(int i=0; i<NumScint;i++)
+            for (int i = 0; i < 2; i++)
             {
-                if (ScintData[i][1] > 0.500)
-                {
-                    Hits.push_back(i);
-                }
+                const int iScint = hits[i];
+                const double Time   = ScintData[iScint][0] / ns;
+                const double Energy = ScintData[iScint][1] / MeV;
+                const G4ThreeVector & Pos   = ScintPositions.at(iScint);
+                const double X = Pos[0] / mm;
+                const double Y = Pos[1] / mm;
+                const double Z = Pos[2] / mm;
+
+                out("Scint#",iScint, Time,"ns ", Energy, "MeV  xyz: (",X,Y,Z,")  Run# ",iRun);
+
+                if (outStream)
+                    *outStream << X << " " << Y << " " << Z << " " << Time << " " << Energy << std::endl;
+
             }
-
-            if (Hits.size() == 2)
-            {
-                for(int i=0; i<2; i++)
-                {
-                    int iScint = Hits[i];
-                    qDebug()<<iScint<<ScintData[iScint][0]<<ScintData[iScint][1]<<" xyz: "<<ScintPositions[iScint][0]<<ScintPositions[iScint][1]<<ScintPositions[iScint][3]<<irun;
-                    *outStream << ScintPositions[iScint][0] / mm << " " << ScintPositions[iScint][1] / mm << " " << ScintPositions[iScint][3] / mm << " " << ScintData[iScint][0] / ns << " " << ScintData[iScint][1] / MeV << std::endl;
-
-                }
-                qDebug()<<"---";
-            }
-
-
-            for(int i=0; i<NumScint;i++) ScintData[i] = {0,0,0};
+            out("---");
         }
 
+        for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
     }
-    else
-    {
-        Hits = 0;
-        Errors = 0;
-
-        UImanager->ApplyCommand("/run/beamOn");
-        std::cout.flush();
-        qDebug() << "Total scintillator hits:" << Hits << " Errors:" << Errors;
-        bScintPositionTestMode = false;
-    }
-
-
 }
 
 #include "G4UIExecutive.hh"
 #include "G4VisManager.hh"
- void SessionManager::runGUI(G4UImanager *UImanager, G4UIExecutive *ui, G4VisManager* visManager)
+void SessionManager::runGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager)
 {
     UImanager->ApplyCommand("/hits/verbose 2");
     UImanager->ApplyCommand("/tracking/verbose 2");
