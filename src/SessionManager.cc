@@ -32,10 +32,6 @@ void SessionManager::setupGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4Vis
     UImanager->ApplyCommand("/control/saveHistory");
     visManager->Initialize();
     UImanager->ApplyCommand("/control/execute vis.mac");
-    UImanager->ApplyCommand("/hits/verbose 2");
-    UImanager->ApplyCommand("/tracking/verbose 2");
-    UImanager->ApplyCommand("/control/saveHistory");
-    UImanager->ApplyCommand("/control/execute vis.mac");
     ui->SessionStart();
 }
 

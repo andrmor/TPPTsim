@@ -1,6 +1,7 @@
 ﻿#include "SessionManager.hh"
 #include "DetectorConstruction.hh"
-#include "ActionInitialization.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "SteppingAction.hh"
 #include "out.hh"
 
 #include <sstream>
@@ -37,10 +38,11 @@ int main(int argc, char** argv)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     runManager->SetUserInitialization(physicsList);
 
-    runManager->SetUserInitialization(new ActionInitialization());
+    runManager->SetUserAction(new PrimaryGeneratorAction);
+    if(SM.runMode == SessionManager::ScintPosTest)
+        runManager->SetUserAction(new SteppingAction);
 
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
-    UImanager->ApplyCommand("/run/initialize");
     UImanager->ApplyCommand("/control/verbose 0");
     UImanager->ApplyCommand("/run/verbose 0");
 
