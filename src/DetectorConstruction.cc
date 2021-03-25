@@ -1,8 +1,9 @@
 #include "DetectorConstruction.hh"
 #include "SensitiveDetectorScint.hh"
 #include "SessionManager.hh"
-#include "G4SystemOfUnits.hh"
+#include "SimulationMode.hh"
 
+#include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -49,10 +50,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
     EncapsMat = matPMMA;
 
-    // Sensitive Detector
-    SensitiveDetectorScint * pSD_Scint = new SensitiveDetectorScint("Scint");
-    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
-
     // Geometry
     G4Box             * solidWorld = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
                         logicWorld = new G4LogicalVolume(solidWorld, matVacuum, "World");
@@ -94,8 +91,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         }
     }
 
-    if (SM.runMode == SessionManager::Main)
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimulationMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
         logicScint->SetSensitiveDetector(pSD_Scint);
+    }
 
     return physWorld;
 }

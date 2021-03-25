@@ -23,14 +23,14 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
     switch (SM.SourceMode)
     {
-        case SessionManager::GammaPair :
+        case SourceModeEnum::GammaPair :
         {
             particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
             Energy = 511*keV;
         }
         break;
 
-        case SessionManager::C10 :
+        case SourceModeEnum::C10 :
         {
             particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
             Energy = 0;
@@ -53,7 +53,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    if(SM.SourceMode == SessionManager::GammaPair)
+    if(SM.SourceMode == SourceModeEnum::GammaPair)
     {
         //Isotropic momentum direction
         for (int i=0; i < SM.NumParticles; i++)

@@ -18,4 +18,6 @@ void out(Arg&& arg, Args&&... rest)
     out(rest...);
 }
 
+void outFlush();
+
 #endif // out_h
