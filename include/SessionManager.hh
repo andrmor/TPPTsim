@@ -18,6 +18,8 @@ class G4LogicalVolume;
 namespace CLHEP { class RanecuEngine; }
 
 enum class SourceModeEnum   {GammaPair, C11, C10, O15};
+enum class DetectorModeEnum {OnlyScint, WithDetector};
+enum class PhantomModeEnum  {PMMA};
 
 class SessionManager
 {

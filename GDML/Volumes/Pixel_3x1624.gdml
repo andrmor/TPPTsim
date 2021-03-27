@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="Pixel_3x1624_v0" unit="mm" x="182.8454132080078" y="-8.070634841918945" z="49.713748931884766"/>
+ <position name="Pixel_3x1624_v1" unit="mm" x="182.64602661132812" y="-8.054943084716797" z="49.713748931884766"/>
+ <position name="Pixel_3x1624_v2" unit="mm" x="182.64602661132812" y="-8.054943084716797" z="52.713748931884766"/>
+ <position name="Pixel_3x1624_v3" unit="mm" x="182.8454132080078" y="-8.070634841918945" z="52.713748931884766"/>
+ <position name="Pixel_3x1624_v4" unit="mm" x="182.41065979003906" y="-11.045695304870605" z="52.713748931884766"/>
+ <position name="Pixel_3x1624_v5" unit="mm" x="182.61004638671875" y="-11.061387062072754" z="52.713748931884766"/>
+ <position name="Pixel_3x1624_v6" unit="mm" x="182.41065979003906" y="-11.045695304870605" z="49.713748931884766"/>
+ <position name="Pixel_3x1624_v7" unit="mm" x="182.61004638671875" y="-11.061387062072754" z="49.713748931884766"/>
+ </define>
+
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="Pixel_3x1624_solid">
+ <triangular vertex1="Pixel_3x1624_v0" vertex2="Pixel_3x1624_v1" vertex3="Pixel_3x1624_v2"/>
+ <triangular vertex1="Pixel_3x1624_v0" vertex2="Pixel_3x1624_v2" vertex3="Pixel_3x1624_v3"/>
+ <triangular vertex1="Pixel_3x1624_v3" vertex2="Pixel_3x1624_v2" vertex3="Pixel_3x1624_v4"/>
+ <triangular vertex1="Pixel_3x1624_v3" vertex2="Pixel_3x1624_v4" vertex3="Pixel_3x1624_v5"/>
+ <triangular vertex1="Pixel_3x1624_v6" vertex2="Pixel_3x1624_v7" vertex3="Pixel_3x1624_v5"/>
+ <triangular vertex1="Pixel_3x1624_v6" vertex2="Pixel_3x1624_v5" vertex3="Pixel_3x1624_v4"/>
+ <triangular vertex1="Pixel_3x1624_v1" vertex2="Pixel_3x1624_v0" vertex3="Pixel_3x1624_v7"/>
+ <triangular vertex1="Pixel_3x1624_v1" vertex2="Pixel_3x1624_v7" vertex3="Pixel_3x1624_v6"/>
+ <triangular vertex1="Pixel_3x1624_v1" vertex2="Pixel_3x1624_v6" vertex3="Pixel_3x1624_v4"/>
+ <triangular vertex1="Pixel_3x1624_v1" vertex2="Pixel_3x1624_v4" vertex3="Pixel_3x1624_v2"/>
+ <triangular vertex1="Pixel_3x1624_v5" vertex2="Pixel_3x1624_v0" vertex3="Pixel_3x1624_v3"/>
+ <triangular vertex1="Pixel_3x1624_v7" vertex2="Pixel_3x1624_v0" vertex3="Pixel_3x1624_v5"/>
+ </tessellated>
+ </solids>
+ <structure>
+ <volume name="Pixel_3x1624">
+ <materialref ref="G4_Al"/>
+ <solidref ref="Pixel_3x1624_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="Pixel_3x1624"/>
+ </setup>
+</gdml>

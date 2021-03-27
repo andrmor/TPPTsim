@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="Substrate_25_8x25_051_v0" unit="mm" x="147.04379272460938" y="-110.98963165283203" z="85.17375183105469"/>
+ <position name="Substrate_25_8x25_051_v1" unit="mm" x="147.0590057373047" y="-111.00261688232422" z="85.17375183105469"/>
+ <position name="Substrate_25_8x25_051_v2" unit="mm" x="147.82313537597656" y="-110.07714080810547" z="83.97374725341797"/>
+ <position name="Substrate_25_8x25_051_v3" unit="mm" x="147.83834838867188" y="-110.09013366699219" z="83.97374725341797"/>
+ <position name="Substrate_25_8x25_051_v4" unit="mm" x="147.82313537597656" y="-110.07714080810547" z="85.17375183105469"/>
+ <position name="Substrate_25_8x25_051_v5" unit="mm" x="147.83834838867188" y="-110.09013366699219" z="85.17375183105469"/>
+ <position name="Substrate_25_8x25_051_v6" unit="mm" x="147.4676055908203" y="-108.98444366455078" z="85.77375030517578"/>
+ <position name="Substrate_25_8x25_051_v7" unit="mm" x="148.22801208496094" y="-109.6338882446289" z="85.77375030517578"/>
+ <position name="Substrate_25_8x25_051_v8" unit="mm" x="148.22801208496094" y="-109.6338882446289" z="59.973751068115234"/>
+ <position name="Substrate_25_8x25_051_v9" unit="mm" x="147.4676055908203" y="-108.98444366455078" z="59.973751068115234"/>
+ <position name="Substrate_25_8x25_051_v10" unit="mm" x="130.71185302734375" y="-128.60292053222656" z="85.77375030517578"/>
+ <position name="Substrate_25_8x25_051_v11" unit="mm" x="131.47225952148438" y="-129.2523651123047" z="85.77375030517578"/>
+ <position name="Substrate_25_8x25_051_v12" unit="mm" x="130.71185302734375" y="-128.60292053222656" z="59.973751068115234"/>
+ <position name="Substrate_25_8x25_051_v13" unit="mm" x="131.47225952148438" y="-129.2523651123047" z="59.973751068115234"/>
+ </define>
+
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="Substrate_25_8x25_051_solid">
+ <triangular vertex1="Substrate_25_8x25_051_v0" vertex2="Substrate_25_8x25_051_v1" vertex3="Substrate_25_8x25_051_v2"/>
+ <triangular vertex1="Substrate_25_8x25_051_v2" vertex2="Substrate_25_8x25_051_v1" vertex3="Substrate_25_8x25_051_v3"/>
+ <triangular vertex1="Substrate_25_8x25_051_v3" vertex2="Substrate_25_8x25_051_v4" vertex3="Substrate_25_8x25_051_v2"/>
+ <triangular vertex1="Substrate_25_8x25_051_v5" vertex2="Substrate_25_8x25_051_v4" vertex3="Substrate_25_8x25_051_v3"/>
+ <triangular vertex1="Substrate_25_8x25_051_v5" vertex2="Substrate_25_8x25_051_v0" vertex3="Substrate_25_8x25_051_v4"/>
+ <triangular vertex1="Substrate_25_8x25_051_v1" vertex2="Substrate_25_8x25_051_v0" vertex3="Substrate_25_8x25_051_v5"/>
+ <triangular vertex1="Substrate_25_8x25_051_v4" vertex2="Substrate_25_8x25_051_v0" vertex3="Substrate_25_8x25_051_v2"/>
+ <triangular vertex1="Substrate_25_8x25_051_v6" vertex2="Substrate_25_8x25_051_v7" vertex3="Substrate_25_8x25_051_v8"/>
+ <triangular vertex1="Substrate_25_8x25_051_v6" vertex2="Substrate_25_8x25_051_v8" vertex3="Substrate_25_8x25_051_v9"/>
+ <triangular vertex1="Substrate_25_8x25_051_v10" vertex2="Substrate_25_8x25_051_v11" vertex3="Substrate_25_8x25_051_v7"/>
+ <triangular vertex1="Substrate_25_8x25_051_v10" vertex2="Substrate_25_8x25_051_v7" vertex3="Substrate_25_8x25_051_v6"/>
+ <triangular vertex1="Substrate_25_8x25_051_v11" vertex2="Substrate_25_8x25_051_v10" vertex3="Substrate_25_8x25_051_v12"/>
+ <triangular vertex1="Substrate_25_8x25_051_v11" vertex2="Substrate_25_8x25_051_v12" vertex3="Substrate_25_8x25_051_v13"/>
+ <triangular vertex1="Substrate_25_8x25_051_v13" vertex2="Substrate_25_8x25_051_v12" vertex3="Substrate_25_8x25_051_v9"/>
+ <triangular vertex1="Substrate_25_8x25_051_v13" vertex2="Substrate_25_8x25_051_v9" vertex3="Substrate_25_8x25_051_v8"/>
+ <triangular vertex1="Substrate_25_8x25_051_v10" vertex2="Substrate_25_8x25_051_v6" vertex3="Substrate_25_8x25_051_v9"/>
+ <triangular vertex1="Substrate_25_8x25_051_v10" vertex2="Substrate_25_8x25_051_v9" vertex3="Substrate_25_8x25_051_v12"/>
+ <triangular vertex1="Substrate_25_8x25_051_v3" vertex2="Substrate_25_8x25_051_v7" vertex3="Substrate_25_8x25_051_v5"/>
+ <triangular vertex1="Substrate_25_8x25_051_v8" vertex2="Substrate_25_8x25_051_v7" vertex3="Substrate_25_8x25_051_v3"/>
+ <triangular vertex1="Substrate_25_8x25_051_v3" vertex2="Substrate_25_8x25_051_v13" vertex3="Substrate_25_8x25_051_v8"/>
+ <triangular vertex1="Substrate_25_8x25_051_v3" vertex2="Substrate_25_8x25_051_v1" vertex3="Substrate_25_8x25_051_v13"/>
+ <triangular vertex1="Substrate_25_8x25_051_v7" vertex2="Substrate_25_8x25_051_v1" vertex3="Substrate_25_8x25_051_v5"/>
+ <triangular vertex1="Substrate_25_8x25_051_v1" vertex2="Substrate_25_8x25_051_v11" vertex3="Substrate_25_8x25_051_v13"/>
+ <triangular vertex1="Substrate_25_8x25_051_v7" vertex2="Substrate_25_8x25_051_v11" vertex3="Substrate_25_8x25_051_v1"/>
+ </tessellated>
+ </solids>
+ <structure>
+ <volume name="Substrate_25_8x25_051">
+ <materialref ref="G4_Al"/>
+ <solidref ref="Substrate_25_8x25_051_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="Substrate_25_8x25_051"/>
+ </setup>
+</gdml>

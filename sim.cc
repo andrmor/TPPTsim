@@ -13,10 +13,10 @@ int main(int argc, char** argv)
     SM.Seed = 0;
     SM.FileName = "/data/margarida/Data/Test.txt";
 
-    //SM.SimulationMode = new SimModeGui(SourceModeEnum::GammaPair);
-    //SM.SimulationMode = new SimModeShowEvent(SourceModeEnum::GammaPair, 9338);
-    //SM.SimulationMode = new SimModeScintPosTest(SourceModeEnum::GammaPair);
-    SM.SimulationMode = new SimModeSingleEvents(SourceModeEnum::GammaPair);
+    SM.SimulationMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
+    //SM.SimulationMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9338);
+    //SM.SimulationMode = new SimModeScintPosTest(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    //SM.SimulationMode = new SimModeSingleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
 
     // --- END of user init ---
 
