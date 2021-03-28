@@ -1,7 +1,11 @@
 #ifndef SimulationMode_h
 #define SimulationMode_h
 
-#include "SessionManager.hh"
+#include "Modes.hh"
+
+#include <vector>
+
+#include "G4ThreeVector.hh"
 
 class G4UserSteppingAction;
 class G4VSensitiveDetector;

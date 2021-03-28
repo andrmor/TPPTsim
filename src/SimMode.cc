@@ -1,4 +1,7 @@
+#include "SessionManager.hh"
 #include "SimMode.hh"
+#include "SteppingAction.hh"
+#include "SensitiveDetectorScint.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -39,12 +42,14 @@ SimModeScintPosTest::SimModeScintPosTest(SourceModeEnum sourceMode, DetectorMode
 {
     bNeedGui    = false;
     bNeedOutput = false;
+
+    SessionManager& SM = SessionManager::getInstance();
+    SM.NumParticlesPerEvent = 10000;
 }
 
 void SimModeScintPosTest::run()
 {
     SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticles = 10000;
 
     SM.runManager->BeamOn(1);
 
@@ -53,7 +58,6 @@ void SimModeScintPosTest::run()
     out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
 }
 
-#include "SteppingAction.hh"
 G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 {
     return new ScintPosTest_SteppingAction;
@@ -120,8 +124,7 @@ void SimModeSingleEvents::run()
     else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
 }
 
-#include "SensitiveDetectorScint.hh"
 G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 {
-    return new SensitiveDetectorScint("Scint");
+    return new SingleEvents_SensitiveDetectorScint("Scint");
 }

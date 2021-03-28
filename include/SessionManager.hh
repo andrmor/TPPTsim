@@ -17,10 +17,6 @@ class SimModeBase;
 class G4LogicalVolume;
 namespace CLHEP { class RanecuEngine; }
 
-enum class SourceModeEnum   {GammaPair, C11, C10, O15};
-enum class DetectorModeEnum {OnlyScint, WithDetector};
-enum class PhantomModeEnum  {PMMA};
-
 class SessionManager
 {
     public:
@@ -53,6 +49,9 @@ class SessionManager
         long Seed         = 0;
         bool bVerbose     = false;
 
+        std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
+        double NumParticlesPerEvent = 1;
+
      // Geometry
         int    NumScintX  = 8;
         int    NumScintY  = 8;
@@ -81,11 +80,6 @@ class SessionManager
 
      // Internal resources
         std::ofstream * outStream  = nullptr;
-
-        std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
-
-     // Data for different modes, to be migrated
-        double NumParticles = 1;
 
      // External resources
         G4Material          * ScintMat   = nullptr;
