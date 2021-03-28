@@ -68,7 +68,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                 physWorld  = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
     }
 
-    logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+    //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
     if (SM.SimulationMode->PhantomMode == PhantomModeEnum::PMMA)

@@ -42,12 +42,12 @@ class SessionManager
         void configureOutput();
         void configureRandomGenerator();
         void configureVerbosity();
+        void scanMaterials();
 
         SimModeBase * SimulationMode = nullptr;
 
-        SourceModeEnum SourceMode = SourceModeEnum::GammaPair;
-
-        std::string FileName     = "/data/margarida/Data/test.txt";
+        std::string WorkingDirectory;
+        std::string FileName         = "TpptSimTest---123.txt";
 
         long Seed         = 0;
 
@@ -75,9 +75,9 @@ class SessionManager
         int    NumSegments = 12;
         int    NumRows     = 4;
 
-        double RowGap      = 0.6 * mm;
-        double Angle0      = 0   * deg;
-        double AngularStep = 9.0 * deg;
+        double RowGap      = 0.6  * mm;
+        double Angle0      = 40.5 * deg; // just a guess!
+        double AngularStep = 9.0  * deg;
 
         double InnerDiam   = 335.4 * mm;
 

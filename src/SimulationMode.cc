@@ -66,6 +66,9 @@ SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorMode
 {
     bNeedGui    = false;
     bNeedOutput = true;
+
+    SessionManager& SM = SessionManager::getInstance();
+    SM.FileName = "Coincidence-GammaPairs-Test1.txt";
 }
 
 void SimModeSingleEvents::run()

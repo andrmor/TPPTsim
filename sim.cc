@@ -11,9 +11,10 @@ int main(int argc, char** argv)
     // --- START of user init ---
 
     SM.Seed = 0;
-    SM.FileName = "/data/margarida/Data/Test.txt";
+    SM.WorkingDirectory = "/data/margarida/Data";
 
-    SM.SimulationMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
+    SM.SimulationMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    //SM.SimulationMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
     //SM.SimulationMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9338);
     //SM.SimulationMode = new SimModeScintPosTest(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
     //SM.SimulationMode = new SimModeSingleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);

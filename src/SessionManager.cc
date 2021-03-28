@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 SessionManager & SessionManager::getInstance()
 {
@@ -33,6 +34,7 @@ SessionManager::SessionManager()
 }
 
 #include "G4SDManager.hh"
+#include "G4LogicalVolumeStore.hh"
 void SessionManager::startSession(int argc, char** argv)
 {
     out("\n\n---------");
@@ -75,6 +77,24 @@ void SessionManager::configureGUI(int argc, char** argv)
     UImanager->ApplyCommand("/hits/verbose 2");
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
+
+    if (SimulationMode->DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
+}
+
+void SessionManager::scanMaterials()
+{
+    out("-->Scanning materials...");
+
+    std::vector<G4LogicalVolume*> * lvs = G4LogicalVolumeStore::GetInstance();
+    for (G4LogicalVolume * lv : *lvs)
+    {
+        G4Material * mat = lv->GetMaterial();
+        out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
+
+        if (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+    }
+
+    out("<--Material scan completed");
 }
 
 void SessionManager::startGUI()
@@ -88,7 +108,7 @@ void SessionManager::startGUI()
 void SessionManager::configureOutput()
 {
     outStream = new std::ofstream();
-    outStream->open(FileName);
+    outStream->open(WorkingDirectory + "/" + FileName);
     if (!outStream->is_open())
     {
         out("Cannot open file to store output data!");
