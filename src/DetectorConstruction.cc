@@ -1,7 +1,7 @@
 #include "DetectorConstruction.hh"
 #include "SensitiveDetectorScint.hh"
 #include "SessionManager.hh"
-#include "SimulationMode.hh"
+#include "SimMode.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
@@ -54,7 +54,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     // Geometry
     G4VPhysicalVolume * physWorld = nullptr;
-    if (SM.SimulationMode->DetetctorMode == DetectorModeEnum::WithDetector)
+    if (SM.SimMode->DetetctorMode == DetectorModeEnum::WithDetector)
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);
@@ -71,7 +71,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    if (SM.SimulationMode->PhantomMode == PhantomModeEnum::PMMA)
+    if (SM.SimMode->PhantomMode == PhantomModeEnum::PMMA)
     {
         G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
         G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
@@ -108,7 +108,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     }
 
     // Sensitive Detector
-    G4VSensitiveDetector * pSD_Scint = SM.SimulationMode->getScintDetector();
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
     if (pSD_Scint)
     {
         G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);

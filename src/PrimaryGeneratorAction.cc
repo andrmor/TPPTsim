@@ -1,6 +1,6 @@
 #include "PrimaryGeneratorAction.hh"
 #include "SessionManager.hh"
-#include "SimulationMode.hh"
+#include "SimMode.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -22,7 +22,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     G4ParticleDefinition* particleDefinition = nullptr;
     double Energy = 0;
 
-    switch (SM.SimulationMode->SourceMode)
+    switch (SM.SimMode->SourceMode)
     {
         case SourceModeEnum::GammaPair :
         {
@@ -54,7 +54,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    if(SM.SimulationMode->SourceMode == SourceModeEnum::GammaPair)
+    if(SM.SimMode->SourceMode == SourceModeEnum::GammaPair)
     {
         //Isotropic momentum direction
         for (int i=0; i < SM.NumParticles; i++)

@@ -1,5 +1,6 @@
 #include "SensitiveDetectorScint.hh"
 #include "SessionManager.hh"
+#include "SimMode.hh"
 
 #include <sstream>
 
@@ -16,12 +17,14 @@ G4bool SensitiveDetectorScint::ProcessHits(G4Step* step, G4TouchableHistory*)
     if (edep == 0) return true;
 
     SessionManager & SM = SessionManager::getInstance();
+    SimModeSingleEvents * Mode = static_cast<SimModeSingleEvents*>(SM.SimMode);
+
     const G4StepPoint * postP  = step->GetPostStepPoint();
 
     int iScint = postP->GetPhysicalVolume()->GetCopyNo();
 
-    double & firstTime = SM.ScintData[iScint][0];
-    double & sumEnergy = SM.ScintData[iScint][1];
+    double & firstTime = Mode->ScintData[iScint][0];
+    double & sumEnergy = Mode->ScintData[iScint][1];
 
     double time = postP->GetGlobalTime();
     if (time < firstTime || firstTime == 0) firstTime = time;

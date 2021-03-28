@@ -1,4 +1,4 @@
-#include "SimulationMode.hh"
+#include "SimMode.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -49,14 +49,14 @@ void SimModeScintPosTest::run()
     SM.runManager->BeamOn(1);
 
     outFlush();
-    if (SM.Hits > 1) SM.SumDelta /= SM.Hits;
-    out("\n---Test results---\nTotal hits of the scintillators:", SM.Hits, "Max delta:", SM.MaxDelta, " Average delta:", SM.SumDelta, "\n\n");
+    if (Hits > 1) SumDelta /= Hits;
+    out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
 }
 
 #include "SteppingAction.hh"
 G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 {
-    return new SteppingAction;
+    return new ScintPosTest_SteppingAction;
 }
 
 // ---
@@ -79,7 +79,7 @@ void SimModeSingleEvents::run()
     const double EnergyThreshold = 0.500*MeV;
 
     const int NumScint = SM.NumScintX * SM.NumScintY * SM.NumRows * SM.NumSegments * 2;
-    for(int i=0; i < NumScint; i++) SM.ScintData.push_back({0,0,0});
+    for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
     std::vector<int> hits;
 
     for (int iRun = 0; iRun < NumPairs; iRun++)
@@ -88,7 +88,7 @@ void SimModeSingleEvents::run()
 
         hits.clear();
         for (int iScint = 0; iScint < NumScint; iScint++)
-            if (SM.ScintData[iScint][1] > EnergyThreshold)
+            if (ScintData[iScint][1] > EnergyThreshold)
                 hits.push_back(iScint);
 
         if (hits.size() == 2)
@@ -96,8 +96,8 @@ void SimModeSingleEvents::run()
             for (int i = 0; i < 2; i++)
             {
                 const int iScint = hits[i];
-                const double Time   = SM.ScintData[iScint][0] / ns;
-                const double Energy = SM.ScintData[iScint][1] / MeV;
+                const double Time   = ScintData[iScint][0] / ns;
+                const double Energy = ScintData[iScint][1] / MeV;
                 const G4ThreeVector & Pos   = SM.ScintPositions.at(iScint);
                 const double X = Pos[0] / mm;
                 const double Y = Pos[1] / mm;
@@ -112,12 +112,12 @@ void SimModeSingleEvents::run()
             out("---");
         }
 
-        for (int i = 0; i < NumScint; i++) SM.ScintData[i] = {0,0,0};
+        for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
     }
 
     outFlush();
     if (!SM.outStream) out("\nOutput stream was not created, nothing was saved");
-    else out("Data saved to file:", SM.FileName);
+    else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
 }
 
 #include "SensitiveDetectorScint.hh"

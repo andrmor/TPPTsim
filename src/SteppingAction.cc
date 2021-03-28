@@ -1,5 +1,6 @@
 #include "SteppingAction.hh"
 #include "SessionManager.hh"
+#include "SimMode.hh"
 #include "out.hh"
 
 #include "G4Step.hh"
@@ -10,15 +11,16 @@
 #include "G4TouchableHandle.hh"
 #include "G4NavigationHistory.hh"
 
-void SteppingAction::UserSteppingAction(const G4Step *step)
+void ScintPosTest_SteppingAction::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
+    SimModeScintPosTest * Mode = static_cast<SimModeScintPosTest*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
 
     if (postP->GetMaterial() == SM.ScintMat)
     {
-        SM.Hits++;
+        Mode->Hits++;
 
         const G4TouchableHandle & touch = postP->GetTouchableHandle(); //to get the physical volumes
         int iScint    = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
@@ -33,8 +35,8 @@ void SteppingAction::UserSteppingAction(const G4Step *step)
         }
         delta = sqrt(delta);
 
-        SM.SumDelta += delta;
-        if (delta > SM.MaxDelta) SM.MaxDelta = delta;
+        Mode->SumDelta += delta;
+        if (delta > Mode->MaxDelta) Mode->MaxDelta = delta;
 
         if (SM.bVerbose)
         {

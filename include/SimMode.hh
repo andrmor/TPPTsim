@@ -56,6 +56,10 @@ public:
     void run() override;
 
     G4UserSteppingAction * getSteppingAction() override;
+
+    double MaxDelta = 0;
+    int    Hits     = 0;
+    double SumDelta = 0;
 };
 
 // ---
@@ -68,6 +72,8 @@ public:
     void run() override;
 
     G4VSensitiveDetector * getScintDetector() override;
+
+    std::vector<G4ThreeVector> ScintData;
 };
 
 #endif // SimulationMode_h

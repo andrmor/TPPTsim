@@ -1,5 +1,5 @@
 #include "SessionManager.hh"
-#include "SimulationMode.hh"
+#include "SimMode.hh"
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "out.hh"
@@ -35,7 +35,7 @@ SessionManager::SessionManager()
 
 #include "G4SDManager.hh"
 #include "G4LogicalVolumeStore.hh"
-void SessionManager::startSession(int argc, char** argv)
+void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
 
@@ -44,31 +44,25 @@ void SessionManager::startSession(int argc, char** argv)
 
     G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "Regions" - Phantom and the Detector, and using different cut-offs
+    physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
     runManager->SetUserInitialization(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction);
 
-    G4UserSteppingAction * StAct = SimulationMode->getSteppingAction();
+    G4UserSteppingAction * StAct = SimMode->getSteppingAction();
     if (StAct) runManager->SetUserAction(StAct);
-
-    //G4UImanager* UImanager = G4UImanager::GetUIpointer();
-    //UImanager->ApplyCommand("/control/verbose 0");
-    //UImanager->ApplyCommand("/run/verbose 0");
-    //UImanager->ApplyCommand("/run/setCut 0.1 mm");   // !!!
-    //UImanager->ApplyCommand("/run/initialize");
 
     runManager->Initialize();
 
     configureRandomGenerator();
-    if (SimulationMode->bNeedGui)    configureGUI(argc, argv);
-    if (SimulationMode->bNeedOutput) configureOutput();
+    if (SimMode->bNeedGui)    configureGUI(argc, argv);
+    if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
 }
 
 SessionManager::~SessionManager() {}
 
-void SessionManager::configureGUI(int argc, char** argv)
+void SessionManager::configureGUI(int argc, char ** argv)
 {
     ui         = new G4UIExecutive(argc, argv);
     visManager = new G4VisExecutive("Quiet");
@@ -78,7 +72,7 @@ void SessionManager::configureGUI(int argc, char** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if (SimulationMode->DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
+    if (SimMode->DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
 }
 
 void SessionManager::scanMaterials()

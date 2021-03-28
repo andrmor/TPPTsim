@@ -34,28 +34,26 @@ class SessionManager
         SessionManager(SessionManager const&) = delete;
         void operator=(SessionManager const&) = delete;
 
-        void startSession(int argc, char **argv);
+        void startSession(int argc, char ** argv);
         void endSession();
 
-        void configureGUI(int argc, char** argv);
+        void configureGUI(int argc, char ** argv);
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
         void configureVerbosity();
         void scanMaterials();
 
-        SimModeBase * SimulationMode = nullptr;
+     // Main settings
+        SimModeBase * SimMode = nullptr;
 
-        std::string WorkingDirectory;
-        std::string FileName         = "TpptSimTest---123.txt";
+        std::string WorkingDirectory = "Sure+Does+Not+Exist";
+        std::string FileName = "TpptSim_DefaultSaveName.txt";
 
         long Seed         = 0;
+        bool bVerbose     = false;
 
-        //Geometry:
-        G4Material      * ScintMat  = nullptr;
-        G4LogicalVolume * logicWorld = nullptr;
-        G4LogicalVolume * logicScint = nullptr;
-
+     // Geometry
         int    NumScintX  = 8;
         int    NumScintY  = 8;
 
@@ -81,26 +79,24 @@ class SessionManager
 
         double InnerDiam   = 335.4 * mm;
 
-        std::vector<G4ThreeVector> ScintPositions;
+     // Internal resources
+        std::ofstream * outStream  = nullptr;
 
-        //Tests (Stepping Action):
-        bool   bVerbose = false;
-        double MaxDelta = 0;
-        int    Hits     = 0;
-        double SumDelta = 0;
+        std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
 
-        //Scintillators Data:
-        std::vector<G4ThreeVector> ScintData;
-
+     // Data for different modes, to be migrated
         double NumParticles = 1;
 
-        CLHEP::RanecuEngine * randGen = nullptr;
+     // External resources
+        G4Material          * ScintMat   = nullptr;
+        G4LogicalVolume     * logicWorld = nullptr;
+        G4LogicalVolume     * logicScint = nullptr;
 
-        G4UIExecutive * ui         = nullptr;
-        G4RunManager  * runManager = nullptr;
-        G4VisManager  * visManager = nullptr;
+        CLHEP::RanecuEngine * randGen    = nullptr;
 
-        std::ofstream * outStream = nullptr;
+        G4UIExecutive       * ui         = nullptr;
+        G4RunManager        * runManager = nullptr;
+        G4VisManager        * visManager = nullptr;
 };
 
 #endif // SESSIONMANAGER_H
