@@ -11,6 +11,9 @@ SimModeGui::SimModeGui(SourceModeEnum sourceMode, DetectorModeEnum detMode, Phan
 {
     bNeedGui    = true;
     bNeedOutput = false;
+
+    SessionManager& SM = SessionManager::getInstance();
+    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeGui::run()
@@ -21,11 +24,14 @@ void SimModeGui::run()
 
 // ---
 
-SimModeShowEvent::SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventIndexToShow) :
-    SimModeGui(sourceMode, detMode, phantMode), iEvent(EventIndexToShow)
+SimModeShowEvent::SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventToShow) :
+    SimModeGui(sourceMode, detMode, phantMode), iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
+
+    SessionManager& SM = SessionManager::getInstance();
+    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeShowEvent::run()
@@ -72,6 +78,7 @@ SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorMode
     bNeedOutput = true;
 
     SessionManager& SM = SessionManager::getInstance();
+    SM.NumParticlesPerEvent = 1;
     SM.FileName = "Coincidence-GammaPairs-Test1.txt";
 }
 

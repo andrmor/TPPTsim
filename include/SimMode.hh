@@ -22,7 +22,7 @@ public:
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
     SourceModeEnum   SourceMode    = SourceModeEnum::GammaPair;
-    DetectorModeEnum DetetctorMode = DetectorModeEnum::WithDetector;
+    DetectorModeEnum DetetctorMode = DetectorModeEnum::OnlyScint;
     PhantomModeEnum  PhantomMode   = PhantomModeEnum::PMMA;
 
     bool bNeedGui    = false;
@@ -44,7 +44,7 @@ public:
 class SimModeShowEvent : public SimModeGui
 {
 public:
-    SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventIndexToShow);
+    SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventToShow);
 
     void run() override;
 

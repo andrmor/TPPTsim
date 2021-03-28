@@ -73,7 +73,7 @@ class SessionManager
         int    NumRows     = 4;
 
         double RowGap      = 0.6  * mm;
-        double Angle0      = 40.5 * deg; // just a guess!
+        double Angle0      = 40.5 * deg; // just a guess, calculate please!
         double AngularStep = 9.0  * deg;
 
         double InnerDiam   = 335.4 * mm;
