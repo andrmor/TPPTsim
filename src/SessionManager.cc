@@ -1,14 +1,26 @@
 #include "SessionManager.hh"
+#include "SimMode.hh"
+#include "DetectorConstruction.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "out.hh"
+
+#include "G4RunManager.hh"
+#include "G4UIExecutive.hh"
+#include "G4UImanager.hh"
+#include "G4VisExecutive.hh"
+#include "G4VisManager.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4StepLimiterPhysics.hh"
+#include "QGSP_BIC_HP.hh"
+#include "G4UImanager.hh"
+#include "G4RandomTools.hh"
+#include "G4String.hh"
+#include "G4ios.hh"
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-#include "G4ParticleDefinition.hh"
-#include "G4UImanager.hh"
-#include "G4RandomTools.hh"
-#include "G4String.hh"
+#include <vector>
 
 SessionManager & SessionManager::getInstance()
 {
@@ -16,103 +28,121 @@ SessionManager & SessionManager::getInstance()
     return instance;
 }
 
-SessionManager::SessionManager(){}
-
-SessionManager::~SessionManager()
+SessionManager::SessionManager()
 {
-    delete outStream;
+    runManager = new G4RunManager;
 }
 
-#include "G4UIExecutive.hh"
-#include "G4VisManager.hh"
-void SessionManager::setupGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager)
+#include "G4SDManager.hh"
+#include "G4LogicalVolumeStore.hh"
+void SessionManager::startSession(int argc, char ** argv)
 {
+    out("\n\n---------");
+
+    DetectorConstruction * theDetector = new DetectorConstruction();
+    runManager->SetUserInitialization(theDetector);
+
+    G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
+    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+    physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
+    runManager->SetUserInitialization(physicsList);
+
+    runManager->SetUserAction(new PrimaryGeneratorAction);
+
+    G4UserSteppingAction * StAct = SimMode->getSteppingAction();
+    if (StAct) runManager->SetUserAction(StAct);
+
+    runManager->Initialize();
+
+    configureRandomGenerator();
+    if (SimMode->bNeedGui)    configureGUI(argc, argv);
+    if (SimMode->bNeedOutput) configureOutput();
+    configureVerbosity();
+}
+
+SessionManager::~SessionManager() {}
+
+void SessionManager::configureGUI(int argc, char ** argv)
+{
+    ui         = new G4UIExecutive(argc, argv);
+    visManager = new G4VisExecutive("Quiet");
+
+    G4UImanager* UImanager = G4UImanager::GetUIpointer();
     UImanager->ApplyCommand("/hits/verbose 2");
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
+
+    if (SimMode->DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
+}
+
+void SessionManager::scanMaterials()
+{
+    out("-->Scanning materials...");
+
+    std::vector<G4LogicalVolume*> * lvs = G4LogicalVolumeStore::GetInstance();
+    for (G4LogicalVolume * lv : *lvs)
+    {
+        G4Material * mat = lv->GetMaterial();
+        out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
+
+        if (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+    }
+
+    out("<--Material scan completed");
+}
+
+void SessionManager::startGUI()
+{
     visManager->Initialize();
+    G4UImanager * UImanager = G4UImanager::GetUIpointer();
     UImanager->ApplyCommand("/control/execute vis.mac");
     ui->SessionStart();
 }
 
-void SessionManager::startSession()
+void SessionManager::configureOutput()
 {
-    out("\n\n---------");
     outStream = new std::ofstream();
-    outStream->open(WorkingDirectory + "/" + BaseFileName);
-
+    outStream->open(WorkingDirectory + "/" + FileName);
     if (!outStream->is_open())
     {
-        out("Cannot open file to store output data, not saving to file!");
+        out("Cannot open file to store output data!");
         delete outStream; outStream = nullptr;
     }
+    else out("\nSaving output to file", FileName);
+}
 
+void SessionManager::configureRandomGenerator()
+{
     randGen = new CLHEP::RanecuEngine();
     randGen->setSeed(Seed);
     G4Random::setTheEngine(randGen);
 }
 
+void SessionManager::configureVerbosity()
+{
+    G4UImanager * UImanager = G4UImanager::GetUIpointer();
+    if (bVerbose)
+    {
+        UImanager->ApplyCommand("/hits/verbose 2");
+        UImanager->ApplyCommand("/tracking/verbose 2");
+        UImanager->ApplyCommand("/control/saveHistory");
+    }
+    else
+    {
+        UImanager->ApplyCommand("/hits/verbose 0");
+        UImanager->ApplyCommand("/tracking/verbose 0");
+        UImanager->ApplyCommand("/control/verbose 0");
+        UImanager->ApplyCommand("/run/verbose 0");
+    }
+    //UImanager->ApplyCommand("/run/initialize");
+}
+
 void SessionManager::endSession()
 {
-    std::cout.flush();
-    G4cout.flush();
-
-    if (runMode == ScintPosTest)
-    {
-        if (Hits > 1) SumDelta /= Hits;
-        out("\nTotal scintillator hits:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta);
-    }
-
     if (outStream) outStream->close();
-    else if (runMode == Main)
-        out("\nOutput stream was not created, nothing was saved");
-}
+    delete outStream;
 
-bool SessionManager::needGui() const
-{
-    return (runMode == GUI || runMode == ShowEvent);
-}
-
-void SessionManager::runSimulation(int NumRuns)
-{
-    const double EnergyThreshold = 0.500*MeV;
-
-    G4UImanager* UImanager = G4UImanager::GetUIpointer();
-
-    const int NumScint = NumScintX * NumScintY * NumRows * NumSegments * 2;
-    for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
-    std::vector<int> hits;
-
-    for (int iRun = 0; iRun < NumRuns; iRun++)
-    {
-        UImanager->ApplyCommand("/run/beamOn");
-
-        hits.clear();
-        for (int iScint = 0; iScint < NumScint; iScint++)
-            if (ScintData[iScint][1] > EnergyThreshold)
-                hits.push_back(iScint);
-
-        if (hits.size() == 2)
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                const int iScint = hits[i];
-                const double Time   = ScintData[iScint][0] / ns;
-                const double Energy = ScintData[iScint][1] / MeV;
-                const G4ThreeVector & Pos   = ScintPositions.at(iScint);
-                const double X = Pos[0] / mm;
-                const double Y = Pos[1] / mm;
-                const double Z = Pos[2] / mm;
-
-                out("Scint#",iScint, Time,"ns ", Energy, "MeV  xyz: (",X,Y,Z,")  Run# ",iRun);
-
-                if (outStream)
-                    *outStream << X << " " << Y << " " << Z << " " << Time << " " << Energy << std::endl;
-
-            }
-            out("---");
-        }
-
-        for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
-    }
+    delete visManager;
+    delete runManager;
+    delete ui;
 }

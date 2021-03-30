@@ -6,12 +6,14 @@
 class G4Step;
 class G4HCofThisEvent;
 
-class SensitiveDetectorScint : public G4VSensitiveDetector
+class SingleEvents_SensitiveDetectorScint : public G4VSensitiveDetector
 {
 public:
-    SensitiveDetectorScint(const G4String & name);
+    SingleEvents_SensitiveDetectorScint(const G4String & name);
 
     virtual G4bool ProcessHits(G4Step* step, G4TouchableHistory* history);
 };
+
+// for different modes create separate SDs!
 
 #endif // SensitiveDetectorScint_h

@@ -1,8 +1,9 @@
 #include "DetectorConstruction.hh"
 #include "SensitiveDetectorScint.hh"
 #include "SessionManager.hh"
-#include "G4SystemOfUnits.hh"
+#include "SimMode.hh"
 
+#include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -19,6 +20,8 @@
 #include "G4Navigator.hh"
 #include "G4SDManager.hh"
 
+#include "G4GDMLParser.hh"
+#include "out.hh"
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     G4NistManager * man = G4NistManager::Instance();
@@ -49,22 +52,32 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
     EncapsMat = matPMMA;
 
-    // Sensitive Detector
-    SensitiveDetectorScint * pSD_Scint = new SensitiveDetectorScint("Scint");
-    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
-
     // Geometry
-    G4Box             * solidWorld = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
-                        logicWorld = new G4LogicalVolume(solidWorld, matVacuum, "World");
-    G4VPhysicalVolume * physWorld  = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
-    logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+    G4VPhysicalVolume * physWorld = nullptr;
+    if (SM.SimMode->DetetctorMode == DetectorModeEnum::WithDetector)
+    {
+        G4GDMLParser parser;
+        parser.Read("mother.gdml", false);
+        physWorld  = parser.GetWorldVolume();
+        logicWorld = physWorld->GetLogicalVolume();
+    }
+    else
+    {
+        G4Box * solidWorld = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
+                logicWorld = new G4LogicalVolume(solidWorld, matVacuum, "World");
+                physWorld  = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
+    }
+
+    //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
-    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
-    //G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matVacuum, "Cyl");
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 0}, logicPmma, "Target", logicWorld, false, 0);
-    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+    if (SM.SimMode->PhantomMode == PhantomModeEnum::PMMA)
+    {
+        G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
+        G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 0}, logicPmma, "Target", logicWorld, false, 0);
+        logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+    }
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint");
@@ -94,8 +107,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         }
     }
 
-    if (SM.runMode == SessionManager::Main)
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
         logicScint->SetSensitiveDetector(pSD_Scint);
+    }
 
     return physWorld;
 }

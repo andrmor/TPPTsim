@@ -11,17 +11,16 @@ class G4Material;
 class G4String;
 class G4UImanager;
 class G4UIExecutive;
+class G4RunManager;
 class G4VisManager;
+class SimModeBase;
+class G4LogicalVolume;
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
 {
     public:
         static SessionManager& getInstance();
-
-        enum RunModeEnum {GUI, ScintPosTest, Main, ShowEvent};
-
-        enum SourceModeEnum {GammaPair, C11, C10, O15};
 
     private:
         SessionManager();
@@ -31,27 +30,29 @@ class SessionManager
         SessionManager(SessionManager const&) = delete;
         void operator=(SessionManager const&) = delete;
 
-        void startSession();
+        void startSession(int argc, char ** argv);
         void endSession();
 
-        bool needGui() const;
-        void runSimulation(int NumRuns);
-        void testCoordinates();
-        void setupGUI(G4UImanager * UImanager, G4UIExecutive * ui, G4VisManager * visManager);
+        void configureGUI(int argc, char ** argv);
+        void startGUI();
+        void configureOutput();
+        void configureRandomGenerator();
+        void configureVerbosity();
+        void scanMaterials();
 
-        RunModeEnum runMode = GUI;
+     // Main settings
+        SimModeBase * SimMode = nullptr;
 
-        SourceModeEnum SourceMode = GammaPair;
-
-        std::string WorkingDirectory = "/data/margarida/Data";
-        std::string BaseFileName     = "Data.txt";
+        std::string WorkingDirectory = "Sure+Does+Not+Exist";
+        std::string FileName = "TpptSim_DefaultSaveName.txt";
 
         long Seed         = 0;
+        bool bVerbose     = false;
 
-        //Geometry:
+        std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
+        double NumParticlesPerEvent = 1;
 
-        G4Material * ScintMat  = nullptr;
-
+     // Geometry
         int    NumScintX  = 8;
         int    NumScintY  = 8;
 
@@ -72,31 +73,24 @@ class SessionManager
         int    NumRows     = 4;
 
         double RowGap      = 0.6  * mm;
-        double Angle0      = 0    * deg;
-        double AngularStep = 9.0 * deg;
+        double Angle0      = 40.5 * deg; // just a guess, calculate please!
+        double AngularStep = 9.0  * deg;
 
         double InnerDiam   = 335.4 * mm;
 
-        std::vector<G4ThreeVector> ScintPositions;
+     // Internal resources
+        std::ofstream * outStream  = nullptr;
 
-        //Tests (Stepping Action):
-        bool   bScintPositionTestMode = false;
-        bool   bVerbose = false;
-        double MaxDelta = 0;
-        int    Hits = 0;
-        double SumDelta = 0;
+     // External resources
+        G4Material          * ScintMat   = nullptr;
+        G4LogicalVolume     * logicWorld = nullptr;
+        G4LogicalVolume     * logicScint = nullptr;
 
-        //Scintillators Data:
-        std::vector<G4ThreeVector> ScintData;
-        std::string FileName_Output;
+        CLHEP::RanecuEngine * randGen    = nullptr;
 
-        double NumParticles = 1;
-
-        CLHEP::RanecuEngine * randGen = nullptr;
-
-private:
-        std::ofstream * outStream = nullptr;
-
+        G4UIExecutive       * ui         = nullptr;
+        G4RunManager        * runManager = nullptr;
+        G4VisManager        * visManager = nullptr;
 };
 
 #endif // SESSIONMANAGER_H
