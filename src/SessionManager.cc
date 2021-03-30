@@ -55,6 +55,7 @@ void SessionManager::startSession(int argc, char ** argv)
     runManager->Initialize();
 
     configureRandomGenerator();
+    configureSource(); //has to be here: after initialize()
     if (SimMode->bNeedGui)    configureGUI(argc, argv);
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
@@ -116,6 +117,48 @@ void SessionManager::configureRandomGenerator()
     randGen = new CLHEP::RanecuEngine();
     randGen->setSeed(Seed);
     G4Random::setTheEngine(randGen);
+}
+
+#include "G4ParticleGun.hh"
+#include "G4IonTable.hh"
+void SessionManager::configureSource()
+{
+    G4ParticleDefinition * particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("geantino");
+    out(particleDefinition);
+
+    double        Energy    = 0;
+    G4ThreeVector Position  = {0, 0, 0};
+    G4ThreeVector Direction = {0, 0, 1.0};
+
+    if      (SimMode->SourceMode == SourceModeEnum::Geantino)
+    {
+        //tests here
+        Position  = {0, 0, 100.0};
+        Direction = {1.0, 0, 0};
+        Energy = 1.0;
+    }
+    else if (SimMode->SourceMode == SourceModeEnum::GammaPair)
+    {
+        particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
+        Energy = 511.0*keV;
+    }
+    else // assuming one of the PE isotopes
+    {
+        G4IonTable * ions = G4IonTable::GetIonTable();
+        switch (SimMode->SourceMode)
+        {
+            case SourceModeEnum::C10 : particleDefinition = ions->GetIon(6, 10, 0); break;
+            case SourceModeEnum::C11 : particleDefinition = ions->GetIon(6, 11, 0); break;
+            case SourceModeEnum::O15 : particleDefinition = ions->GetIon(8, 15, 0); break;
+            case SourceModeEnum::N13 : particleDefinition = ions->GetIon(7, 13, 0); break;
+            default:;
+        };
+    };
+
+    ParticleGun->SetParticleDefinition(particleDefinition);
+    ParticleGun->SetParticlePosition(Position);
+    ParticleGun->SetParticleMomentumDirection(Direction);
+    ParticleGun->SetParticleEnergy(Energy);
 }
 
 void SessionManager::configureVerbosity()

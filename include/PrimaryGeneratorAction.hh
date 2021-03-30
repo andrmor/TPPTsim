@@ -15,7 +15,7 @@ public:
     virtual void GeneratePrimaries(G4Event * anEvent);
 
 private:
-    G4ParticleGun * fParticleGun = nullptr;
+    G4ParticleGun * ParticleGun = nullptr;
 };
 
 // to be split later: there will be a point source, a pencil beam and I guess something more advanced

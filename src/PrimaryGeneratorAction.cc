@@ -12,47 +12,25 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include "G4IonTable.hh"
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction()
 {
     SessionManager & SM = SessionManager::getInstance();
-    fParticleGun = new G4ParticleGun(SM.NumParticlesPerEvent);
 
-    G4ParticleDefinition* particleDefinition = nullptr;
-    double Energy = 0;
+    ParticleGun = new G4ParticleGun(SM.NumParticlesPerEvent);
+    SM.ParticleGun = ParticleGun;
 
-    switch (SM.SimMode->SourceMode)
-    {
-        default:;
-
-        case SourceModeEnum::GammaPair :
-        {
-            particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-            Energy = 511.0*keV;
-        }
-        break;
-
-        /*
-        case SourceModeEnum::C10 :
-        {
-            particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-            Energy = 0;
-            fParticleGun->SetParticleMomentumDirection({0,0,1.0});
-        }
-        break;
-        */
-
-        /*more here*/
-    }
-
-    fParticleGun->SetParticleDefinition(particleDefinition);
-    fParticleGun->SetParticleEnergy(Energy);
-    fParticleGun->SetParticlePosition({0,0,0});
+    //the rest is defined in SessionManager::configureSource() -> has to be there since IonTable is recreated during runManager->Initialize();
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
-    delete fParticleGun;
+    delete ParticleGun; ParticleGun = nullptr;
+
+    //paranoic
+    SessionManager & SM = SessionManager::getInstance();
+    SM.ParticleGun = nullptr;
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event * anEvent)
@@ -69,13 +47,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event * anEvent)
         y = sin(phi) * sin(theta);
         z = cos(phi);
 
-        fParticleGun->SetParticleMomentumDirection({x,y,z});
-        fParticleGun->GeneratePrimaryVertex(anEvent);
-        fParticleGun->SetParticleMomentumDirection({-x,-y,-z});
-        fParticleGun->GeneratePrimaryVertex(anEvent);
+        ParticleGun->SetParticleMomentumDirection({x,y,z});
+        ParticleGun->GeneratePrimaryVertex(anEvent);
+        ParticleGun->SetParticleMomentumDirection({-x,-y,-z});
+        ParticleGun->GeneratePrimaryVertex(anEvent);
     }
     else
     {
-        fParticleGun->GeneratePrimaryVertex(anEvent);
+        ParticleGun->GeneratePrimaryVertex(anEvent);
     }
 }

@@ -15,6 +15,7 @@ class G4RunManager;
 class G4VisManager;
 class SimModeBase;
 class G4LogicalVolume;
+class G4ParticleGun;
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
@@ -37,6 +38,7 @@ class SessionManager
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
+        void configureSource();
         void configureVerbosity();
         void scanMaterials();
 
@@ -79,18 +81,20 @@ class SessionManager
         double InnerDiam   = 335.4 * mm;
 
      // Internal resources
-        std::ofstream * outStream  = nullptr;
+        std::ofstream       * outStream  = nullptr;
 
      // External resources
-        G4Material          * ScintMat   = nullptr;
-        G4LogicalVolume     * logicWorld = nullptr;
-        G4LogicalVolume     * logicScint = nullptr;
+        G4Material          * ScintMat    = nullptr;
+        G4LogicalVolume     * logicWorld  = nullptr;
+        G4LogicalVolume     * logicScint  = nullptr;
 
-        CLHEP::RanecuEngine * randGen    = nullptr;
+        G4ParticleGun       * ParticleGun = nullptr;
 
-        G4UIExecutive       * ui         = nullptr;
-        G4RunManager        * runManager = nullptr;
-        G4VisManager        * visManager = nullptr;
+        CLHEP::RanecuEngine * randGen     = nullptr;
+
+        G4UIExecutive       * ui          = nullptr;
+        G4RunManager        * runManager  = nullptr;
+        G4VisManager        * visManager  = nullptr;
 };
 
 #endif // SESSIONMANAGER_H
