@@ -7,6 +7,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
+#include "G4IonTable.hh"
 #include "G4RandomTools.hh"
 
 #define _USE_MATH_DEFINES
@@ -32,20 +33,17 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
         }
         break;
 
-        /*
-        case SourceModeEnum::C10 :
+        case SourceModeEnum::C11 :
         {
             particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-            Energy = 0;
-            fParticleGun->SetParticleMomentumDirection({0,0,1.0});
+            Energy = 511.0*keV;
         }
         break;
-        */
 
         /*more here*/
     }
 
-    fParticleGun->SetParticleDefinition(particleDefinition);
+    if(particleDefinition) fParticleGun->SetParticleDefinition(particleDefinition);
     fParticleGun->SetParticleEnergy(Energy);
     fParticleGun->SetParticlePosition({0,0,0});
 }
@@ -59,7 +57,17 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event * anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    if (SM.SimMode->SourceMode == SourceModeEnum::GammaPair)
+    if (SM.SimMode->SourceMode == SourceModeEnum::C11)
+    {
+        int Z = 6, A = 11;
+        double excitEnergy = 0;
+        double charge = 0;
+        G4ParticleDefinition* particleDefinition = G4IonTable::GetIonTable()->GetIon(Z,A,excitEnergy);
+        fParticleGun->SetParticleDefinition(particleDefinition);
+        fParticleGun->SetParticleCharge(charge);
+        fParticleGun->SetParticleMomentumDirection({0,0,1.0});
+    }
+    else if (SM.SimMode->SourceMode == SourceModeEnum::GammaPair)
     {
         double phi = acos(-1.0 + 2.0 * G4UniformRand());
         double theta = 2.0 * M_PI * G4UniformRand();
@@ -73,9 +81,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event * anEvent)
         fParticleGun->GeneratePrimaryVertex(anEvent);
         fParticleGun->SetParticleMomentumDirection({-x,-y,-z});
         fParticleGun->GeneratePrimaryVertex(anEvent);
+        return;
     }
-    else
-    {
-        fParticleGun->GeneratePrimaryVertex(anEvent);
-    }
+
+    fParticleGun->GeneratePrimaryVertex(anEvent);
 }
