@@ -127,7 +127,7 @@ void SessionManager::configureSource()
     out(particleDefinition);
 
     double        Energy    = 0;
-    G4ThreeVector Position  = {0, 0, 0};
+    G4ThreeVector Position  = {0, 0, GlobalZ0};
     G4ThreeVector Direction = {0, 0, 1.0};
 
     if      (SimMode->SourceMode == SourceModeEnum::Geantino)

@@ -75,7 +75,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     {
         G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
         G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
-        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 0}, logicPmma, "Target", logicWorld, false, 0);
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Target", logicWorld, false, 0);
         logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
     }
 
@@ -100,7 +100,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         for (int iZ = 0; iZ < SM.NumRows; iZ++)
         {
             double RowPitch = SM.EncapsSizeY + SM.RowGap;
-            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
             positionAssembly(rot, G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
             positionAssembly(rot, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
