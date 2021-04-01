@@ -80,7 +80,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     }
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
-    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint");
+    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
     logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
     solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
@@ -95,15 +95,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X = Radius * sin(Angle);
         double Y = Radius * cos(Angle);
-        G4RotationMatrix * rot = new CLHEP::HepRotation(-Angle, 90.0*deg, 0);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
         for (int iZ = 0; iZ < SM.NumRows; iZ++)
         {
             double RowPitch = SM.EncapsSizeY + SM.RowGap;
             double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            positionAssembly(rot, G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
-            positionAssembly(rot, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
+            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
         }
     }
 
