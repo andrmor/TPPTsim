@@ -77,6 +77,8 @@ SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorMode
     bNeedGui    = false;
     bNeedOutput = true;
 
+    NumEvents   = 10000;
+
     SessionManager& SM = SessionManager::getInstance();
     SM.NumParticlesPerEvent = 1;
     SM.FileName = "Coincidence-GammaPairs-Test1.txt";
@@ -86,14 +88,13 @@ void SimModeSingleEvents::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
-    const int    NumPairs = 10000;
     const double EnergyThreshold = 0.500*MeV;
 
-    const int NumScint = SM.NumScintX * SM.NumScintY * SM.NumRows * SM.NumSegments * 2;
+    const int NumScint = SM.countScintillators();
     for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
     std::vector<int> hits;
 
-    for (int iRun = 0; iRun < NumPairs; iRun++)
+    for (int iRun = 0; iRun < NumEvents; iRun++)
     {
         SM.runManager->BeamOn(1);
 
@@ -133,5 +134,70 @@ void SimModeSingleEvents::run()
 
 G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 {
-    return new SingleEvents_SensitiveDetectorScint("Scint");
+    return new SensitiveDetectorScint_SingleEvents("Scint");
 }
+
+// ---
+
+SimModeMultipleEvents::SimModeMultipleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
+    SimModeBase(sourceMode, detMode, phantMode)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager& SM = SessionManager::getInstance();
+    SM.NumParticlesPerEvent = 10;
+    SM.FileName = "TPPToutput-Test1.txt";
+    InitialReserve = 1000;
+}
+
+void SimModeMultipleEvents::run()
+{
+    SessionManager& SM = SessionManager::getInstance();
+
+    const int NumScint = SM.countScintillators();
+    DepositionData.resize(NumScint);
+    for(auto & vec : DepositionData) vec.reserve(InitialReserve);
+
+
+    SM.runManager->BeamOn(1);
+
+    out("Sim done!");
+    outFlush();
+
+    saveData();
+
+    outFlush();
+    if (!SM.outStream) out("\nOutput stream was not created, nothing was saved");
+    else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
+}
+
+G4VSensitiveDetector *SimModeMultipleEvents::getScintDetector()
+{
+    return new SensitiveDetectorScint_MultipleEvents("SD");
+}
+
+void SimModeMultipleEvents::saveData()
+{
+    SessionManager& SM = SessionManager::getInstance();
+    const int numScint = SM.countScintillators();
+
+    if (SM.outStream)
+    {
+        for (int iScint = 0; iScint < numScint; iScint++)
+        {
+            const G4ThreeVector & sp = SM.ScintPositions[iScint];
+            auto & nodes = DepositionData[iScint];
+
+            if (!nodes.empty())
+            {
+                *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+
+                for (const DepositionNodeRecord & n : nodes)
+                    *SM.outStream << n.pos[0] << " " << n.pos[1] << " " << n.pos[2] << " " << n.time << " " << n.energy << std::endl;
+            }
+        }
+    }
+}
+
+// ---

@@ -11,9 +11,10 @@ int main(int argc, char** argv)
     // --- START of user init ---
 
     SM.Seed = 0;
-    SM.WorkingDirectory = "/data/margarida/Data";
+    SM.WorkingDirectory = "/home/andr/WORK/TPPT";
 
-    SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    SM.SimMode = new SimModeMultipleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeGui(SourceModeEnum::C11, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9643);

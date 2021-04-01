@@ -42,6 +42,8 @@ class SessionManager
         void configureVerbosity();
         void scanMaterials();
 
+        int countScintillators() const;
+
      // Main settings
         SimModeBase * SimMode = nullptr;
 

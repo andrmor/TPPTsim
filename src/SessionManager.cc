@@ -92,6 +92,11 @@ void SessionManager::scanMaterials()
     out("<--Material scan completed");
 }
 
+int SessionManager::countScintillators() const
+{
+    return NumScintX * NumScintY * NumRows * NumSegments * 2.0;
+}
+
 void SessionManager::startGUI()
 {
     visManager->Initialize();

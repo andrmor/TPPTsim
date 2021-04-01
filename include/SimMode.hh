@@ -77,7 +77,33 @@ public:
 
     G4VSensitiveDetector * getScintDetector() override;
 
+    int NumEvents = 10000;
     std::vector<G4ThreeVector> ScintData;
+};
+
+// ---
+struct DepositionNodeRecord
+{
+    DepositionNodeRecord(G4ThreeVector Pos, double Time, double Energy) :
+        pos(Pos), time(Time), energy(Energy) {}
+
+    G4ThreeVector pos;
+    double        time;
+    double        energy;
+};
+class SimModeMultipleEvents : public SimModeBase
+{
+public:
+    SimModeMultipleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode);
+
+    void run() override;
+
+    G4VSensitiveDetector * getScintDetector() override;
+
+    void saveData(); //might be called multiple times!
+
+    int InitialReserve = 1000; // expected number of nodes per scintillator //later: trigger dump to file when first scint reaches this number of nodes
+    std::vector< std::vector<DepositionNodeRecord> > DepositionData;
 };
 
 #endif // SimulationMode_h
