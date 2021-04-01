@@ -48,9 +48,16 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     G4ThreeVector global = postP->GetPosition();
     G4ThreeVector local = postP->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(global);
 
-    out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
+    //out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
 
-    Nodes.push_back(DepositionNodeRecord(local, postP->GetGlobalTime(), edep));
+    DepositionNodeRecord newNode(local, postP->GetGlobalTime(), edep);
+    if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif, Mode->MaxR2))
+    {
+        if (Nodes.size() == Mode->InitialReserve) Mode->saveData();
+        Nodes.push_back(newNode);
+    }
+    else
+        Nodes.back().merge(newNode);
 
     return true;
 }

@@ -87,6 +87,9 @@ struct DepositionNodeRecord
     DepositionNodeRecord(G4ThreeVector Pos, double Time, double Energy) :
         pos(Pos), time(Time), energy(Energy) {}
 
+    void merge(const DepositionNodeRecord & other);
+    bool isCluster(const DepositionNodeRecord & other, double maxTimeDelta, double maxR2) const;
+
     G4ThreeVector pos;
     double        time;
     double        energy;
@@ -102,7 +105,10 @@ public:
 
     void saveData(); //might be called multiple times!
 
-    int InitialReserve = 1000; // expected number of nodes per scintillator //later: trigger dump to file when first scint reaches this number of nodes
+    bool   bDoCluster     = true; // only considers consequtive nodes!
+    double MaxTimeDif     = 0.2;
+    double MaxR2          = 0.5 * 0.5;
+    size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
     std::vector< std::vector<DepositionNodeRecord> > DepositionData;
 };
 

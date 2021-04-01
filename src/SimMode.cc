@@ -148,7 +148,12 @@ SimModeMultipleEvents::SimModeMultipleEvents(SourceModeEnum sourceMode, Detector
     SessionManager& SM = SessionManager::getInstance();
     SM.NumParticlesPerEvent = 10;
     SM.FileName = "TPPToutput-Test1.txt";
-    InitialReserve = 1000;
+    InitialReserve = 10000;
+
+    bDoCluster     = true;
+    MaxTimeDif     = 0.2 * ns;
+    double MaxR    = 0.5 * mm;
+    MaxR2          = MaxR * MaxR;
 }
 
 void SimModeMultipleEvents::run()
@@ -162,14 +167,15 @@ void SimModeMultipleEvents::run()
 
     SM.runManager->BeamOn(1);
 
-    out("Sim done!");
-    outFlush();
-
     saveData();
 
     outFlush();
     if (!SM.outStream) out("\nOutput stream was not created, nothing was saved");
-    else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
+    else
+    {
+        out("\nData saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
+        if (bDoCluster) out("Depositions were clustered using",MaxTimeDif,"ns time threshold and maxR of",sqrt(MaxR2),"mm");
+    }
 }
 
 G4VSensitiveDetector *SimModeMultipleEvents::getScintDetector()
@@ -191,13 +197,34 @@ void SimModeMultipleEvents::saveData()
 
             if (!nodes.empty())
             {
-                *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+                *SM.outStream << "#" << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
 
                 for (const DepositionNodeRecord & n : nodes)
                     *SM.outStream << n.pos[0] << " " << n.pos[1] << " " << n.pos[2] << " " << n.time << " " << n.energy << std::endl;
             }
         }
+        for (auto & vec : DepositionData) vec.clear();
     }
+}
+
+void DepositionNodeRecord::merge(const DepositionNodeRecord & other)
+{
+    if (other.energy <= 0) return;
+
+    const double newEnergy = energy + other.energy;
+    time = (time * energy  +  other.time * other.energy) / newEnergy;
+    energy = newEnergy;
+}
+
+bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double maxTimeDelta, double maxR2) const
+{
+    if ( fabs(time - other.time) > maxTimeDelta ) return false;
+
+    double d2 = 0;
+    for (int i = 0; i < 3; i++) d2 += (pos[i] - other.pos[i]) * (pos[i] - other.pos[i]);
+    if (d2 > maxR2) return false;
+
+    return true;
 }
 
 // ---

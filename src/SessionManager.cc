@@ -129,7 +129,6 @@ void SessionManager::configureRandomGenerator()
 void SessionManager::configureSource()
 {
     G4ParticleDefinition * particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("geantino");
-    out(particleDefinition);
 
     double        Energy    = 0;
     G4ThreeVector Position  = {0, 0, GlobalZ0};
