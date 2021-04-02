@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     SM.Seed             = 0;
     SM.WorkingDirectory = "/home/andr/WORK/TPPT";
     SM.bG4Verbose       = false;
-    SM.bDebug           = true;
+    SM.bDebug           = false;
 
     // Phantom
     SM.PhantomMode      = PhantomModeEnum::PMMA;
