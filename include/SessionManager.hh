@@ -14,6 +14,7 @@ class G4UImanager;
 class G4UIExecutive;
 class G4RunManager;
 class G4VisManager;
+class SourceModeBase;
 class SimModeBase;
 class G4LogicalVolume;
 class G4ParticleGun;
@@ -39,15 +40,15 @@ class SessionManager
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
-        void configureSource();
+        void initializeSource();
         void configureVerbosity();
         void scanMaterials();
 
         int countScintillators() const;
 
      // Main settings
+        SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
-        SourceModeEnum     SourceMode    = SourceModeEnum::GammaPair;
         DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScints;
         PhantomModeEnum    PhantomMode   = PhantomModeEnum::PMMA;
 

@@ -1,4 +1,5 @@
 ﻿#include "SessionManager.hh"
+#include "SourceMode.hh"
 #include "SimMode.hh"
 #include "out.hh"
 
@@ -24,8 +25,8 @@ int main(int argc, char** argv)
     //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
 
   // Source
-    SM.SourceMode       = SourceModeEnum::GammaPair;
-    //SM.SourceMode       = SourceModeEnum::C11;
+    SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
 
   // Operation mode
     SM.SimMode          = new SimModeGui();

@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "SourceMode.hh"
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
@@ -39,6 +40,17 @@ void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
 
+    if (!SourceMode)
+    {
+        out("Source mode not provided!");
+        exit(1);
+    }
+    if (!SimMode)
+    {
+        out("Simulation mode not provided!");
+        exit(2);
+    }
+
     DetectorConstruction * theDetector = new DetectorConstruction();
     runManager->SetUserInitialization(theDetector);
 
@@ -47,7 +59,7 @@ void SessionManager::startSession(int argc, char ** argv)
     physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
     runManager->SetUserInitialization(physicsList);
 
-    runManager->SetUserAction(new PrimaryGeneratorAction);
+    runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
     G4UserSteppingAction * StAct = SimMode->getSteppingAction();
     if (StAct) runManager->SetUserAction(StAct);
@@ -55,7 +67,7 @@ void SessionManager::startSession(int argc, char ** argv)
     runManager->Initialize();
 
     configureRandomGenerator();
-    configureSource(); //has to be here: after initialize()
+    initializeSource(); //has to be here: after initialize()
     if (SimMode->bNeedGui)    configureGUI(argc, argv);
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
@@ -124,45 +136,9 @@ void SessionManager::configureRandomGenerator()
     G4Random::setTheEngine(randGen);
 }
 
-#include "G4ParticleGun.hh"
-#include "G4IonTable.hh"
-void SessionManager::configureSource()
+void SessionManager::initializeSource()
 {
-    G4ParticleDefinition * particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("geantino");
-
-    double        Energy    = 0;
-    G4ThreeVector Position  = {0, 0, GlobalZ0};
-    G4ThreeVector Direction = {0, 0, 1.0};
-
-    if      (SourceMode == SourceModeEnum::Geantino)
-    {
-        //tests here
-        Position  = {0, 0, 100.0};
-        Direction = {1.0, 0, 0};
-        Energy = 1.0;
-    }
-    else if (SourceMode == SourceModeEnum::GammaPair)
-    {
-        particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-        Energy = 511.0*keV;
-    }
-    else // assuming one of the PE isotopes
-    {
-        G4IonTable * ions = G4IonTable::GetIonTable();
-        switch (SourceMode)
-        {
-            case SourceModeEnum::C10 : particleDefinition = ions->GetIon(6, 10, 0); break;
-            case SourceModeEnum::C11 : particleDefinition = ions->GetIon(6, 11, 0); break;
-            case SourceModeEnum::O15 : particleDefinition = ions->GetIon(8, 15, 0); break;
-            case SourceModeEnum::N13 : particleDefinition = ions->GetIon(7, 13, 0); break;
-            default:;
-        };
-    };
-
-    ParticleGun->SetParticleDefinition(particleDefinition);
-    ParticleGun->SetParticlePosition(Position);
-    ParticleGun->SetParticleMomentumDirection(Direction);
-    ParticleGun->SetParticleEnergy(Energy);
+    SourceMode->initialize();
 }
 
 void SessionManager::configureVerbosity()
