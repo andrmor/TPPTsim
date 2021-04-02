@@ -25,12 +25,6 @@ void SourceModeBase::initialize()
     ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
 }
 
-void SourceModeBase::setOrigin(const G4ThreeVector & origin)
-{
-    Origin = origin;
-    ParticleGun->SetParticlePosition(origin);
-}
-
 // ---
 
 PointSource::PointSource(ParticleBase * particle, const G4ThreeVector & origin, int numPerEvent) :
@@ -38,7 +32,7 @@ PointSource::PointSource(ParticleBase * particle, const G4ThreeVector & origin, 
 {
     //Warning: particle definition can be set only later when physics list is initialized
 
-    setOrigin(origin);
+    ParticleGun->SetParticlePosition(origin);
 
     bSkipDirection = particle->bSkipDirection;
     if (bSkipDirection) ParticleGun->SetParticleMomentumDirection({0,0,1.0});
@@ -70,4 +64,20 @@ void PointSource::GeneratePrimaries(G4Event * anEvent)
             ParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
+}
+
+// ---
+
+PencilBeam::PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent) :
+    SourceModeBase(particle, numPerEvent)
+{
+    //Warning: particle definition can be set only later when physics list is initialized
+    ParticleGun->SetParticlePosition(origin);
+    ParticleGun->SetParticleMomentumDirection(direction);
+    ParticleGun->SetParticleEnergy(Particle->Energy);
+}
+
+void PencilBeam::GeneratePrimaries(G4Event * anEvent)
+{
+    ParticleGun->GeneratePrimaryVertex(anEvent);
 }

@@ -104,4 +104,16 @@ public:
     std::vector< std::vector<DepositionNodeRecord> > DepositionData;
 };
 
+// ---
+
+class SimModeTracing : public SimModeGui
+{
+public:
+    SimModeTracing();
+
+    void run() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+};
+
 #endif // SimulationMode_h

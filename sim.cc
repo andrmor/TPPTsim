@@ -25,15 +25,18 @@ int main(int argc, char** argv)
     //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
 
   // Source
-    SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 1);
     //SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PencilBeam(new ParticleGamma(511.0*keV), {0, 0, SM.GlobalZ0}, {1.0,0,0}, 1);
+    SM.SourceMode       = new PencilBeam(new ParticleGeantino, {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0}, 1);
 
   // Operation mode
-    SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(9643);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents();
+    SM.SimMode          = new SimModeTracing();
 
 // --- END of user init ---
 

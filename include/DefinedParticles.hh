@@ -78,4 +78,13 @@ public:
     ParticleN13() : ParticlePES(7, 13) {Name = "N13";}
 };
 
+// ---
+
+class ParticleProton : public ParticleBase
+{
+public:
+    ParticleProton(double energy = 100.0*MeV) : ParticleBase("proton") {Energy = energy;}
+    G4ParticleDefinition * getParticleDefinition() const override;
+};
+
 #endif // definedparticles_h

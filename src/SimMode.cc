@@ -11,9 +11,6 @@ SimModeGui::SimModeGui()
 {
     bNeedGui    = true;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeGui::run()
@@ -28,9 +25,6 @@ SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeShowEvent::run()
@@ -46,9 +40,6 @@ SimModeScintPosTest::SimModeScintPosTest()
 {
     bNeedGui    = false;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 10000;
 }
 
 void SimModeScintPosTest::run()
@@ -64,7 +55,7 @@ void SimModeScintPosTest::run()
 
 G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 {
-    return new ScintPosTest_SteppingAction;
+    return new SteppingAction_ScintPosTest;
 }
 
 // ---
@@ -77,7 +68,6 @@ SimModeSingleEvents::SimModeSingleEvents()
     NumEvents   = 10000;
 
     SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
     SM.FileName = "Coincidence-GammaPairs-Test1.txt";
 }
 
@@ -142,7 +132,6 @@ SimModeMultipleEvents::SimModeMultipleEvents()
     bNeedOutput = true;
 
     SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 10;
     SM.FileName = "TPPToutput-Test1.txt";
     InitialReserve = 10000;
 
@@ -224,3 +213,19 @@ bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double m
 }
 
 // ---
+
+SimModeTracing::SimModeTracing()
+{
+    bNeedGui    = true;
+    bNeedOutput = false;
+}
+
+void SimModeTracing::run()
+{
+    SimModeGui::run();
+}
+
+G4UserSteppingAction * SimModeTracing::getSteppingAction()
+{
+    return new SteppingAction_Tracing;
+}

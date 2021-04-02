@@ -60,7 +60,6 @@ class SessionManager
         bool bDebug       = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
-        double NumParticlesPerEvent = 1;
 
      // Geometry
         int    NumScintX  = 8;

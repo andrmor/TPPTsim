@@ -15,7 +15,6 @@ public:
     ~SourceModeBase();
 
     void initialize();
-    void setOrigin(const G4ThreeVector & origin);
 
     virtual void GeneratePrimaries(G4Event * anEvent) = 0;
 
@@ -23,7 +22,6 @@ protected:
     ParticleBase  * Particle    = nullptr;  // owns!
 
     int             NumPerEvent = 1;
-    G4ThreeVector   Origin;
 
     // Run-time resources
     G4ParticleGun * ParticleGun = nullptr;
@@ -43,6 +41,12 @@ protected:
     bool bGeneratePair  = false;
 };
 
+class PencilBeam : public SourceModeBase
+{
+public:
+    PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent);
 
+    void GeneratePrimaries(G4Event * anEvent) override;
+};
 
 #endif // SourceMode_h

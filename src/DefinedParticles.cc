@@ -34,3 +34,10 @@ G4ParticleDefinition * ParticlePES::getParticleDefinition() const
     return itab->GetIon(Z, A, 0);
 }
 
+// ---
+
+G4ParticleDefinition *ParticleProton::getParticleDefinition() const
+{
+    G4ParticleTable * ptab = G4ParticleTable::GetParticleTable();
+    return ptab->FindParticle("proton");
+}
