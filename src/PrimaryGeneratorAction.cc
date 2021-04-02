@@ -37,7 +37,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event * anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    if (SM.SimMode->SourceMode == SourceModeEnum::GammaPair)
+    if (SM.SourceMode == SourceModeEnum::GammaPair)
     {
         double phi = acos(-1.0 + 2.0 * G4UniformRand());
         double theta = 2.0 * M_PI * G4UniformRand();

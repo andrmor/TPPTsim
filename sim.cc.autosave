@@ -14,15 +14,20 @@ int main(int argc, char** argv)
     SM.WorkingDirectory = "/home/andr/WORK/TPPT";
 
     SM.SimMode = new SimModeMultipleEvents();
-    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    //SM.SimMode = new SimModeGui();
     //SM.SimMode = new SimModeGui(SourceModeEnum::C11, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9643);
     //SM.SimMode = new SimModeScintPosTest(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
     //SM.SimMode = new SimModeSingleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
 
+    // Source
     SM.SourceMode    = SourceModeEnum::GammaPair;
+    
+    // Detector
     SM.DetetctorMode = DetectorModeEnum::OnlyScint;
+    
+    //Phantom
     SM.PhantomMode   = PhantomModeEnum::PMMA;
 
     // --- END of user init ---

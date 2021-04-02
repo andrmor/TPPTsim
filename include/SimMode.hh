@@ -1,8 +1,6 @@
 #ifndef SimulationMode_h
 #define SimulationMode_h
 
-#include "Modes.hh"
-
 #include <vector>
 
 #include "G4ThreeVector.hh"
@@ -13,17 +11,11 @@ class G4VSensitiveDetector;
 class SimModeBase
 {
 public:
-    SimModeBase(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-        SourceMode(sourceMode), DetetctorMode(detMode), PhantomMode(phantMode) {}
     virtual ~SimModeBase(){}
 
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
-
-    SourceModeEnum   SourceMode    = SourceModeEnum::GammaPair;
-    DetectorModeEnum DetetctorMode = DetectorModeEnum::OnlyScint;
-    PhantomModeEnum  PhantomMode   = PhantomModeEnum::PMMA;
 
     bool bNeedGui    = false;
     bool bNeedOutput = false;
@@ -34,7 +26,7 @@ public:
 class SimModeGui : public SimModeBase
 {
 public:
-    SimModeGui(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode);
+    SimModeGui();
 
     void run() override;
 };
@@ -44,7 +36,7 @@ public:
 class SimModeShowEvent : public SimModeGui
 {
 public:
-    SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventToShow);
+    SimModeShowEvent(int EventToShow);
 
     void run() override;
 
@@ -55,7 +47,7 @@ public:
 class SimModeScintPosTest : public SimModeBase
 {
 public:
-    SimModeScintPosTest(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode);
+    SimModeScintPosTest();
 
     void run() override;
 
@@ -71,7 +63,7 @@ public:
 class SimModeSingleEvents : public SimModeBase
 {
 public:
-    SimModeSingleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode);
+    SimModeSingleEvents();
 
     void run() override;
 
@@ -97,7 +89,7 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode);
+    SimModeMultipleEvents();
 
     void run() override;
 

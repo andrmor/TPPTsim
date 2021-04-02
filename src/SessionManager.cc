@@ -73,7 +73,7 @@ void SessionManager::configureGUI(int argc, char ** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if (SimMode->DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
+    if (DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
 }
 
 void SessionManager::scanMaterials()
@@ -134,14 +134,14 @@ void SessionManager::configureSource()
     G4ThreeVector Position  = {0, 0, GlobalZ0};
     G4ThreeVector Direction = {0, 0, 1.0};
 
-    if      (SimMode->SourceMode == SourceModeEnum::Geantino)
+    if      (SourceMode == SourceModeEnum::Geantino)
     {
         //tests here
         Position  = {0, 0, 100.0};
         Direction = {1.0, 0, 0};
         Energy = 1.0;
     }
-    else if (SimMode->SourceMode == SourceModeEnum::GammaPair)
+    else if (SourceMode == SourceModeEnum::GammaPair)
     {
         particleDefinition = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
         Energy = 511.0*keV;
@@ -149,7 +149,7 @@ void SessionManager::configureSource()
     else // assuming one of the PE isotopes
     {
         G4IonTable * ions = G4IonTable::GetIonTable();
-        switch (SimMode->SourceMode)
+        switch (SourceMode)
         {
             case SourceModeEnum::C10 : particleDefinition = ions->GetIon(6, 10, 0); break;
             case SourceModeEnum::C11 : particleDefinition = ions->GetIon(6, 11, 0); break;

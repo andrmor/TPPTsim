@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "Modes.hh"
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
@@ -6,8 +7,7 @@
 
 #include "G4RunManager.hh"
 
-SimModeGui::SimModeGui(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeGui::SimModeGui()
 {
     bNeedGui    = true;
     bNeedOutput = false;
@@ -24,8 +24,7 @@ void SimModeGui::run()
 
 // ---
 
-SimModeShowEvent::SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventToShow) :
-    SimModeGui(sourceMode, detMode, phantMode), iEvent(EventToShow)
+SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
@@ -43,8 +42,7 @@ void SimModeShowEvent::run()
 
 // ---
 
-SimModeScintPosTest::SimModeScintPosTest(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeScintPosTest::SimModeScintPosTest()
 {
     bNeedGui    = false;
     bNeedOutput = false;
@@ -71,8 +69,7 @@ G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 
 // ---
 
-SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeSingleEvents::SimModeSingleEvents()
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -139,8 +136,7 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeMultipleEvents::SimModeMultipleEvents()
 {
     bNeedGui    = false;
     bNeedOutput = true;

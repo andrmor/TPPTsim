@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Modes.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 
@@ -45,7 +46,10 @@ class SessionManager
         int countScintillators() const;
 
      // Main settings
-        SimModeBase * SimMode = nullptr;
+        SimModeBase      * SimMode       = nullptr;
+        SourceModeEnum     SourceMode    = SourceModeEnum::GammaPair;
+        DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScint;
+        PhantomModeEnum    PhantomMode   = PhantomModeEnum::PMMA;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";
