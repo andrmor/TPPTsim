@@ -8,32 +8,33 @@ int main(int argc, char** argv)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    // --- START of user init ---
+// --- START of user init ---
 
+  // General settings
     SM.Seed             = 0;
     SM.WorkingDirectory = "/home/andr/WORK/TPPT";
     SM.bG4Verbose       = false;
     SM.bDebug           = false;
 
-    // Phantom
+  // Phantom
     SM.PhantomMode      = PhantomModeEnum::PMMA;
 
-    // Detector
-    SM.DetetctorMode    = DetectorModeEnum::OnlyScint;
+  // Detector
+    SM.DetetctorMode    = DetectorModeEnum::OnlyScints;
     //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
 
-    // Source
+  // Source
     SM.SourceMode       = SourceModeEnum::GammaPair;
     //SM.SourceMode       = SourceModeEnum::C11;
 
-    // Operation mode
-    //SM.SimMode          = new SimModeGui();
+  // Operation mode
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(9643);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
-    SM.SimMode          = new SimModeMultipleEvents();
+    //SM.SimMode          = new SimModeMultipleEvents();
 
-    // --- END of user init ---
+// --- END of user init ---
 
     SM.startSession(argc, argv); // has to be after setting up of the simulation mode
     SM.SimMode->run();

@@ -48,7 +48,7 @@ class SessionManager
      // Main settings
         SimModeBase      * SimMode       = nullptr;
         SourceModeEnum     SourceMode    = SourceModeEnum::GammaPair;
-        DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScint;
+        DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScints;
         PhantomModeEnum    PhantomMode   = PhantomModeEnum::PMMA;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
