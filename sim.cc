@@ -1,4 +1,5 @@
 ﻿#include "SessionManager.hh"
+#include "SourceMode.hh"
 #include "SimMode.hh"
 #include "out.hh"
 
@@ -8,20 +9,36 @@ int main(int argc, char** argv)
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    // --- START of user init ---
+// --- START of user init ---
 
-    SM.Seed = 0;
+  // General settings
+    SM.Seed             = 0;
     SM.WorkingDirectory = "/home/andr/WORK/TPPT";
+    SM.bG4Verbose       = false;
+    SM.bDebug           = false;
 
-    SM.SimMode = new SimModeMultipleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeGui(SourceModeEnum::C11, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9643);
-    //SM.SimMode = new SimModeScintPosTest(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeSingleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+  // Phantom
+    SM.PhantomMode      = PhantomModeEnum::PMMA;
 
-    // --- END of user init ---
+  // Detector
+    SM.DetetctorMode    = DetectorModeEnum::OnlyScints;
+    //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
+
+  // Source
+    //SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PencilBeam(new ParticleGamma(511.0*keV), {0, 0, SM.GlobalZ0}, {1.0,0,0}, 1);
+    SM.SourceMode       = new PencilBeam(new ParticleGeantino, {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0}, 1);
+
+  // Operation mode
+    //SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeShowEvent(9643);
+    //SM.SimMode          = new SimModeScintPosTest();
+    //SM.SimMode          = new SimModeSingleEvents();
+    //SM.SimMode          = new SimModeMultipleEvents();
+    SM.SimMode          = new SimModeTracing();
+
+// --- END of user init ---
 
     SM.startSession(argc, argv); // has to be after setting up of the simulation mode
     SM.SimMode->run();

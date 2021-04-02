@@ -11,7 +11,7 @@
 #include "G4TouchableHandle.hh"
 #include "G4NavigationHistory.hh"
 
-void ScintPosTest_SteppingAction::UserSteppingAction(const G4Step * step)
+void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
     SimModeScintPosTest * Mode = static_cast<SimModeScintPosTest*>(SM.SimMode);
@@ -38,7 +38,7 @@ void ScintPosTest_SteppingAction::UserSteppingAction(const G4Step * step)
         Mode->SumDelta += delta;
         if (delta > Mode->MaxDelta) Mode->MaxDelta = delta;
 
-        if (SM.bVerbose)
+        if (SM.bDebug)
         {
             out("Index of the scintillator:",iScint, " Index of the assembly:",iAssembly);
             out("Volume center position:", globCenterPos[0], globCenterPos[1], globCenterPos[2]);
@@ -47,4 +47,55 @@ void ScintPosTest_SteppingAction::UserSteppingAction(const G4Step * step)
 
         }
     }
+}
+
+// ---
+
+#include "G4VProcess.hh"
+#include "G4Track.hh"
+void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
+{
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+    if (!postP) return;
+
+    G4VPhysicalVolume * physVol = preP->GetPhysicalVolume();
+    std::string physVolName, logVolName;
+    int         copyNum;
+    std::string matName;
+    G4ThreeVector prePos = preP->GetPosition();
+
+    bool bStart = (step->GetTrack()->GetCurrentStepNumber() == 1);
+    if (bStart)
+    {
+        physVol = preP->GetPhysicalVolume();
+        if (physVol)
+        {
+            physVolName = preP->GetPhysicalVolume()->GetName();
+            logVolName  = preP->GetPhysicalVolume()->GetLogicalVolume()->GetName();
+            copyNum = preP->GetPhysicalVolume()->GetCopyNo();
+            matName = preP->GetMaterial()->GetName();
+            out("Created at (", prePos[0], ",",prePos[1],",", prePos[2],")", physVolName, "/", logVolName, "(",copyNum, ")", matName);
+        }
+        else
+            out("Created at (", prePos[0], ",",prePos[1],",", prePos[2],") - seems to be outside the World!" );
+    }
+
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+
+    std::string procName = "undefined";
+    if (proc) procName   = proc->GetProcessName();
+    G4ThreeVector pos    = postP->GetPosition();
+    physVol = postP->GetPhysicalVolume();
+
+    if (physVol)
+    {
+        physVolName = postP->GetPhysicalVolume()->GetName();
+        logVolName  = postP->GetPhysicalVolume()->GetLogicalVolume()->GetName();
+        copyNum = postP->GetPhysicalVolume()->GetCopyNo();
+        matName = postP->GetMaterial()->GetName();
+        out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ", physVolName, "/", logVolName, "(",copyNum, ")", matName);
+    }
+    else
+        out("Exited world at (", pos[0], ",",pos[1],",", pos[2],")" );
 }

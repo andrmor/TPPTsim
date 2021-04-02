@@ -48,7 +48,7 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     G4ThreeVector global = postP->GetPosition();
     G4ThreeVector local = postP->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(global);
 
-    //out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
+    if (SM.bDebug) out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
 
     DepositionNodeRecord newNode(local, postP->GetGlobalTime(), edep);
     if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif, Mode->MaxR2))

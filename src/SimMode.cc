@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "Modes.hh"
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
@@ -6,14 +7,10 @@
 
 #include "G4RunManager.hh"
 
-SimModeGui::SimModeGui(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeGui::SimModeGui()
 {
     bNeedGui    = true;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeGui::run()
@@ -24,14 +21,10 @@ void SimModeGui::run()
 
 // ---
 
-SimModeShowEvent::SimModeShowEvent(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode, int EventToShow) :
-    SimModeGui(sourceMode, detMode, phantMode), iEvent(EventToShow)
+SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
 }
 
 void SimModeShowEvent::run()
@@ -43,14 +36,10 @@ void SimModeShowEvent::run()
 
 // ---
 
-SimModeScintPosTest::SimModeScintPosTest(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeScintPosTest::SimModeScintPosTest()
 {
     bNeedGui    = false;
     bNeedOutput = false;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 10000;
 }
 
 void SimModeScintPosTest::run()
@@ -66,13 +55,12 @@ void SimModeScintPosTest::run()
 
 G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 {
-    return new ScintPosTest_SteppingAction;
+    return new SteppingAction_ScintPosTest;
 }
 
 // ---
 
-SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeSingleEvents::SimModeSingleEvents()
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -80,7 +68,6 @@ SimModeSingleEvents::SimModeSingleEvents(SourceModeEnum sourceMode, DetectorMode
     NumEvents   = 10000;
 
     SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 1;
     SM.FileName = "Coincidence-GammaPairs-Test1.txt";
 }
 
@@ -139,14 +126,12 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(SourceModeEnum sourceMode, DetectorModeEnum detMode, PhantomModeEnum phantMode) :
-    SimModeBase(sourceMode, detMode, phantMode)
+SimModeMultipleEvents::SimModeMultipleEvents()
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
     SessionManager& SM = SessionManager::getInstance();
-    SM.NumParticlesPerEvent = 10;
     SM.FileName = "TPPToutput-Test1.txt";
     InitialReserve = 10000;
 
@@ -228,3 +213,19 @@ bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double m
 }
 
 // ---
+
+SimModeTracing::SimModeTracing()
+{
+    bNeedGui    = true;
+    bNeedOutput = false;
+}
+
+void SimModeTracing::run()
+{
+    SimModeGui::run();
+}
+
+G4UserSteppingAction * SimModeTracing::getSteppingAction()
+{
+    return new SteppingAction_Tracing;
+}

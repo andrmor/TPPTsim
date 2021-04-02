@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Modes.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 
@@ -13,6 +14,7 @@ class G4UImanager;
 class G4UIExecutive;
 class G4RunManager;
 class G4VisManager;
+class SourceModeBase;
 class SimModeBase;
 class G4LogicalVolume;
 class G4ParticleGun;
@@ -38,23 +40,26 @@ class SessionManager
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
-        void configureSource();
+        void initializeSource();
         void configureVerbosity();
         void scanMaterials();
 
         int countScintillators() const;
 
      // Main settings
-        SimModeBase * SimMode = nullptr;
+        SourceModeBase   * SourceMode    = nullptr;
+        SimModeBase      * SimMode       = nullptr;
+        DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScints;
+        PhantomModeEnum    PhantomMode   = PhantomModeEnum::PMMA;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";
 
         long Seed         = 0;
-        bool bVerbose     = false;
+        bool bG4Verbose   = false;
+        bool bDebug       = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
-        double NumParticlesPerEvent = 1;
 
      // Geometry
         int    NumScintX  = 8;

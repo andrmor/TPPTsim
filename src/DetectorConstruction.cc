@@ -54,7 +54,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     // Geometry
     G4VPhysicalVolume * physWorld = nullptr;
-    if (SM.SimMode->DetetctorMode == DetectorModeEnum::WithDetector)
+    if (SM.DetetctorMode == DetectorModeEnum::ScintsAndGDML)
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);
@@ -71,7 +71,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    if (SM.SimMode->PhantomMode == PhantomModeEnum::PMMA)
+    if (SM.PhantomMode == PhantomModeEnum::PMMA)
     {
         G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
         G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
