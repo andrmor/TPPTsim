@@ -38,7 +38,7 @@ void ScintPosTest_SteppingAction::UserSteppingAction(const G4Step * step)
         Mode->SumDelta += delta;
         if (delta > Mode->MaxDelta) Mode->MaxDelta = delta;
 
-        if (SM.bVerbose)
+        if (SM.bDebug)
         {
             out("Index of the scintillator:",iScint, " Index of the assembly:",iAssembly);
             out("Volume center position:", globCenterPos[0], globCenterPos[1], globCenterPos[2]);

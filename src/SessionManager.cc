@@ -73,7 +73,7 @@ void SessionManager::configureGUI(int argc, char ** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if (DetetctorMode == DetectorModeEnum::WithDetector) scanMaterials();
+    if (DetetctorMode == DetectorModeEnum::ScintsAndGDML) scanMaterials();
 }
 
 void SessionManager::scanMaterials()
@@ -168,7 +168,7 @@ void SessionManager::configureSource()
 void SessionManager::configureVerbosity()
 {
     G4UImanager * UImanager = G4UImanager::GetUIpointer();
-    if (bVerbose)
+    if (bG4Verbose)
     {
         UImanager->ApplyCommand("/hits/verbose 2");
         UImanager->ApplyCommand("/tracking/verbose 2");

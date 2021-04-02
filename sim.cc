@@ -10,20 +10,28 @@ int main(int argc, char** argv)
 
     // --- START of user init ---
 
-    SM.Seed = 0;
+    SM.Seed             = 0;
     SM.WorkingDirectory = "/home/andr/WORK/TPPT";
+    SM.bG4Verbose       = false;
+    SM.bDebug           = true;
 
-    SM.SimMode = new SimModeMultipleEvents();
-    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeGui(SourceModeEnum::C11, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeGui(SourceModeEnum::GammaPair, DetectorModeEnum::WithDetector, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeShowEvent(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA, 9643);
-    //SM.SimMode = new SimModeScintPosTest(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
-    //SM.SimMode = new SimModeSingleEvents(SourceModeEnum::GammaPair, DetectorModeEnum::OnlyScint, PhantomModeEnum::PMMA);
+    // Phantom
+    SM.PhantomMode      = PhantomModeEnum::PMMA;
 
-    SM.SourceMode    = SourceModeEnum::GammaPair;
-    SM.DetetctorMode = DetectorModeEnum::OnlyScint;
-    SM.PhantomMode   = PhantomModeEnum::PMMA;
+    // Detector
+    SM.DetetctorMode    = DetectorModeEnum::OnlyScint;
+    //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
+
+    // Source
+    SM.SourceMode       = SourceModeEnum::GammaPair;
+    //SM.SourceMode       = SourceModeEnum::C11;
+
+    // Operation mode
+    //SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeShowEvent(9643);
+    //SM.SimMode          = new SimModeScintPosTest();
+    //SM.SimMode          = new SimModeSingleEvents();
+    SM.SimMode          = new SimModeMultipleEvents();
 
     // --- END of user init ---
 

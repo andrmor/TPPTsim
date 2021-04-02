@@ -55,7 +55,8 @@ class SessionManager
         std::string FileName = "TpptSim_DefaultSaveName.txt";
 
         long Seed         = 0;
-        bool bVerbose     = false;
+        bool bG4Verbose   = false;
+        bool bDebug       = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
         double NumParticlesPerEvent = 1;
