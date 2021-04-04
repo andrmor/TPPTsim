@@ -182,7 +182,7 @@ void SimModeMultipleEvents::saveData()
 
             if (!nodes.empty())
             {
-                *SM.outStream << "#" << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+                *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
 
                 for (const DepositionNodeRecord & n : nodes)
                     *SM.outStream << n.pos[0] << " " << n.pos[1] << " " << n.pos[2] << " " << n.time << " " << n.energy << std::endl;
@@ -198,6 +198,8 @@ void DepositionNodeRecord::merge(const DepositionNodeRecord & other)
 
     const double newEnergy = energy + other.energy;
     time = (time * energy  +  other.time * other.energy) / newEnergy;
+    for (int i = 0; i < 3; i++)
+        pos[i] = (pos[i] * energy + other.pos[i] * other.energy) / newEnergy;
     energy = newEnergy;
 }
 

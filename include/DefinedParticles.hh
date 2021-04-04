@@ -78,6 +78,12 @@ public:
     ParticleN13() : ParticlePES(7, 13) {Name = "N13";}
 };
 
+class ParticleN12 : public ParticlePES
+{
+public:
+    ParticleN12() : ParticlePES(7, 12) {Name = "N12";}
+};
+
 // ---
 
 class ParticleProton : public ParticleBase
