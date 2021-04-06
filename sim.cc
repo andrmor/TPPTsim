@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeShowEvent(9643);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
-    SM.SimMode          = new SimModeMultipleEvents();
+    SM.SimMode          = new SimModeMultipleEvents("SimOutput.txt");
     //SM.SimMode          = new SimModeTracing();
 
 // --- END of user init ---

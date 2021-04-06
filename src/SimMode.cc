@@ -126,13 +126,13 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents()
+SimModeMultipleEvents::SimModeMultipleEvents(const std::string & FileName)
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
-    SessionManager& SM = SessionManager::getInstance();
-    SM.FileName = "TPPToutput-Test1.txt";
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName    = FileName;
     InitialReserve = 10000;
 
     bDoCluster     = true;

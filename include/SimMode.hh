@@ -89,7 +89,7 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents();
+    SimModeMultipleEvents(const std::string & FileName);
 
     void run() override;
 
