@@ -68,6 +68,17 @@ void PointSource::GeneratePrimaries(G4Event * anEvent)
 
 // ---
 
+PointSourceUniformTime::PointSourceUniformTime(ParticleBase *particle, const G4ThreeVector &origin, int numPerEvent, double timeWindow) :
+    PointSource(particle, origin, numPerEvent), TimeWindow(timeWindow) {}
+
+void PointSourceUniformTime::GeneratePrimaries(G4Event *anEvent)
+{
+    ParticleGun->SetParticleTime(G4UniformRand() * TimeWindow);
+    PointSource::GeneratePrimaries(anEvent);
+}
+
+// ---
+
 PencilBeam::PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent) :
     SourceModeBase(particle, numPerEvent)
 {

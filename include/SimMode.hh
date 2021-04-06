@@ -89,7 +89,7 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(const std::string & FileName);
+    SimModeMultipleEvents(int numRuns, const std::string & FileName);
 
     void run() override;
 
@@ -97,6 +97,7 @@ public:
 
     void saveData(); //might be called multiple times!
 
+    int    NumRuns        = 1;
     bool   bDoCluster     = true; // only considers consequtive nodes!
     double MaxTimeDif     = 0.2;
     double MaxR2          = 0.5 * 0.5;

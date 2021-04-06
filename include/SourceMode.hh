@@ -41,6 +41,17 @@ protected:
     bool bGeneratePair  = false;
 };
 
+class PointSourceUniformTime : public PointSource
+{
+public:
+    PointSourceUniformTime(ParticleBase * particle, const G4ThreeVector & origin, int numPerEvent, double timeWindow);
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    double TimeWindow = 0;
+};
+
 class PencilBeam : public SourceModeBase
 {
 public:
