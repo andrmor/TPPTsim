@@ -33,6 +33,7 @@ G4bool SensitiveDetectorScint_SingleEvents::ProcessHits(G4Step* step, G4Touchabl
 
 // ---
 
+#include <G4VProcess.hh>
 G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
     const double edep = step->GetTotalEnergyDeposit();
@@ -42,15 +43,27 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     SimModeMultipleEvents * Mode = static_cast<SimModeMultipleEvents*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
-    int iScint = postP->GetPhysicalVolume()->GetCopyNo();
-    std::vector<DepositionNodeRecord> & Nodes = Mode->DepositionData[iScint];
+    const G4StepPoint * preP   = step->GetPreStepPoint();
 
-    G4ThreeVector global = postP->GetPosition();
+    bool bTransport = false;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc) bTransport = ( (proc->GetProcessType() == fTransportation) );
+
+    //There could be energy deposition on Transportation (charged particles)!
+    //if (!bTransport && postP->GetPhysicalVolume()->GetName() != "Scint") out("AAAAAAAAAAAAAAAAAAAAAAAAA");
+
+    const int iScint             = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
+                                               : postP->GetPhysicalVolume()->GetCopyNo() );
+
+    const G4ThreeVector & global = (bTransport ? preP ->GetPosition()
+                                               : postP->GetPosition() );
+
     G4ThreeVector local = postP->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(global);
 
     if (SM.bDebug) out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
 
     DepositionNodeRecord newNode(local, postP->GetGlobalTime(), edep);
+    std::vector<DepositionNodeRecord> & Nodes = Mode->DepositionData[iScint];
     if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif, Mode->MaxR2))
     {
         if (Nodes.size() == Mode->InitialReserve) Mode->saveData();

@@ -132,7 +132,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             double X = -0.5 * (SM.NumScintX - 1) * SM.ScintPitchX  +  SM.ScintPitchX * ix;
             double Y = -0.5 * (SM.NumScintY - 1) * SM.ScintPitchY  +  SM.ScintPitchY * iy;
             G4ThreeVector ScintPos(X, Y, 0);
-            new G4PVPlacement(nullptr, ScintPos, logicScint, "TT", logicEncaps, true, iScint++);
+            new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
             G4ThreeVector glob = (*AssemblyRot).inverse()(ScintPos);
             glob[0] += AssemblyPos[0];
