@@ -90,7 +90,8 @@ void SessionManager::configureGUI(int argc, char ** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if (DetectorMode == DetectorModeEnum::ScintsAndGDML) scanMaterials();
+    if ( std::count(DetectorComposition.begin(), DetectorComposition.end(), DetComp::GDML) ) // ugle version of "contains"
+        scanMaterials();
 }
 
 void SessionManager::scanMaterials()

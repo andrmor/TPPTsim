@@ -51,7 +51,8 @@ class SessionManager
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
         PhantomModeBase  * PhantomMode   = nullptr;
-        DetectorModeEnum   DetectorMode = DetectorModeEnum::OnlyScints;
+
+        std::vector<DetComp> DetectorComposition;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";

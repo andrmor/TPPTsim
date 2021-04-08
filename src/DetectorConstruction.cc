@@ -55,7 +55,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     // Geometry
     G4VPhysicalVolume * physWorld = nullptr;
-    if (SM.DetectorMode == DetectorModeEnum::ScintsAndGDML)
+
+    if ( std::count(SM.DetectorComposition.begin(), SM.DetectorComposition.end(), DetComp::GDML) ) // ugle version of "contains"
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);

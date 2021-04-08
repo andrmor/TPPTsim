@@ -23,8 +23,8 @@ int main(int argc, char** argv)
     SM.PhantomMode      = new PhantomModePMMA;
 
   // Detector
-    SM.DetectorMode    = DetectorModeEnum::OnlyScints;
-    //SM.DetectorMode    = DetectorModeEnum::ScintsAndGDML;
+    SM.DetectorComposition = {DetComp::Scint};
+    //SM.DetectorComposition = {DetComp::Scint, DetComp::GDML};
 
   // Source
     SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
