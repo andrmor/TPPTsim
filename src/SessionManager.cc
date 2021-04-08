@@ -90,7 +90,7 @@ void SessionManager::configureGUI(int argc, char ** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if (DetetctorMode == DetectorModeEnum::ScintsAndGDML) scanMaterials();
+    if (DetectorMode == DetectorModeEnum::ScintsAndGDML) scanMaterials();
 }
 
 void SessionManager::scanMaterials()

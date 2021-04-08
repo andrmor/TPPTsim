@@ -55,7 +55,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     // Geometry
     G4VPhysicalVolume * physWorld = nullptr;
-    if (SM.DetetctorMode == DetectorModeEnum::ScintsAndGDML)
+    if (SM.DetectorMode == DetectorModeEnum::ScintsAndGDML)
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);
