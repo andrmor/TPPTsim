@@ -27,10 +27,10 @@ int main(int argc, char** argv)
     //SM.DetetctorMode    = DetectorModeEnum::ScintsAndGDML;
 
   // Source
+    SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
     //SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 100);
     //SM.SourceMode       = new PointSource(new ParticleN12, {0, 0, SM.GlobalZ0}, 100); // 11ms
-    //SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
-    SM.SourceMode       = new PointSourceUniformTime(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1, 1000.0);
+    //SM.SourceMode       = new PointSourceUniformTime(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1, 1000.0);
     //SM.SourceMode       = new PencilBeam(new ParticleGamma(511.0*keV), {0, 0, SM.GlobalZ0}, {1.0,0,0}, 1);
     //SM.SourceMode       = new PencilBeam(new ParticleGeantino, {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0}, 1);
 
