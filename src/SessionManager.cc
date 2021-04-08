@@ -50,6 +50,11 @@ void SessionManager::startSession(int argc, char ** argv)
         out("Simulation mode not provided!");
         exit(2);
     }
+    if (!PhantomMode)
+    {
+        out("Phantom mode not provided!");
+        exit(3);
+    }
 
     DetectorConstruction * theDetector = new DetectorConstruction();
     runManager->SetUserInitialization(theDetector);

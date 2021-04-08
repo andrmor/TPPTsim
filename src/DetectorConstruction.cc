@@ -2,6 +2,7 @@
 #include "SensitiveDetectorScint.hh"
 #include "SessionManager.hh"
 #include "SimMode.hh"
+#include "PhantomMode.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
@@ -67,17 +68,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                 logicWorld = new G4LogicalVolume(solidWorld, matVacuum, "World");
                 physWorld  = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
     }
-
     //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    if (SM.PhantomMode == PhantomModeEnum::PMMA)
-    {
-        G4VSolid          * solidPmma = new G4Tubs("Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
-        G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Cyl");
-        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Target", logicWorld, false, 0);
-        logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
-    }
+    SM.PhantomMode->definePhantom(logicWorld);
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z

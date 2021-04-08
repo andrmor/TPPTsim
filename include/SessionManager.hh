@@ -16,6 +16,7 @@ class G4RunManager;
 class G4VisManager;
 class SourceModeBase;
 class SimModeBase;
+class PhantomModeBase;
 class G4LogicalVolume;
 class G4ParticleGun;
 namespace CLHEP { class RanecuEngine; }
@@ -49,8 +50,8 @@ class SessionManager
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
+        PhantomModeBase  * PhantomMode   = nullptr;
         DetectorModeEnum   DetetctorMode = DetectorModeEnum::OnlyScints;
-        PhantomModeEnum    PhantomMode   = PhantomModeEnum::PMMA;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";

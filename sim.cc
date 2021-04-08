@@ -1,6 +1,7 @@
 ﻿#include "SessionManager.hh"
 #include "SourceMode.hh"
 #include "SimMode.hh"
+#include "PhantomMode.hh"
 #include "out.hh"
 
 #include <sstream>
@@ -18,7 +19,8 @@ int main(int argc, char** argv)
     SM.bDebug           = false;
 
   // Phantom
-    SM.PhantomMode      = PhantomModeEnum::PMMA;
+    //SM.PhantomMode      = new PhantomModeNone;
+    SM.PhantomMode      = new PhantomModePMMA;
 
   // Detector
     SM.DetetctorMode    = DetectorModeEnum::OnlyScints;
@@ -33,11 +35,11 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new PencilBeam(new ParticleGeantino, {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0}, 1);
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(9643);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
-    SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.txt");
+    //SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.txt");
     //SM.SimMode          = new SimModeTracing();
 
 // --- END of user init ---
