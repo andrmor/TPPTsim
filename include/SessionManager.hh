@@ -45,7 +45,9 @@ class SessionManager
         void configureVerbosity();
         void scanMaterials();
 
-        int countScintillators() const;
+        int  countScintillators() const;
+
+        bool detectorContains(DetComp component) const;
 
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;

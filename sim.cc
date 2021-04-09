@@ -25,6 +25,7 @@ int main(int argc, char** argv)
   // Detector
     SM.DetectorComposition = {DetComp::Scint};
     //SM.DetectorComposition = {DetComp::Scint, DetComp::GDML};
+    //SM.DetectorComposition = {};
 
   // Source
     SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);

@@ -90,8 +90,7 @@ void SessionManager::configureGUI(int argc, char ** argv)
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if ( std::count(DetectorComposition.begin(), DetectorComposition.end(), DetComp::GDML) ) // ugle version of "contains"
-        scanMaterials();
+    if ( detectorContains(DetComp::GDML) ) scanMaterials();
 }
 
 void SessionManager::scanMaterials()
@@ -113,6 +112,11 @@ void SessionManager::scanMaterials()
 int SessionManager::countScintillators() const
 {
     return NumScintX * NumScintY * NumRows * NumSegments * 2.0;
+}
+
+bool SessionManager::detectorContains(DetComp component) const
+{
+    return std::count(DetectorComposition.begin(), DetectorComposition.end(), component); // pre-c++20 ugly version of "contains"
 }
 
 void SessionManager::startGUI()

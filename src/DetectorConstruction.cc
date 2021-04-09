@@ -56,7 +56,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Geometry
     G4VPhysicalVolume * physWorld = nullptr;
 
-    if ( std::count(SM.DetectorComposition.begin(), SM.DetectorComposition.end(), DetComp::GDML) ) // ugle version of "contains"
+    if ( SM.detectorContains(DetComp::GDML) )
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);
@@ -74,41 +74,44 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     SM.PhantomMode->definePhantom(logicWorld);
 
-    solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
-    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
-    logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
-
-    solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
-
-    SM.ScintPositions.clear();
-
-    int iAssembly = 0;
-    int iScint    = 0;
-    for (int iA = 0; iA < SM.NumSegments; iA++)
+    if ( SM.detectorContains(DetComp::Scint) )
     {
-        double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ);
-        double Angle  = SM.AngularStep * iA + SM.Angle0;
-        double X = Radius * sin(Angle);
-        double Y = Radius * cos(Angle);
-        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
-        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+        solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
+        logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
+        logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
-        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
+
+        SM.ScintPositions.clear();
+
+        int iAssembly = 0;
+        int iScint    = 0;
+        for (int iA = 0; iA < SM.NumSegments; iA++)
         {
-            double RowPitch = SM.EncapsSizeY + SM.RowGap;
-            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+            double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ);
+            double Angle  = SM.AngularStep * iA + SM.Angle0;
+            double X = Radius * sin(Angle);
+            double Y = Radius * cos(Angle);
+            G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+            G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
-            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
-            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
+            for (int iZ = 0; iZ < SM.NumRows; iZ++)
+            {
+                double RowPitch = SM.EncapsSizeY + SM.RowGap;
+                double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+                positionAssembly(rot,  G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
+                positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
+            }
         }
-    }
 
-    // Sensitive Detector
-    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
-    if (pSD_Scint)
-    {
-        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
-        logicScint->SetSensitiveDetector(pSD_Scint);
+        // Sensitive Detector
+        G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+        if (pSD_Scint)
+        {
+            G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
+            logicScint->SetSensitiveDetector(pSD_Scint);
+        }
     }
 
     return physWorld;
