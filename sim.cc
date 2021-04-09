@@ -19,8 +19,9 @@ int main(int argc, char** argv)
     SM.bDebug           = false;
 
   // Phantom
+    //SM.PhantomMode      = new PhantomModePMMA;
     //SM.PhantomMode      = new PhantomModeNone;
-    SM.PhantomMode      = new PhantomModePMMA;
+    SM.PhantomMode      = new PhantomModeDerenzo(200.0, 200.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
 
   // Detector
     SM.DetectorComposition = {DetComp::Scint};
