@@ -18,6 +18,7 @@ class SourceModeBase;
 class SimModeBase;
 class PhantomModeBase;
 class G4LogicalVolume;
+class G4VPhysicalVolume;
 class G4ParticleGun;
 namespace CLHEP { class RanecuEngine; }
 
@@ -99,6 +100,7 @@ class SessionManager
      // External resources
         G4Material          * ScintMat    = nullptr;
         G4LogicalVolume     * logicWorld  = nullptr;
+        G4VPhysicalVolume   * physWorld   = nullptr;
         G4LogicalVolume     * logicScint  = nullptr;
 
         G4ParticleGun       * ParticleGun = nullptr;

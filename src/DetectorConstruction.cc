@@ -54,20 +54,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     EncapsMat = matPMMA;
 
     // Geometry
-    G4VPhysicalVolume * physWorld = nullptr;
-
     if ( SM.detectorContains(DetComp::GDML) )
     {
         G4GDMLParser parser;
         parser.Read("mother.gdml", false);
-        physWorld  = parser.GetWorldVolume();
-        logicWorld = physWorld->GetLogicalVolume();
+        SM.physWorld  = parser.GetWorldVolume();
+        logicWorld = SM.physWorld->GetLogicalVolume();
     }
     else
     {
-        G4Box * solidWorld = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
-                logicWorld = new G4LogicalVolume(solidWorld, matVacuum, "World");
-                physWorld  = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
+        G4Box * solidWorld   = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
+                logicWorld   = new G4LogicalVolume(solidWorld, matVacuum, "World");
+                SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
     }
     //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
@@ -114,7 +112,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         }
     }
 
-    return physWorld;
+    return SM.physWorld;
 }
 
 G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos)

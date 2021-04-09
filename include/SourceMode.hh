@@ -7,6 +7,8 @@
 
 class G4ParticleGun;
 class G4Event;
+class G4Material;
+class G4Navigator;
 
 class SourceModeBase
 {
@@ -25,6 +27,9 @@ protected:
 
     // Run-time resources
     G4ParticleGun * ParticleGun = nullptr;
+
+protected:
+    virtual void customPostInit() {}
 };
 
 // ---
@@ -52,12 +57,39 @@ protected:
     double TimeWindow = 0;
 };
 
+// ---
+
 class PencilBeam : public SourceModeBase
 {
 public:
     PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent);
 
     void GeneratePrimaries(G4Event * anEvent) override;
+};
+
+// ---
+
+class MaterialLimitedSource : public SourceModeBase
+{
+public:
+    MaterialLimitedSource(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & boundingBoxFullSize, const G4String & material, int numPerEvent);
+    ~MaterialLimitedSource();
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    G4ThreeVector Origin;
+    G4ThreeVector BoundingBox;
+    G4String      Material;
+
+    bool bSkipDirection = false;
+    bool bGeneratePair  = false;
+
+    //run-time
+    G4Material  * SourceMat = nullptr;
+    G4Navigator * Navigator = nullptr;
+
+    virtual void customPostInit();
 };
 
 #endif // SourceMode_h

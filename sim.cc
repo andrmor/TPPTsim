@@ -21,7 +21,8 @@ int main(int argc, char** argv)
   // Phantom
     //SM.PhantomMode      = new PhantomModePMMA;
     //SM.PhantomMode      = new PhantomModeNone;
-    SM.PhantomMode      = new PhantomModeDerenzo(200.0, 200.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
+    //SM.PhantomMode      = new PhantomModeDerenzo(200.0, 200.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
+    SM.PhantomMode      = new PhantomModeDerenzo(200.0, 200.0, {4.0}, 90.0, 5.0, 45.0);
 
   // Detector
     SM.DetectorComposition = {DetComp::Scint};
@@ -29,12 +30,14 @@ int main(int argc, char** argv)
     //SM.DetectorComposition = {};
 
   // Source
-    SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
+    //SM.SourceMode       = new PointSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1);
     //SM.SourceMode       = new PointSource(new ParticleC11, {0, 0, SM.GlobalZ0}, 100);
     //SM.SourceMode       = new PointSource(new ParticleN12, {0, 0, SM.GlobalZ0}, 100); // 11ms
     //SM.SourceMode       = new PointSourceUniformTime(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, 1, 1000.0);
     //SM.SourceMode       = new PencilBeam(new ParticleGamma(511.0*keV), {0, 0, SM.GlobalZ0}, {1.0,0,0}, 1);
     //SM.SourceMode       = new PencilBeam(new ParticleGeantino, {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0}, 1);
+    //SM.SourceMode       = new MaterialLimitedSource(new ParticleGammaPair, {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", 10);
+    SM.SourceMode       = new MaterialLimitedSource(new ParticleGamma, {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", 1);
 
   // Operation mode
     SM.SimMode          = new SimModeGui();
