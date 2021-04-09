@@ -99,8 +99,11 @@ void PencilBeam::GeneratePrimaries(G4Event * anEvent)
 // ---
 
 #include "G4Navigator.hh"
-MaterialLimitedSource::MaterialLimitedSource(ParticleBase *particle, const G4ThreeVector &origin, const G4ThreeVector &boundingBoxFullSize, const G4String &material, int numPerEvent) :
-    SourceModeBase(particle, numPerEvent), Origin(origin), BoundingBox(boundingBoxFullSize), Material(material)
+MaterialLimitedSource::MaterialLimitedSource(ParticleBase *particle,
+                                             const G4ThreeVector &origin, const G4ThreeVector &boundingBoxFullSize,
+                                             const G4String &material,
+                                             G4String fileName_EmissionPosition) :
+    SourceModeBase(particle, 1), Origin(origin), BoundingBox(boundingBoxFullSize), Material(material), FileName(fileName_EmissionPosition)
 {
     ParticleGun->SetParticleEnergy(Particle->Energy);
 
@@ -110,10 +113,24 @@ MaterialLimitedSource::MaterialLimitedSource(ParticleBase *particle, const G4Thr
     ParticleGun->SetParticleEnergy(Particle->Energy);
 
     bGeneratePair = (bool)dynamic_cast<ParticleGammaPair*>(particle);
+
+    if (!FileName.empty())
+    {
+        Stream = new std::ofstream();
+        Stream->open(FileName);
+        if (!Stream->is_open())
+        {
+            out("Cannot open file to store emission positions!");
+            delete Stream; Stream = nullptr;
+        }
+        else out("\nSaving source emission positions to file", FileName);
+    }
 }
 
 MaterialLimitedSource::~MaterialLimitedSource()
 {
+    if (Stream) Stream->close();
+    delete Stream;
     delete Navigator;
 }
 
@@ -142,6 +159,8 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
             if (vol->GetLogicalVolume()->GetMaterial() == SourceMat)
             {
                 ParticleGun->SetParticlePosition(pos);
+                if (Stream)
+                    *Stream << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
                 break;
             }
 

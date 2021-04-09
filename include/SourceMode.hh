@@ -72,7 +72,10 @@ public:
 class MaterialLimitedSource : public SourceModeBase
 {
 public:
-    MaterialLimitedSource(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & boundingBoxFullSize, const G4String & material, int numPerEvent);
+    MaterialLimitedSource(ParticleBase * particle,
+                          const G4ThreeVector & origin, const G4ThreeVector & boundingBoxFullSize,
+                          const G4String & material,
+                          G4String fileName_EmissionPosition = "");
     ~MaterialLimitedSource();
 
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -81,13 +84,15 @@ protected:
     G4ThreeVector Origin;
     G4ThreeVector BoundingBox;
     G4String      Material;
+    G4String      FileName;
 
     bool bSkipDirection = false;
     bool bGeneratePair  = false;
 
     //run-time
-    G4Material  * SourceMat = nullptr;
-    G4Navigator * Navigator = nullptr;
+    G4Material    * SourceMat = nullptr;
+    G4Navigator   * Navigator = nullptr;
+    std::ofstream * Stream = nullptr;
 
     virtual void customPostInit();
 };
