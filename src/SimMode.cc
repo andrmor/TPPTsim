@@ -193,7 +193,7 @@ void SimModeMultipleEvents::saveData()
 
                 for (const DepositionNodeRecord & n : nodes)
                     *SM.outStream << char(0xff);
-                    SM.outStream->write((char*)sp[0], 6*sizeof(double));
+                    SM.outStream->write((char*)&, 6*sizeof(double));
                     SM.outStream->write((char*)&n.time, sizeof(double));
                     SM.outStream->write((char*)&n.energy, sizeof (double));
                     //*SM.outStream << particle << char(0x00);
