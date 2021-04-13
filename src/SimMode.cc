@@ -175,7 +175,32 @@ void SimModeMultipleEvents::saveData()
     SessionManager& SM = SessionManager::getInstance();
     const int numScint = SM.countScintillators();
 
-    if (SM.outStream)
+    if(SM.bBinaryOutput)
+    {
+        for (int iScint = 0; iScint < numScint; iScint++)
+        {
+            const G4ThreeVector & sp = SM.ScintPositions[iScint];
+
+            auto & nodes = DepositionData[iScint];
+
+            if (!nodes.empty())
+            {
+                *SM.outStream << char(0xee);
+                SM.outStream->write((char*)&iScint, sizeof(int));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][0], sizeof(double));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][1], sizeof(double));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][2], sizeof(double));
+
+                for (const DepositionNodeRecord & n : nodes)
+                    *SM.outStream << char(0xff);
+                    SM.outStream->write((char*)sp[0], 6*sizeof(double));
+                    SM.outStream->write((char*)&n.time, sizeof(double));
+                    SM.outStream->write((char*)&n.energy, sizeof (double));
+                    //*SM.outStream << particle << char(0x00);
+            }
+        }
+    }
+    else
     {
         for (int iScint = 0; iScint < numScint; iScint++)
         {

@@ -130,7 +130,10 @@ void SessionManager::startGUI()
 void SessionManager::configureOutput()
 {
     outStream = new std::ofstream();
-    outStream->open(WorkingDirectory + "/" + FileName);
+
+    if (bBinaryOutput) outStream->open(FileName, std::ios::out | std::ios::binary);
+    else outStream->open(FileName);
+
     if (!outStream->is_open())
     {
         out("Cannot open file to store output data!");
