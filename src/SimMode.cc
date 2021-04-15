@@ -192,12 +192,14 @@ void SimModeMultipleEvents::saveData()
                 SM.outStream->write((char*)&SM.ScintPositions[iScint][2], sizeof(double));
 
                 for (int iNodes = 0; iNodes < nodes.size(); iNodes++)
+                {
                     *SM.outStream << char(0xff);
-                    SM.outStream->write((char*)&DepositionData[iScint][0], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][1], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][2], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][3], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][4], sizeof (double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[0], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[1], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[2], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].time, sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].energy, sizeof (double));
+                }
             }
         }
     }

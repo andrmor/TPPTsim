@@ -60,7 +60,7 @@ class SessionManager
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";
 
-        bool bBinaryOutput        = false;
+        bool bBinaryOutput        = true;
 
         long Seed         = 0;
         bool bG4Verbose   = false;
