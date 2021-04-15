@@ -52,19 +52,12 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     //There could be energy deposition on Transportation (charged particles)!
     //if (!bTransport && postP->GetPhysicalVolume()->GetName() != "Scint") out("AAAAAAAAAAAAAAAAAAAAAAAAA");
 
-    const int iScint             = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
-                                               : postP->GetPhysicalVolume()->GetCopyNo() );
+    const int iScint = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
+                                   : postP->GetPhysicalVolume()->GetCopyNo() );
 
-    const G4ThreeVector & global = (bTransport ? preP ->GetPosition()
-                                               : postP->GetPosition() );
-
-    G4ThreeVector local = postP->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(global);
-
-    if (SM.bDebug) out(iScint, "    ", global[0], global[1], global[2], "->",local[0], local[1], local[2]);
-
-    DepositionNodeRecord newNode(local, postP->GetGlobalTime(), edep);
+    DepositionNodeRecord newNode(postP->GetGlobalTime(), edep);
     std::vector<DepositionNodeRecord> & Nodes = Mode->DepositionData[iScint];
-    if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif, Mode->MaxR2))
+    if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif))
     {
         if (Nodes.size() == Mode->InitialReserve) Mode->saveData();
         Nodes.push_back(newNode);

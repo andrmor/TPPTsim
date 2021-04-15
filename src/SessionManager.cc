@@ -131,15 +131,16 @@ void SessionManager::configureOutput()
 {
     outStream = new std::ofstream();
 
-    if (bBinaryOutput) outStream->open(FileName, std::ios::out | std::ios::binary);
-    else outStream->open(FileName);
+    std::string fullFileName = WorkingDirectory + "/" + FileName;
+    if (bBinOutput) outStream->open(fullFileName, std::ios::out | std::ios::binary);
+    else outStream->open(fullFileName);
 
-    if (!outStream->is_open())
+    if (!outStream->is_open() || outStream->fail() || outStream->bad())
     {
         out("Cannot open file to store output data!");
         delete outStream; outStream = nullptr;
     }
-    else out("\nSaving output to file", FileName);
+    else out("\nSaving output to file", fullFileName);
 }
 
 void SessionManager::configureRandomGenerator()

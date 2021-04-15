@@ -78,6 +78,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
         logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
+        /*  positive Z is facing the phantom:
+        G4Box * b   = new G4Box("b", 1.0*mm, 1.0*mm, 1.0*mm);
+        G4LogicalVolume * lb  = new G4LogicalVolume(b, matVacuum, "bb");
+        new G4PVPlacement(nullptr, {0, 0, 5}, lb, "ss", logicScint, false, 0);
+        */
+
         solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
 
         SM.ScintPositions.clear();

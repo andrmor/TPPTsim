@@ -126,7 +126,7 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(int numRuns, const std::string & FileName)
+SimModeMultipleEvents::SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary)
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -134,13 +134,12 @@ SimModeMultipleEvents::SimModeMultipleEvents(int numRuns, const std::string & Fi
     NumRuns = numRuns;
 
     SessionManager & SM = SessionManager::getInstance();
+    SM.bBinOutput  = bBinary;
     SM.FileName    = FileName;
     InitialReserve = 10000;
 
     bDoCluster     = true;
-    MaxTimeDif     = 0.2 * ns;
-    double MaxR    = 0.5 * mm;
-    MaxR2          = MaxR * MaxR;
+    MaxTimeDif     = 0.1 * ns;
 }
 
 void SimModeMultipleEvents::run()
@@ -161,7 +160,7 @@ void SimModeMultipleEvents::run()
     else
     {
         out("\nData saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
-        if (bDoCluster) out("Depositions were clustered using",MaxTimeDif,"ns time threshold and maxR of",sqrt(MaxR2),"mm");
+        if (bDoCluster) out("Depositions were clustered using",MaxTimeDif,"ns time threshold");
     }
 }
 
@@ -175,12 +174,10 @@ void SimModeMultipleEvents::saveData()
     SessionManager& SM = SessionManager::getInstance();
     const int numScint = SM.countScintillators();
 
-    if(SM.bBinaryOutput)
+    if(SM.bBinOutput)
     {
         for (int iScint = 0; iScint < numScint; iScint++)
         {
-            const G4ThreeVector & sp = SM.ScintPositions[iScint];
-
             auto & nodes = DepositionData[iScint];
 
             if (!nodes.empty())
@@ -194,11 +191,8 @@ void SimModeMultipleEvents::saveData()
                 for (int iNodes = 0; iNodes < nodes.size(); iNodes++)
                 {
                     *SM.outStream << char(0xff);
-                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[0], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[1], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[2], sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].time, sizeof(double));
-                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].energy, sizeof (double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].time,   sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].energy, sizeof(double));
                 }
             }
         }
@@ -215,7 +209,7 @@ void SimModeMultipleEvents::saveData()
                 *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
 
                 for (const DepositionNodeRecord & n : nodes)
-                    *SM.outStream << n.pos[0] << " " << n.pos[1] << " " << n.pos[2] << " " << n.time << " " << n.energy << std::endl;
+                    *SM.outStream << n.time << " " << n.energy << std::endl;
             }
         }
         for (auto & vec : DepositionData) vec.clear();
@@ -228,19 +222,12 @@ void DepositionNodeRecord::merge(const DepositionNodeRecord & other)
 
     const double newEnergy = energy + other.energy;
     time = (time * energy  +  other.time * other.energy) / newEnergy;
-    for (int i = 0; i < 3; i++)
-        pos[i] = (pos[i] * energy + other.pos[i] * other.energy) / newEnergy;
     energy = newEnergy;
 }
 
-bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double maxTimeDelta, double maxR2) const
+bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double maxTimeDelta) const
 {
     if ( fabs(time - other.time) > maxTimeDelta ) return false;
-
-    double d2 = 0;
-    for (int i = 0; i < 3; i++) d2 += (pos[i] - other.pos[i]) * (pos[i] - other.pos[i]);
-    if (d2 > maxR2) return false;
-
     return true;
 }
 

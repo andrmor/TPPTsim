@@ -14,8 +14,8 @@ int main(int argc, char** argv)
 
   // General settings
     SM.Seed             = 0;
-    //SM.WorkingDirectory = "/home/andr/WORK/TPPT";
-    SM.WorkingDirectory = "/data/margarida/Data";
+    SM.WorkingDirectory = "/home/andr/WORK/TPPT";
+    //SM.WorkingDirectory = "/data/margarida/Data";
     SM.bG4Verbose       = false;
     SM.bDebug           = false;
 
@@ -41,11 +41,11 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new MaterialLimitedSource(new ParticleGamma, {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER");
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(100000);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
-    SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.txt");
+    //SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeTracing();
 
 // --- END of user init ---

@@ -76,20 +76,19 @@ public:
 // ---
 struct DepositionNodeRecord
 {
-    DepositionNodeRecord(G4ThreeVector Pos, double Time, double Energy) :
-        pos(Pos), time(Time), energy(Energy) {}
+    DepositionNodeRecord(double Time, double Energy) :
+        time(Time), energy(Energy) {}
 
     void merge(const DepositionNodeRecord & other);
-    bool isCluster(const DepositionNodeRecord & other, double maxTimeDelta, double maxR2) const;
+    bool isCluster(const DepositionNodeRecord & other, double maxTimeDelta) const;
 
-    G4ThreeVector pos;
     double        time;
     double        energy;
 };
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(int numRuns, const std::string & FileName);
+    SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary = false);
 
     void run() override;
 
@@ -100,7 +99,6 @@ public:
     int    NumRuns        = 1;
     bool   bDoCluster     = true; // only considers consequtive nodes!
     double MaxTimeDif     = 0.2;
-    double MaxR2          = 0.5 * 0.5;
     size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
     std::vector< std::vector<DepositionNodeRecord> > DepositionData;
 };
