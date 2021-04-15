@@ -175,7 +175,35 @@ void SimModeMultipleEvents::saveData()
     SessionManager& SM = SessionManager::getInstance();
     const int numScint = SM.countScintillators();
 
-    if (SM.outStream)
+    if(SM.bBinaryOutput)
+    {
+        for (int iScint = 0; iScint < numScint; iScint++)
+        {
+            const G4ThreeVector & sp = SM.ScintPositions[iScint];
+
+            auto & nodes = DepositionData[iScint];
+
+            if (!nodes.empty())
+            {
+                *SM.outStream << char(0xee);
+                SM.outStream->write((char*)&iScint, sizeof(int));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][0], sizeof(double));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][1], sizeof(double));
+                SM.outStream->write((char*)&SM.ScintPositions[iScint][2], sizeof(double));
+
+                for (int iNodes = 0; iNodes < nodes.size(); iNodes++)
+                {
+                    *SM.outStream << char(0xff);
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[0], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[1], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].pos[2], sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].time, sizeof(double));
+                    SM.outStream->write((char*)&DepositionData[iScint][iNodes].energy, sizeof (double));
+                }
+            }
+        }
+    }
+    else
     {
         for (int iScint = 0; iScint < numScint; iScint++)
         {
