@@ -43,9 +43,9 @@ int main(int argc, char** argv)
   // Operation mode
     //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(100000);
-    SM.SimMode          = new SimModeScintPosTest();
+    //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeSingleEvents();
-    //SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.bin", true);
+    SM.SimMode          = new SimModeMultipleEvents(10000, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeTracing();
 
 // --- END of user init ---
