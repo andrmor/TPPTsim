@@ -26,7 +26,7 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         int iScint    = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
         int iAssembly = touch->GetVolume(1)->GetCopyNo(); //container/master of the volume (encapsulation)
 
-        G4ThreeVector globCenterPos = touch->GetHistory()->GetTopTransform().Inverse().TransformPoint(G4ThreeVector(0,0,0)); //local to global
+        G4ThreeVector globCenterPos = touch->GetHistory()->GetTopTransform().Inverse().TransformPoint(G4ThreeVector(0,0,0.5*SM.ScintSizeZ)); //local to global
         double delta = 0;
         for (int i=0; i<3; i++)
         {

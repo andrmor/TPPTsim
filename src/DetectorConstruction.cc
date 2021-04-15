@@ -136,6 +136,8 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             G4ThreeVector ScintPos(X, Y, 0);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
+            //want to save center of the face towards the phantom
+            ScintPos[2] += 0.5 * SM.ScintSizeZ;
             G4ThreeVector glob = (*AssemblyRot).inverse()(ScintPos);
             glob[0] += AssemblyPos[0];
             glob[1] += AssemblyPos[1];
