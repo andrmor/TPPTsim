@@ -82,6 +82,17 @@ void PointSourceUniformTime::GeneratePrimaries(G4Event *anEvent)
 
 // ---
 
+PointSourceExponentialTime::PointSourceExponentialTime(ParticleBase *particle, const G4ThreeVector &origin, int numPerEvent, double decayTime) :
+    PointSource(particle, origin, numPerEvent), DecayTime(decayTime) {}
+
+void PointSourceExponentialTime::GeneratePrimaries(G4Event *anEvent)
+{
+    ParticleGun->SetParticleTime(G4RandExponential::shoot(DecayTime));
+    PointSource::GeneratePrimaries(anEvent);
+}
+
+// ---
+
 PencilBeam::PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent) :
     SourceModeBase(particle, numPerEvent)
 {
@@ -192,4 +203,3 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
         }
     }
 }
-

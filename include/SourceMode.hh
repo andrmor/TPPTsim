@@ -59,6 +59,19 @@ protected:
 
 // ---
 
+class PointSourceExponentialTime : public PointSource
+{
+public:
+    PointSourceExponentialTime(ParticleBase * particle, const G4ThreeVector & origin, int numPerEvent, double decayTime);
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    double DecayTime = 0;
+};
+
+// ---
+
 class PencilBeam : public SourceModeBase
 {
 public:
