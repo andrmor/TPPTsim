@@ -1,10 +1,9 @@
 #ifndef SourceMode_h
 #define SourceMode_h
 
-#include "DefinedParticles.hh" // !!!*** to .cc
-
 #include "G4ThreeVector.hh"
 
+class ParticleBase;
 class TimeGeneratorBase;
 class G4ParticleGun;
 class G4Event;
@@ -14,24 +13,23 @@ class G4Navigator;
 class SourceModeBase
 {
 public:
-    SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator);
+    SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator); // transfers ownership
     ~SourceModeBase();
 
     void initialize();
 
-    virtual void GeneratePrimaries(G4Event * anEvent) = 0;
+    virtual void GeneratePrimaries(G4Event * anEvent);
 
 protected:
-    ParticleBase      * Particle      = nullptr; // owns!
-    TimeGeneratorBase * TimeGenerator = nullptr; // owns!
-
-    // Run-time own resources
+    ParticleBase      * Particle      = nullptr;
+    TimeGeneratorBase * TimeGenerator = nullptr;
     G4ParticleGun     * ParticleGun   = nullptr;
+
+    bool bSkipDirection = false;
+    bool bGeneratePair  = false;
 
 protected:
     G4ThreeVector generateDirectionIsotropic();
-
-protected:
     virtual void customPostInit() {}
 };
 
@@ -41,12 +39,6 @@ class PointSource : public SourceModeBase
 {
 public:
     PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin);
-
-    void GeneratePrimaries(G4Event * anEvent) override;
-
-protected:
-    bool bSkipDirection = false;
-    bool bGeneratePair  = false;
 };
 
 // ---
@@ -55,8 +47,6 @@ class PencilBeam : public SourceModeBase
 {
 public:
     PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction);
-
-    void GeneratePrimaries(G4Event * anEvent) override;
 };
 
 // ---
@@ -78,9 +68,6 @@ protected:
     G4ThreeVector BoundingBox;
     G4String      Material;
     G4String      FileName;
-
-    bool bSkipDirection = false;
-    bool bGeneratePair  = false;
 
     //run-time
     G4Material    * SourceMat = nullptr;

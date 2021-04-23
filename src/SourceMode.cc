@@ -1,6 +1,7 @@
 #include "SourceMode.hh"
 #include "SessionManager.hh"
 #include "G4ParticleGun.hh"
+#include "DefinedParticles.hh"
 #include "TimeGenerator.hh"
 #include "out.hh"
 
@@ -14,6 +15,15 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
     Particle(particle), TimeGenerator(timeGenerator)
 {
     ParticleGun = new G4ParticleGun(1);
+
+    //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
+
+    bSkipDirection = particle->bSkipDirection; // can be overwriten by the concrete source type!
+    if (bSkipDirection) ParticleGun->SetParticleMomentumDirection({0, 0, 1.0});
+
+    bGeneratePair  = (bool)dynamic_cast<GammaPair*>(particle);
+
+    ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
 }
 
 SourceModeBase::~SourceModeBase()
@@ -27,6 +37,26 @@ void SourceModeBase::initialize()
 {
     ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
     customPostInit();
+}
+
+void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
+{
+    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+
+    if (bSkipDirection)
+        ParticleGun->GeneratePrimaryVertex(anEvent);
+    else
+    {
+        G4ThreeVector v = generateDirectionIsotropic();
+        ParticleGun->SetParticleMomentumDirection(v);
+        ParticleGun->GeneratePrimaryVertex(anEvent);
+
+        if (bGeneratePair)
+        {
+            ParticleGun->SetParticleMomentumDirection(-v);
+            ParticleGun->GeneratePrimaryVertex(anEvent);
+        }
+    }
 }
 
 G4ThreeVector SourceModeBase::generateDirectionIsotropic()
@@ -54,37 +84,7 @@ G4ThreeVector SourceModeBase::generateDirectionIsotropic()
 PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin) :
     SourceModeBase(particle, timeGenerator)
 {
-    //Warning: particle definition can be set only later when physics list is initialized. see initialize() method
-
     ParticleGun->SetParticlePosition(origin);
-
-    bSkipDirection = particle->bSkipDirection;
-    if (bSkipDirection) ParticleGun->SetParticleMomentumDirection({0,0,1.0});
-
-    ParticleGun->SetParticleEnergy(Particle->Energy);
-
-    bGeneratePair = (bool)dynamic_cast<GammaPair*>(particle);
-}
-
-void PointSource::GeneratePrimaries(G4Event * anEvent)
-{
-    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
-
-    if (bSkipDirection)
-        ParticleGun->GeneratePrimaryVertex(anEvent);
-    else
-    {
-        G4ThreeVector v = generateDirectionIsotropic();
-        ParticleGun->SetParticleMomentumDirection(v);
-
-        ParticleGun->GeneratePrimaryVertex(anEvent);
-
-        if (bGeneratePair)
-        {
-            ParticleGun->SetParticleMomentumDirection(-v);//{-x,-y,-z});
-            ParticleGun->GeneratePrimaryVertex(anEvent);
-        }
-    }
 }
 
 // ---
@@ -92,16 +92,10 @@ void PointSource::GeneratePrimaries(G4Event * anEvent)
 PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
     SourceModeBase(particle, timeGenerator)
 {
-    //Warning: particle definition can be set only later when physics list is initialized
     ParticleGun->SetParticlePosition(origin);
-    ParticleGun->SetParticleMomentumDirection(direction);
-    ParticleGun->SetParticleEnergy(Particle->Energy);
-}
 
-void PencilBeam::GeneratePrimaries(G4Event * anEvent)
-{
-    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
-    ParticleGun->GeneratePrimaryVertex(anEvent);
+    bSkipDirection = true;
+    ParticleGun->SetParticleMomentumDirection(direction);
 }
 
 // ---
@@ -117,20 +111,11 @@ MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
     Material(material),
     FileName(fileName_EmissionPositions)
 {
-    ParticleGun->SetParticleEnergy(Particle->Energy);
-
-    bSkipDirection = particle->bSkipDirection;
-    if (bSkipDirection) ParticleGun->SetParticleMomentumDirection({0,0,1.0});
-
-    ParticleGun->SetParticleEnergy(Particle->Energy);
-
-    bGeneratePair = (bool)dynamic_cast<GammaPair*>(particle);
-
     if (!FileName.empty())
     {
         Stream = new std::ofstream();
         Stream->open(FileName);
-        if (!Stream->is_open())
+        if (!Stream->is_open() || Stream->fail() || Stream->bad())
         {
             out("Cannot open file to store emission positions!");
             delete Stream; Stream = nullptr;
@@ -142,8 +127,8 @@ MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
 MaterialLimitedSource::~MaterialLimitedSource()
 {
     if (Stream) Stream->close();
-    delete Stream;
-    delete Navigator;
+    delete Stream;    Stream    = nullptr;
+    delete Navigator; Navigator = nullptr;
 }
 
 void MaterialLimitedSource::customPostInit()
@@ -158,11 +143,8 @@ void MaterialLimitedSource::customPostInit()
 
 void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
 {
-    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
-
     G4ThreeVector pos;
     int attempts = 0;
-
     while (true)
     {
         for (int i = 0 ; i < 3; i++)
@@ -178,25 +160,12 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
                 break;
             }
 
-        if (attempts > 1000)
+        if (attempts++ > 10000)
         {
-            out("Made 1000 attempts to generate a position within the source material, but failed!");
+            out("Made 10000 attempts to generate a position within the source material, but failed!");
             exit(33);
         }
     }
 
-    if (bSkipDirection)
-        ParticleGun->GeneratePrimaryVertex(anEvent);
-    else
-    {
-        G4ThreeVector v = generateDirectionIsotropic();
-        ParticleGun->SetParticleMomentumDirection(v);
-        ParticleGun->GeneratePrimaryVertex(anEvent);
-
-        if (bGeneratePair)
-        {
-            ParticleGun->SetParticleMomentumDirection(-v);
-            ParticleGun->GeneratePrimaryVertex(anEvent);
-        }
-    }
+    SourceModeBase::GeneratePrimaries(anEvent);
 }
