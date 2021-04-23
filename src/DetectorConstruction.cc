@@ -72,7 +72,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     SM.PhantomMode->definePhantom(logicWorld);
 
-    if ( SM.detectorContains(DetComp::Scint) )
+    if ( SM.detectorContains(DetComp::Scintillators) )
     {
         solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
         logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z

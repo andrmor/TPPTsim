@@ -63,7 +63,7 @@ PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenera
 
     ParticleGun->SetParticleEnergy(Particle->Energy);
 
-    bGeneratePair = (bool)dynamic_cast<ParticleGammaPair*>(particle);
+    bGeneratePair = (bool)dynamic_cast<GammaPair*>(particle);
 }
 
 void PointSource::GeneratePrimaries(G4Event * anEvent)
@@ -124,7 +124,7 @@ MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
 
     ParticleGun->SetParticleEnergy(Particle->Energy);
 
-    bGeneratePair = (bool)dynamic_cast<ParticleGammaPair*>(particle);
+    bGeneratePair = (bool)dynamic_cast<GammaPair*>(particle);
 
     if (!FileName.empty())
     {

@@ -1,7 +1,6 @@
 #ifndef modes_h
 #define modes_h
 
-enum class DetectorModeEnum {OnlyScints, ScintsAndGDML};
-enum class DetComp {Scint, GDML};
+enum class DetComp {Scintillators, GDML};
 
 #endif // modes_h

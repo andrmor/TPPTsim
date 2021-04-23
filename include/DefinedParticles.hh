@@ -22,74 +22,74 @@ public:
 
 // ---
 
-class ParticleGeantino : public ParticleBase
+class Geantino : public ParticleBase
 {
 public:
-    ParticleGeantino() : ParticleBase("geantino") {}
+    Geantino() : ParticleBase("geantino") {}
     G4ParticleDefinition * getParticleDefinition() const override;
 };
 
-class ParticleGamma : public ParticleBase
+class Gamma : public ParticleBase
 {
 public:
-    ParticleGamma(double energy = 0.511*MeV) : ParticleBase("gamma") {Energy = energy;}
+    Gamma(double energy = 0.511*MeV) : ParticleBase("gamma") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
 };
 
-class ParticleGammaPair : public ParticleBase
+class GammaPair : public ParticleBase
 {
 public:
-    ParticleGammaPair(double energy = 0.511*MeV) : ParticleBase("gammaPair") {Energy = energy;}
+    GammaPair(double energy = 0.511*MeV) : ParticleBase("gammaPair") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
 };
 
 // ---
 
-class ParticlePES : public ParticleBase
+class Isotope : public ParticleBase
 {
 public:
-    ParticlePES(int z, int a);
+    Isotope(int z, int a);
     G4ParticleDefinition * getParticleDefinition() const override;
 
     int Z, A;
 };
 
-class ParticleC10 : public ParticlePES
+class C10 : public Isotope
 {
 public:
-    ParticleC10() : ParticlePES(6, 10) {Name = "C10";}
+    C10() : Isotope(6, 10) {Name = "C10";}
 };
 
-class ParticleC11 : public ParticlePES
+class C11 : public Isotope
 {
 public:
-    ParticleC11() : ParticlePES(6, 11) {Name = "C11";}
+    C11() : Isotope(6, 11) {Name = "C11";}
 };
 
-class ParticleO15 : public ParticlePES
+class O15 : public Isotope
 {
 public:
-    ParticleO15() : ParticlePES(8, 15) {Name = "O15";}
+    O15() : Isotope(8, 15) {Name = "O15";}
 };
 
-class ParticleN13 : public ParticlePES
+class N13 : public Isotope
 {
 public:
-    ParticleN13() : ParticlePES(7, 13) {Name = "N13";}
+    N13() : Isotope(7, 13) {Name = "N13";}
 };
 
-class ParticleN12 : public ParticlePES
+class N12 : public Isotope
 {
 public:
-    ParticleN12() : ParticlePES(7, 12) {Name = "N12";}
+    N12() : Isotope(7, 12) {Name = "N12";}
 };
 
 // ---
 
-class ParticleProton : public ParticleBase
+class Proton : public ParticleBase
 {
 public:
-    ParticleProton(double energy = 100.0*MeV) : ParticleBase("proton") {Energy = energy;}
+    Proton(double energy = 100.0*MeV) : ParticleBase("proton") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
 };
 
