@@ -33,14 +33,14 @@ public:
 class PhantomDerenzo : public PhantomModeBase
 {
 public:
-    PhantomDerenzo(double height, double diameter, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
-        Height(height), Diameter(diameter), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
+    PhantomDerenzo(double diameter, double height, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
+        Diameter(diameter), Height(height), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
 
     void definePhantom(G4LogicalVolume * logicWorld) override;
 
 protected:
-    double Height       = 200.0;
     double Diameter     = 200.0;
+    double Height       = 200.0;
     std::vector<double> HoleDiameters;
     double RadialOffset = 50.0;
     double Margin       = 50.0;
