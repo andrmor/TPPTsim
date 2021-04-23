@@ -15,14 +15,14 @@ public:
 
 // ---
 
-class PhantomModeNone : public PhantomModeBase
+class PhantomNone : public PhantomModeBase
 {
     //nothing to add :)
 };
 
 // ---
 
-class PhantomModePMMA : public PhantomModeBase
+class PhantomPMMA : public PhantomModeBase
 {
 public:
     void definePhantom(G4LogicalVolume * logicWorld) override;
@@ -30,10 +30,10 @@ public:
 
 // ---
 
-class PhantomModeDerenzo : public PhantomModeBase
+class PhantomDerenzo : public PhantomModeBase
 {
 public:
-    PhantomModeDerenzo(double height, double diameter, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
+    PhantomDerenzo(double height, double diameter, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
         Height(height), Diameter(diameter), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
 
     void definePhantom(G4LogicalVolume * logicWorld) override;

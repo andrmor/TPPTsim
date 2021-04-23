@@ -18,7 +18,7 @@
 #include <string>
 #include <math.h>
 
-void PhantomModePMMA::definePhantom(G4LogicalVolume * logicWorld)
+void PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
@@ -36,7 +36,7 @@ void PhantomModePMMA::definePhantom(G4LogicalVolume * logicWorld)
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 }
 
-void PhantomModeDerenzo::definePhantom(G4LogicalVolume *logicWorld)
+void PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();

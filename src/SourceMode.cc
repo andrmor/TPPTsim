@@ -1,6 +1,7 @@
 #include "SourceMode.hh"
 #include "SessionManager.hh"
 #include "G4ParticleGun.hh"
+#include "TimeGenerator.hh"
 #include "out.hh"
 
 #include "G4RandomTools.hh"
@@ -9,31 +10,51 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-SourceModeBase::SourceModeBase(ParticleBase * particle, int numPerEvent) :
-    Particle(particle), NumPerEvent(numPerEvent)
+SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator) :
+    Particle(particle), TimeGenerator(timeGenerator)
 {
-    ParticleGun = new G4ParticleGun(numPerEvent);
+    ParticleGun = new G4ParticleGun(1);
 }
 
 SourceModeBase::~SourceModeBase()
 {
-    delete ParticleGun; ParticleGun = nullptr;
-    delete Particle;    Particle    = nullptr;
+    delete ParticleGun;   ParticleGun   = nullptr;
+    delete TimeGenerator; TimeGenerator = nullptr;
+    delete Particle;      Particle      = nullptr;
 }
 
 void SourceModeBase::initialize()
 {
     ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
-
     customPostInit();
+}
+
+G4ThreeVector SourceModeBase::generateDirectionIsotropic()
+{
+    //Sphere function of CERN ROOT
+
+    double a = 0, b = 0, r2 = 1.0;
+    while (r2 > 0.25)
+    {
+        a  = G4UniformRand() - 0.5;
+        b  = G4UniformRand() - 0.5;
+        r2 = a*a + b*b;
+    }
+    double scale = 8.0 * sqrt(0.25 - r2);
+
+    G4ThreeVector v;
+    v[0] = a * scale;
+    v[1] = b * scale;
+    v[2] = ( -1.0 + 8.0 * r2 );
+    return v;
 }
 
 // ---
 
-PointSource::PointSource(ParticleBase * particle, const G4ThreeVector & origin, int numPerEvent) :
-    SourceModeBase(particle, numPerEvent)
+PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin) :
+    SourceModeBase(particle, timeGenerator)
 {
-    //Warning: particle definition can be set only later when physics list is initialized
+    //Warning: particle definition can be set only later when physics list is initialized. see initialize() method
 
     ParticleGun->SetParticlePosition(origin);
 
@@ -47,23 +68,20 @@ PointSource::PointSource(ParticleBase * particle, const G4ThreeVector & origin, 
 
 void PointSource::GeneratePrimaries(G4Event * anEvent)
 {
+    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+
     if (bSkipDirection)
         ParticleGun->GeneratePrimaryVertex(anEvent);
     else
     {
-        double phi   = acos(-1.0 + 2.0 * G4UniformRand());
-        double theta = 2.0 * M_PI * G4UniformRand();
+        G4ThreeVector v = generateDirectionIsotropic();
+        ParticleGun->SetParticleMomentumDirection(v);
 
-        double x = sin(phi) * cos(theta);
-        double y = sin(phi) * sin(theta);
-        double z = cos(phi);
-
-        ParticleGun->SetParticleMomentumDirection({x,y,z});
         ParticleGun->GeneratePrimaryVertex(anEvent);
 
         if (bGeneratePair)
         {
-            ParticleGun->SetParticleMomentumDirection({-x,-y,-z});
+            ParticleGun->SetParticleMomentumDirection(-v);//{-x,-y,-z});
             ParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
@@ -71,30 +89,8 @@ void PointSource::GeneratePrimaries(G4Event * anEvent)
 
 // ---
 
-PointSourceUniformTime::PointSourceUniformTime(ParticleBase *particle, const G4ThreeVector &origin, int numPerEvent, double timeWindow) :
-    PointSource(particle, origin, numPerEvent), TimeWindow(timeWindow) {}
-
-void PointSourceUniformTime::GeneratePrimaries(G4Event *anEvent)
-{
-    ParticleGun->SetParticleTime(G4UniformRand() * TimeWindow);
-    PointSource::GeneratePrimaries(anEvent);
-}
-
-// ---
-
-PointSourceExponentialTime::PointSourceExponentialTime(ParticleBase *particle, const G4ThreeVector &origin, int numPerEvent, double decayTime) :
-    PointSource(particle, origin, numPerEvent), DecayTime(decayTime) {}
-
-void PointSourceExponentialTime::GeneratePrimaries(G4Event *anEvent)
-{
-    ParticleGun->SetParticleTime(G4RandExponential::shoot(DecayTime));
-    PointSource::GeneratePrimaries(anEvent);
-}
-
-// ---
-
-PencilBeam::PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, const G4ThreeVector & direction, int numPerEvent) :
-    SourceModeBase(particle, numPerEvent)
+PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
+    SourceModeBase(particle, timeGenerator)
 {
     //Warning: particle definition can be set only later when physics list is initialized
     ParticleGun->SetParticlePosition(origin);
@@ -104,17 +100,22 @@ PencilBeam::PencilBeam(ParticleBase * particle, const G4ThreeVector & origin, co
 
 void PencilBeam::GeneratePrimaries(G4Event * anEvent)
 {
+    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 // ---
 
 #include "G4Navigator.hh"
-MaterialLimitedSource::MaterialLimitedSource(ParticleBase *particle,
-                                             const G4ThreeVector &origin, const G4ThreeVector &boundingBoxFullSize,
-                                             const G4String &material,
-                                             G4String fileName_EmissionPosition) :
-    SourceModeBase(particle, 1), Origin(origin), BoundingBox(boundingBoxFullSize), Material(material), FileName(fileName_EmissionPosition)
+MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
+                                             TimeGeneratorBase * timeGenerator,
+                                             const G4ThreeVector & origin, const G4ThreeVector &boundingBoxFullSize,
+                                             const G4String & material,
+                                             G4String fileName_EmissionPositions) :
+    SourceModeBase(particle, timeGenerator),
+    Origin(origin), BoundingBox(boundingBoxFullSize),
+    Material(material),
+    FileName(fileName_EmissionPositions)
 {
     ParticleGun->SetParticleEnergy(Particle->Energy);
 
@@ -157,6 +158,8 @@ void MaterialLimitedSource::customPostInit()
 
 void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
 {
+    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+
     G4ThreeVector pos;
     int attempts = 0;
 
@@ -186,19 +189,13 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
         ParticleGun->GeneratePrimaryVertex(anEvent);
     else
     {
-        double phi   = acos(-1.0 + 2.0 * G4UniformRand());
-        double theta = 2.0 * M_PI * G4UniformRand();
-
-        double x = sin(phi) * cos(theta);
-        double y = sin(phi) * sin(theta);
-        double z = cos(phi);
-
-        ParticleGun->SetParticleMomentumDirection({x,y,z});
+        G4ThreeVector v = generateDirectionIsotropic();
+        ParticleGun->SetParticleMomentumDirection(v);
         ParticleGun->GeneratePrimaryVertex(anEvent);
 
         if (bGeneratePair)
         {
-            ParticleGun->SetParticleMomentumDirection({-x,-y,-z});
+            ParticleGun->SetParticleMomentumDirection(-v);
             ParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
