@@ -18,10 +18,11 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
 
     //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
 
-    bSkipDirection = particle->bSkipDirection; // can be overwriten by the concrete source type!
-    if (bSkipDirection) ParticleGun->SetParticleMomentumDirection({0, 0, 1.0});
+    bIsotropicDirection = !particle->bSkipDirection; // can be overwriten by the concrete source type!
 
-    bGeneratePair  = (bool)dynamic_cast<GammaPair*>(particle);
+    GammaPair * pair = dynamic_cast<GammaPair*>(particle);
+    bGeneratePair = pair;
+    if (pair) bAcollinearity = pair->bAcollineraity;
 
     ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
 }
@@ -43,20 +44,27 @@ void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
 {
     ParticleGun->SetParticleTime(TimeGenerator->generateTime());
 
-    if (bSkipDirection)
-        ParticleGun->GeneratePrimaryVertex(anEvent);
-    else
-    {
-        G4ThreeVector v = generateDirectionIsotropic();
-        ParticleGun->SetParticleMomentumDirection(v);
-        ParticleGun->GeneratePrimaryVertex(anEvent);
+    if (bIsotropicDirection) Direction = generateDirectionIsotropic(); //else it is fixed
+    ParticleGun->SetParticleMomentumDirection(Direction);
 
-        if (bGeneratePair)
-        {
-            ParticleGun->SetParticleMomentumDirection(-v);
-            ParticleGun->GeneratePrimaryVertex(anEvent);
-        }
+    ParticleGun->GeneratePrimaryVertex(anEvent);
+    if (bGeneratePair) generateSecond(anEvent);
+}
+
+G4ThreeVector SourceModeBase::generateSecond(G4Event * anEvent)
+{
+    if (bAcollinearity)
+    {
+        G4ThreeVector v = -Direction;
+        constexpr double Sigma = 0.5*deg / 2.35482;
+        double angle = G4RandGauss::shoot(0, Sigma);
+        v.rotate(angle, v.orthogonal());
+        v.rotate(G4UniformRand()*2.0*M_PI, Direction);
+        ParticleGun->SetParticleMomentumDirection(v);
     }
+    else ParticleGun->SetParticleMomentumDirection(-Direction);
+
+    ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 G4ThreeVector SourceModeBase::generateDirectionIsotropic()
@@ -94,8 +102,8 @@ PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerato
 {
     ParticleGun->SetParticlePosition(origin);
 
-    bSkipDirection = true;
-    ParticleGun->SetParticleMomentumDirection(direction);
+    Direction = direction;
+    bIsotropicDirection = false;
 }
 
 // ---

@@ -25,11 +25,16 @@ protected:
     TimeGeneratorBase * TimeGenerator = nullptr;
     G4ParticleGun     * ParticleGun   = nullptr;
 
-    bool bSkipDirection = false;
+    G4ThreeVector Direction = {0, 0, 1.0};  // more general approach will be realized later!
+    bool bIsotropicDirection = true;
+
     bool bGeneratePair  = false;
+    bool bAcollinearity = false;
 
 protected:
     G4ThreeVector generateDirectionIsotropic();
+    G4ThreeVector generateSecond(G4Event * anEvent);
+
     virtual void customPostInit() {}
 };
 
