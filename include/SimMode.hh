@@ -120,14 +120,25 @@ public:
 class SimModeAcollinTest : public SimModeBase
 {
 public:
-    SimModeAcollinTest(int numEvents, const std::string &fileName);
+    SimModeAcollinTest(int numRuns, const std::string &fileName);
 
     void run() override;
 
     G4UserSteppingAction * getSteppingAction() override;
 
+    void addDirection(const G4ThreeVector & v);
+
 protected:
-    int NumEvents = 1;
+    int NumRuns = 1;
+
+    std::vector<G4ThreeVector> GammaDirections;
+
+    std::vector<double> Histogram;
+    int numBins = 100;
+    double angleFrom = 178.0;
+    double deltaAngle = 0.02;
+    int numUnderflows = 0;
+    int numOverflows  = 0;
 
 };
 

@@ -251,8 +251,8 @@ G4UserSteppingAction * SimModeTracing::getSteppingAction()
 
 // ---
 
-SimModeAcollinTest::SimModeAcollinTest(int numEvents, const std::string & fileName) :
-    NumEvents(numEvents)
+SimModeAcollinTest::SimModeAcollinTest(int numRuns, const std::string & fileName) :
+    NumRuns(numRuns)
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -266,14 +266,41 @@ void SimModeAcollinTest::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
-    SM.runManager->BeamOn(NumEvents);
+    Histogram.resize(numBins);
+    for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
 
-    //outFlush();
-    //if (Hits > 1) SumDelta /= Hits;
-    //out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
+    for (int iRun = 0; iRun < NumRuns; iRun++)
+    {
+        SM.runManager->BeamOn(1);
+
+        if (GammaDirections.size() == 2)
+        {
+            double angle = GammaDirections.front().angle(GammaDirections.back()) / deg;
+            int index = (angle - angleFrom) / deltaAngle;
+            if      (index <  0)       numUnderflows++;
+            else if (index >= numBins) numOverflows++;
+            else Histogram[index]++;
+        }
+        GammaDirections.clear();
+    }
+
+    outFlush();
+    out("\n\n\nResults:");
+    for (int iBin = 0; iBin < numBins; iBin++)
+    {
+        std::cout << Histogram[iBin] << ",";
+
+        if (SM.outStream)
+            *SM.outStream << (angleFrom + deltaAngle * iBin) << " " << Histogram[iBin] << std::endl;
+    }
 }
 
 G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
 {
     return new SteppingAction_AcollinearityTester;
+}
+
+void SimModeAcollinTest::addDirection(const G4ThreeVector & v)
+{
+    GammaDirections.push_back(v);
 }

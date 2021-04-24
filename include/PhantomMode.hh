@@ -10,7 +10,7 @@ class PhantomModeBase
 public:
     virtual ~PhantomModeBase(){}
 
-    virtual G4LogicalVolume * definePhantom(G4LogicalVolume * /*logicWorld*/) {return nullptr;}
+    virtual G4LogicalVolume * definePhantom(G4LogicalVolume * /*logicWorld*/) {return nullptr;} //returns the phantom's logical volume
 };
 
 // ---
