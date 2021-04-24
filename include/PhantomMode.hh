@@ -10,7 +10,7 @@ class PhantomModeBase
 public:
     virtual ~PhantomModeBase(){}
 
-    virtual void definePhantom(G4LogicalVolume * logicWorld) {}
+    virtual G4LogicalVolume * definePhantom(G4LogicalVolume * /*logicWorld*/) {return nullptr;}
 };
 
 // ---
@@ -25,7 +25,7 @@ class PhantomNone : public PhantomModeBase
 class PhantomPMMA : public PhantomModeBase
 {
 public:
-    void definePhantom(G4LogicalVolume * logicWorld) override;
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 // ---
@@ -33,7 +33,7 @@ public:
 class PhantomTinyCube : public PhantomModeBase
 {
 public:
-    void definePhantom(G4LogicalVolume * logicWorld) override;
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 // ---
@@ -44,7 +44,7 @@ public:
     PhantomDerenzo(double diameter, double height, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
         Diameter(diameter), Height(height), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
 
-    void definePhantom(G4LogicalVolume * logicWorld) override;
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
 protected:
     double Diameter     = 200.0;

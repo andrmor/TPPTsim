@@ -70,7 +70,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    SM.PhantomMode->definePhantom(logicWorld);
+    G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
+    if (phantom)
+    {
+        G4Region * regPhantom = new G4Region("Phantom");
+        regPhantom->AddRootLogicalVolume(phantom);
+
+        if (SM.bSimAcollinearity) SM.registerAcollinearGammaModel(regPhantom);
+    }
 
     if ( SM.detectorContains(DetComp::Scintillators) )
     {

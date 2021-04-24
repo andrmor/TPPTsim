@@ -11,7 +11,7 @@ public:
 
     G4bool IsApplicable(const G4ParticleDefinition & particle) override;
 
-    G4bool ModelTrigger(const G4FastTrack & track) override;
+    G4bool ModelTrigger(const G4FastTrack & fastTrack) override;
 
     void DoIt(const G4FastTrack & fastTrack, G4FastStep & step) override;
 

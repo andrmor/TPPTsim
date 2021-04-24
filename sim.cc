@@ -42,10 +42,10 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(100000);
     //SM.SimMode          = new SimModeScintPosTest();
-    SM.SimMode          = new SimModeAcollinTest(1, "AcolTest.txt");
+    //SM.SimMode          = new SimModeAcollinTest(2, "AcolTest.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput.bin", true);

@@ -21,6 +21,7 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4ParticleGun;
 class G4ParticleDefinition;
+class G4Region;
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
@@ -46,6 +47,7 @@ class SessionManager
         void initializeSource();
         void configureVerbosity();
         void scanMaterials();
+        void registerAcollinearGammaModel(G4Region * region);
 
         int  countScintillators() const;
 
