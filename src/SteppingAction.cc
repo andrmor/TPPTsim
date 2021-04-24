@@ -106,8 +106,11 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
     if (step->GetTrack()->GetParticleDefinition() != SM.GammaPD) return;
 
     SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
-    const G4ThreeVector & v = step->GetPreStepPoint()->GetMomentumDirection();
-    out(v);
+    const G4ThreeVector & vpre  = step->GetPreStepPoint()->GetMomentumDirection();
+    const G4ThreeVector & vpost = step->GetPostStepPoint()->GetMomentumDirection();
+    const G4ThreeVector & rpre = step->GetPreStepPoint()->GetPosition();
+    const G4ThreeVector & rpost = step->GetPostStepPoint()->GetPosition();
+    out(vpre, vpost, " pos ", rpre, rpost);
     //step->GetTrack()->SetTrackStatus(fStopAndKill);
 
     //if (!step->IsLastStepInVolume()) return;

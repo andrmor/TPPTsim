@@ -37,7 +37,9 @@ void PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
 }
 
 // ---
-
+#include "G4Region.hh"
+#include "AcollinearGammaModel.hh"
+#include "G4AutoDelete.hh"
 void PhantomTinyCube::definePhantom(G4LogicalVolume *logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
@@ -54,6 +56,17 @@ void PhantomTinyCube::definePhantom(G4LogicalVolume *logicWorld)
     G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
     new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+
+    //test
+    G4Region* regPhantom = new G4Region("Phantom");
+    regPhantom->AddRootLogicalVolume(logicPmma);
+    //G4Region * region    = G4RegionStore::GetInstance()->GetRegion("Phantom");
+    //out("************************Region:", region);
+    AcollinearGammaModel * mod = new AcollinearGammaModel( "FastMod", regPhantom );
+    G4AutoDelete::Register( mod );
+    //G4ProcessManager* pmanager = G4Gamma::GammaDefinition()->GetProcessManager();
+    //out("aaaaaaaaaaaaaa", pmanager);
+    //pmanager->AddDiscreteProcess( fastSimProcess );
 }
 
 // ---

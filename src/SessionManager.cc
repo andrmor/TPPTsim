@@ -16,6 +16,7 @@
 #include "G4UImanager.hh"
 #include "G4RandomTools.hh"
 #include "G4String.hh"
+#include "G4FastSimulationPhysics.hh"
 #include "G4ios.hh"
 
 #include <iostream>
@@ -36,6 +37,10 @@ SessionManager::SessionManager()
 
 #include "G4SDManager.hh"
 #include "G4LogicalVolumeStore.hh"
+#include "AcollinearGammaModel.hh"
+#include "G4Gamma.hh"
+#include "G4RegionStore.hh"
+#include "G4AutoDelete.hh"
 void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
@@ -62,6 +67,13 @@ void SessionManager::startSession(int argc, char ** argv)
     G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
+    if (bSimAcollinearity)
+    {
+        G4FastSimulationPhysics* fastSimulationPhysics = new G4FastSimulationPhysics();
+        fastSimulationPhysics->BeVerbose();
+        fastSimulationPhysics->ActivateFastSimulation("gamma");
+        physicsList->RegisterPhysics( fastSimulationPhysics );
+    }
     runManager->SetUserInitialization(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
