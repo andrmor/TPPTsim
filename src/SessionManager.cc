@@ -3,6 +3,7 @@
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "TrackingAction.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -66,13 +67,18 @@ void SessionManager::startSession(int argc, char ** argv)
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
+    if (bSimAcollinearity) runManager->SetUserAction(new TrackingAction);
+
     G4UserSteppingAction * StAct = SimMode->getSteppingAction();
     if (StAct) runManager->SetUserAction(StAct);
 
+    // ---
     runManager->Initialize();
+    // ---
 
+    GammaPD = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
     configureRandomGenerator();
-    initializeSource(); //has to be here: after initialize()
+    initializeSource();
     if (SimMode->bNeedGui)    configureGUI(argc, argv);
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();

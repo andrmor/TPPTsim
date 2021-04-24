@@ -20,6 +20,7 @@ class PhantomModeBase;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4ParticleGun;
+class G4ParticleDefinition;
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
@@ -55,18 +56,21 @@ class SessionManager
         SimModeBase      * SimMode       = nullptr;
         PhantomModeBase  * PhantomMode   = nullptr;
 
+        bool bSimAcollinearity = false;
+
         std::vector<DetComp> DetectorComposition;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName = "TpptSim_DefaultSaveName.txt";
 
-        bool bBinOutput        = false;
+        bool bBinOutput   = false;
 
         long Seed         = 0;
         bool bG4Verbose   = false;
         bool bDebug       = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
+        G4ParticleDefinition * GammaPD = nullptr;
 
      // Geometry
         int    NumScintX  = 8;
