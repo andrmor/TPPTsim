@@ -99,3 +99,19 @@ void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
     else
         out("Exited world at (", pos[0], ",",pos[1],",", pos[2],")" );
 }
+
+void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    if (step->GetTrack()->GetParticleDefinition() != SM.GammaPD) return;
+
+    SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
+    const G4ThreeVector & v = step->GetPreStepPoint()->GetMomentumDirection();
+    out(v);
+    //step->GetTrack()->SetTrackStatus(fStopAndKill);
+
+    //if (!step->IsLastStepInVolume()) return;
+    //if (step->GetPostStepPoint()->GetPhysicalVolume()) return;
+    //exiting World
+    //out(step->GetPostStepPoint()->GetPhysicalVolume());
+}

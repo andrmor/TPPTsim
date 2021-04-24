@@ -24,13 +24,14 @@ int main(int argc, char** argv)
 
   // Phantom
     //SM.PhantomMode      = new PhantomNone;
-    SM.PhantomMode      = new PhantomPMMA;
+    //SM.PhantomMode      = new PhantomPMMA;
+    SM.PhantomMode      = new PhantomTinyCube;
     //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
 
   // Detector
-    SM.DetectorComposition = {DetComp::Scintillators};
+    SM.DetectorComposition = {};
+    //SM.DetectorComposition = {DetComp::Scintillators};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
-    //SM.DetectorComposition = {};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ConstantTime(0), {0, 0, SM.GlobalZ0});
@@ -41,9 +42,10 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
 
   // Operation mode
-    SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(100000);
     //SM.SimMode          = new SimModeScintPosTest();
+    SM.SimMode          = new SimModeAcollinTest(1, "AcolTest.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput.bin", true);
@@ -51,7 +53,7 @@ int main(int argc, char** argv)
 
 // --- END of user init ---
 
-    SM.startSession(argc, argv); // has to be after setting up of the simulation mode
+    SM.startSession(argc, argv);
     SM.SimMode->run();
     SM.endSession();
 }

@@ -36,6 +36,28 @@ void PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 }
 
+// ---
+
+void PhantomTinyCube::definePhantom(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(5);
+    elements.push_back("H"); natoms.push_back(8);
+    elements.push_back("O"); natoms.push_back(2);
+    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+
+    G4VSolid          * solidPmma = new G4Box("Box", 3.0*mm, 3.0*mm, 3.0*mm);
+    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
+    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
+    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+}
+
+// ---
+
 void PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();

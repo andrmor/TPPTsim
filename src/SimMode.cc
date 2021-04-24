@@ -248,3 +248,32 @@ G4UserSteppingAction * SimModeTracing::getSteppingAction()
 {
     return new SteppingAction_Tracing;
 }
+
+// ---
+
+SimModeAcollinTest::SimModeAcollinTest(int numEvents, const std::string & fileName) :
+    NumEvents(numEvents)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.bBinOutput  = false;
+    SM.FileName    = fileName;
+}
+
+void SimModeAcollinTest::run()
+{
+    SessionManager& SM = SessionManager::getInstance();
+
+    SM.runManager->BeamOn(NumEvents);
+
+    //outFlush();
+    //if (Hits > 1) SumDelta /= Hits;
+    //out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
+}
+
+G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
+{
+    return new SteppingAction_AcollinearityTester;
+}

@@ -30,6 +30,14 @@ public:
 
 // ---
 
+class PhantomTinyCube : public PhantomModeBase
+{
+public:
+    void definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
+// ---
+
 class PhantomDerenzo : public PhantomModeBase
 {
 public:

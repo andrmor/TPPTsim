@@ -115,4 +115,20 @@ public:
     G4UserSteppingAction * getSteppingAction() override;
 };
 
+// ---
+
+class SimModeAcollinTest : public SimModeBase
+{
+public:
+    SimModeAcollinTest(int numEvents, const std::string &fileName);
+
+    void run() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+protected:
+    int NumEvents = 1;
+
+};
+
 #endif // SimulationMode_h
