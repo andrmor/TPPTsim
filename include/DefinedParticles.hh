@@ -39,11 +39,12 @@ public:
 class GammaPair : public ParticleBase
 {
 public:
-    GammaPair(double energy = 0.511*MeV, bool acollinearity = false) :
-        ParticleBase("gammaPair"), bAcollineraity(acollinearity) {Energy = energy; }
+    GammaPair(double energy = 0.511*MeV) //, bool acollinearity = false) :
+        : ParticleBase("gammaPair")      //, bAcollineraity(acollinearity)
+          {Energy = energy; }
     G4ParticleDefinition * getParticleDefinition() const override;
 
-    bool bAcollineraity = false;
+    //bool bAcollineraity = false;
 };
 
 // ---

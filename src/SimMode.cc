@@ -151,7 +151,11 @@ void SimModeMultipleEvents::run()
     for(auto & vec : DepositionData) vec.reserve(InitialReserve);
 
 
-    SM.runManager->BeamOn(NumRuns);
+    for (int iRun = 0; iRun < NumRuns; iRun++)
+    {
+        if (iRun % 1000 == 0) out("Run #", iRun);
+        SM.runManager->BeamOn(1);
+    }
 
     saveData();
 

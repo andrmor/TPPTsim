@@ -29,11 +29,11 @@ protected:
     bool bIsotropicDirection = true;
 
     bool bGeneratePair  = false;
-    bool bAcollinearity = false;
+    //bool bAcollinearity = false;
 
 protected:
     G4ThreeVector generateDirectionIsotropic();
-    G4ThreeVector generateSecond(G4Event * anEvent);
+    void generateSecond(G4Event * anEvent);
 
     virtual void customPostInit() {}
 };

@@ -22,7 +22,7 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
 
     GammaPair * pair = dynamic_cast<GammaPair*>(particle);
     bGeneratePair = pair;
-    if (pair) bAcollinearity = pair->bAcollineraity;
+    //if (pair) bAcollinearity = pair->bAcollineraity;
 
     ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
 }
@@ -51,8 +51,9 @@ void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
     if (bGeneratePair) generateSecond(anEvent);
 }
 
-G4ThreeVector SourceModeBase::generateSecond(G4Event * anEvent)
+void SourceModeBase::generateSecond(G4Event * anEvent)
 {
+    /*
     if (bAcollinearity)
     {
         G4ThreeVector v = -Direction;
@@ -62,7 +63,9 @@ G4ThreeVector SourceModeBase::generateSecond(G4Event * anEvent)
         v.rotate(G4UniformRand()*2.0*M_PI, Direction);
         ParticleGun->SetParticleMomentumDirection(v);
     }
-    else ParticleGun->SetParticleMomentumDirection(-Direction);
+    else
+    */
+    ParticleGun->SetParticleMomentumDirection(-Direction);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }
