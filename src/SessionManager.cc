@@ -69,10 +69,11 @@ void SessionManager::startSession(int argc, char ** argv)
     physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
     if (bSimAcollinearity)
     {
-        G4FastSimulationPhysics * fastSimulationPhysics = new G4FastSimulationPhysics();
-        //fastSimulationPhysics->BeVerbose();
-        fastSimulationPhysics->ActivateFastSimulation("gamma");
-        physicsList->RegisterPhysics( fastSimulationPhysics );
+        G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
+        // see registerAcollinearGammaModel()
+        //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
+        fsm->ActivateFastSimulation("gamma");
+        physicsList->RegisterPhysics(fsm);
     }
     runManager->SetUserInitialization(physicsList);
 

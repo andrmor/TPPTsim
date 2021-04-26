@@ -7,7 +7,7 @@
 
 G4bool AcollinearGammaModel::IsApplicable(const G4ParticleDefinition & particle)
 {
-    // in principle, not needed since it is now activated only on gammas
+    // in principle, not needed since it is now activated only for gammas
     bool applicable = (&particle == G4Gamma::GammaDefinition());
     //out("isApplicable called", particle.GetParticleName(), applicable);
     return applicable;
@@ -17,6 +17,9 @@ G4bool AcollinearGammaModel::ModelTrigger(const G4FastTrack & fastTrack)
 {
     const G4Track * track = fastTrack.GetPrimaryTrack();
     if (track->GetCurrentStepNumber() != 1) return false; // not the first step
+
+    const double energy = track->GetKineticEnergy();
+    if (energy < 0.5109 || energy > 0.512) return false;  // only 0.510999
 
     const int Id       = track->GetTrackID();
     const int parentId = track->GetParentID();

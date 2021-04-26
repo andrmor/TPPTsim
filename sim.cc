@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
   // General settings
     SM.Seed              = 0;
-    SM.bSimAcollinearity = true;
+    SM.bSimAcollinearity = true;  // only for the phantom region!
     SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
     SM.bG4Verbose        = false;

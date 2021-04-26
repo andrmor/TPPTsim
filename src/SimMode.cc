@@ -285,14 +285,16 @@ void SimModeAcollinTest::run()
     }
 
     outFlush();
-    out("\n\n\nResults:");
+    out("\nDistribution of inter-gamma angles (from", angleFrom,"to 180 deg):");
     for (int iBin = 0; iBin < numBins; iBin++)
     {
-        std::cout << Histogram[iBin] << ",";
+        std::cout << (iBin == 0 ? '[' : ',');
+        std::cout << Histogram[iBin];
 
         if (SM.outStream)
             *SM.outStream << (angleFrom + deltaAngle * iBin) << " " << Histogram[iBin] << std::endl;
     }
+    std::cout << ']' << std::endl;
 }
 
 G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
