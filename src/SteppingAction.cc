@@ -129,5 +129,5 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
     */
 
     SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
-    Mode->addDirection(vec, step->GetTrack()->GetParentID());
+    Mode->addDirection(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
 }

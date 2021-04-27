@@ -126,7 +126,7 @@ public:
 
     G4UserSteppingAction * getSteppingAction() override;
 
-    void addDirection(const G4ThreeVector & v, int parentID);
+    void addDirection(const G4ThreeVector & v, int parentID, double energy);
 
 protected:
     int NumRuns = 1;

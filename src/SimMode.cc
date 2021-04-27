@@ -324,10 +324,10 @@ G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
     return new SteppingAction_AcollinearityTester;
 }
 
-void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID)
+void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, double energy)
 {
     // the first gamma to track will be annihilation one, some of the following ones can be secondary ones!
-    out(parentID);
+    out("ParentId:", parentID, "Energy:", energy);
     if (ParentTrackId == -1) ParentTrackId = parentID;
     else
     {
