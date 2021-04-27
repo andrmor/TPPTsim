@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
     SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
-    SM.bG4Verbose        = false;
+    SM.bG4Verbose        = true;
     SM.bDebug            = false;
 
   // Phantom
@@ -41,10 +41,10 @@ int main(int argc, char** argv)
 
   // Operation mode
     //SM.SimMode          = new SimModeGui();
-    //SM.SimMode          = new SimModeShowEvent(100000);
+    SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
-    SM.SimMode          = new SimModeAcollinTest(10000, "AcolTest.txt");
+    //SM.SimMode          = new SimModeAcollinTest(10000, "AcolTest.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
