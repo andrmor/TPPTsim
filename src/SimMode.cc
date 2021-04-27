@@ -275,30 +275,48 @@ void SimModeAcollinTest::run()
 
     for (int iRun = 0; iRun < NumRuns; iRun++)
     {
+        ParentTrackId = -1;
+        out("Run #", iRun);
+
         SM.runManager->BeamOn(1);
 
-        if (GammaDirections.size() == 2)
+        //if (GammaDirections.size() == 2) //multiple gamma annihilation is included in the model?
+        if (GammaDirections.size() >= 2)
         {
-            double angle = GammaDirections.front().angle(GammaDirections.back()) / deg;
+            double angle = GammaDirections[0].angle(GammaDirections[1]) / deg - 1e-10; // -1e-10 to get 180 deg in the previous bin
             int index = (angle - angleFrom) / deltaAngle;
-            if      (index <  0)       numUnderflows++;
+            if      (index <  0)
+            {
+                numUnderflows++;
+                out("Undeflow angle:", angle);
+            }
             else if (index >= numBins) numOverflows++;
             else Histogram[index]++;
+        }
+        else
+        {
+            out("Unexpected: number of gammas is", GammaDirections.size());
+            for (auto & v : GammaDirections) out(v);
         }
         GammaDirections.clear();
     }
 
     outFlush();
     out("\nDistribution of inter-gamma angles (from", angleFrom,"to 180 deg):");
+    int sum = 0;
     for (int iBin = 0; iBin < numBins; iBin++)
     {
         std::cout << (iBin == 0 ? '[' : ',');
         std::cout << Histogram[iBin];
+        sum += Histogram[iBin];
 
         if (SM.outStream)
             *SM.outStream << (angleFrom + deltaAngle * iBin) << " " << Histogram[iBin] << std::endl;
     }
     std::cout << ']' << std::endl;
+    out("Distribution sum:", sum);
+    out("Underflows:", numUnderflows);
+    out("Overflows:", numOverflows);
 }
 
 G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
@@ -306,7 +324,15 @@ G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
     return new SteppingAction_AcollinearityTester;
 }
 
-void SimModeAcollinTest::addDirection(const G4ThreeVector & v)
+void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID)
 {
+    // the first gamma to track will be annihilation one, some of the following ones can be secondary ones!
+    out(parentID);
+    if (ParentTrackId == -1) ParentTrackId = parentID;
+    else
+    {
+        if (parentID != ParentTrackId) return;
+    }
+
     GammaDirections.push_back(v);
 }

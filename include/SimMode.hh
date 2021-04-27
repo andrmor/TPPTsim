@@ -126,7 +126,7 @@ public:
 
     G4UserSteppingAction * getSteppingAction() override;
 
-    void addDirection(const G4ThreeVector & v);
+    void addDirection(const G4ThreeVector & v, int parentID);
 
 protected:
     int NumRuns = 1;
@@ -139,6 +139,7 @@ protected:
     double deltaAngle = 0.02;
     int numUnderflows = 0;
     int numOverflows  = 0;
+    int ParentTrackId = -1;
 
 };
 

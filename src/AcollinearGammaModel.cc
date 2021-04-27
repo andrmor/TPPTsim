@@ -19,7 +19,7 @@ G4bool AcollinearGammaModel::ModelTrigger(const G4FastTrack & fastTrack)
     if (track->GetCurrentStepNumber() != 1) return false; // not the first step
 
     const double energy = track->GetKineticEnergy();
-    if (energy < 0.5109 || energy > 0.512) return false;  // only 0.510999
+    if (energy < 0.510 || energy > 0.512) return false;  // annihilationis -> 0.510999
 
     const int Id       = track->GetTrackID();
     const int parentId = track->GetParentID();

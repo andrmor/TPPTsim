@@ -10,6 +10,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4TouchableHandle.hh"
 #include "G4NavigationHistory.hh"
+#include "G4VProcess.hh"
+#include "G4Track.hh"
 
 void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 {
@@ -51,8 +53,6 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 
 // ---
 
-#include "G4VProcess.hh"
-#include "G4Track.hh"
 void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
 {
     const G4StepPoint * postP  = step->GetPostStepPoint();
@@ -95,26 +95,39 @@ void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
         copyNum = postP->GetPhysicalVolume()->GetCopyNo();
         matName = postP->GetMaterial()->GetName();
         out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ", physVolName, "/", logVolName, "(",copyNum, ")", matName);
+        //out(proc->GetProcessType());
     }
     else
         out("Exited world at (", pos[0], ",",pos[1],",", pos[2],")" );
 }
 
+// ---
+
 void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
 {
     SessionManager & SM = SessionManager::getInstance();
     if (step->GetTrack()->GetParticleDefinition() != SM.GammaPD) return;
+    if (step->GetTrack()->GetCurrentStepNumber() != 1) return;
 
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+
+    G4ThreeVector vec;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc->GetProcessType() == fParameterisation) // catching fastSimProcess_massGeom
+        vec = postP->GetMomentumDirection();
+    else
+        vec = preP->GetMomentumDirection();
+
+    /*
     const G4ThreeVector & vpre  = step->GetPreStepPoint()->GetMomentumDirection();
     const G4ThreeVector & vpost = step->GetPostStepPoint()->GetMomentumDirection();
     const G4ThreeVector & rpre = step->GetPreStepPoint()->GetPosition();
     const G4ThreeVector & rpost = step->GetPostStepPoint()->GetPosition();
-    //out(vpre, vpost, " pos ", rpre, rpost);
-
-    if (step->GetTrack()->GetCurrentStepNumber() < 2) return; //1 step can be rotation, so lets take the second
-
-    step->GetTrack()->SetTrackStatus(fStopAndKill);
+    out(vpre, vpost, " pos ", rpre, rpost);
+    //step->GetTrack()->SetTrackStatus(fStopAndKill);
+    */
 
     SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
-    Mode->addDirection(vpre);
+    Mode->addDirection(vec, step->GetTrack()->GetParentID());
 }
