@@ -100,7 +100,7 @@ class SessionManager
 
         double InnerDiam   = 335.4 * mm;
 
-        double GlobalZ0    = 60.0 * mm;  // just a guess, calculate please!
+        double GlobalZ0    = 58.85 * mm;
 
      // Internal resources
         std::ofstream       * outStream  = nullptr;

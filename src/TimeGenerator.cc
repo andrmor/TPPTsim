@@ -4,7 +4,7 @@
 
 double UniformTime::generateTime()
 {
-    return TimeFrom + TimeTo * G4UniformRand();
+    return TimeFrom + (TimeTo - TimeFrom) * G4UniformRand();
 }
 
 double ExponentialTime::generateTime()
