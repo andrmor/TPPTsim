@@ -126,12 +126,12 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary)
+SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary)
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
-    NumRuns = numRuns;
+    NumEvents = numEvents;
 
     SessionManager & SM = SessionManager::getInstance();
     SM.bBinOutput  = bBinary;
@@ -150,12 +150,14 @@ void SimModeMultipleEvents::run()
     DepositionData.resize(NumScint);
     for(auto & vec : DepositionData) vec.reserve(InitialReserve);
 
-
-    for (int iRun = 0; iRun < NumRuns; iRun++)
+    /*
+    for (int iRun = 0; iRun < NumEvents; iRun++)
     {
         if (iRun % 1000 == 0) out("Run #", iRun);
         SM.runManager->BeamOn(1);
     }
+    */
+    SM.runManager->BeamOn(NumEvents);
 
     saveData();
 

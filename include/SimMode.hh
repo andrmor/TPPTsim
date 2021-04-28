@@ -88,7 +88,7 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary = false);
+    SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary = false);
 
     void run() override;
 
@@ -96,7 +96,7 @@ public:
 
     void saveData(); //might be called multiple times!
 
-    int    NumRuns        = 1;
+    int    NumEvents        = 1;
     bool   bDoCluster     = true; // only considers consequtive nodes!
     double MaxTimeDif     = 0.2;
     size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
