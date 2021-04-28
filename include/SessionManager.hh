@@ -48,6 +48,8 @@ class SessionManager
         void configureVerbosity();
         void scanMaterials();
         void registerAcollinearGammaModel(G4Region * region);
+        void createPhantomRegion(G4LogicalVolume * logVolPhantom);
+        void createScintillatorRegion(G4LogicalVolume * logVolScint);
 
         int  countScintillators() const;
 
@@ -110,6 +112,9 @@ class SessionManager
         G4LogicalVolume     * logicWorld  = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
         G4LogicalVolume     * logicScint  = nullptr;
+
+        G4Region            * regPhantom  = nullptr;
+        G4Region            * regScint    = nullptr;
 
         G4ParticleGun       * ParticleGun = nullptr;
 
