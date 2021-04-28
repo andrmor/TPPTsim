@@ -336,3 +336,86 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
 
     GammaDirections.push_back(v);
 }
+
+// ---
+
+SimModeAnnihilTest::SimModeAnnihilTest(int numRuns, const std::string & fileName) :
+    NumRuns(numRuns)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.bBinOutput  = false;
+    SM.FileName    = fileName;
+}
+
+void SimModeAnnihilTest::run()
+{
+    SessionManager& SM = SessionManager::getInstance();
+
+    Histogram.resize(numBins);
+    for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
+
+    for (int iRun = 0; iRun < NumRuns; iRun++)
+    {
+        ParentTrackId = -1;
+        out("Run #", iRun);
+
+        SM.runManager->BeamOn(1);
+
+        //if (GammaDirections.size() == 2) //multiple gamma annihilation is included in the model?
+        if (AnnihilationPositions.size() >= 2)
+        {
+            double position = AnnihilationPositions[0].angle(AnnihilationPositions[1]) / mm - 1e-10; // -1e-10 to get 10 mm in the previous bin
+            int index = (position - positionFrom) / deltaPosition;
+            if      (index <  0)
+            {
+                numUnderflows++;
+                out("Underflow position:", position);
+            }
+            else if (index >= numBins) numOverflows++;
+            else Histogram[index]++;
+        }
+        else
+        {
+            out("Unexpected: number of annihalitions is", AnnihilationPositions.size());
+            for (auto & v : AnnihilationPositions) out(v);
+        }
+        AnnihilationPositions.clear();
+    }
+
+    outFlush();
+    out("\nDistribution of annihilation positions (from", positionFrom,"to 10 mm):");
+    int sum = 0;
+    for (int iBin = 0; iBin < numBins; iBin++)
+    {
+        std::cout << (iBin == 0 ? '[' : ',');
+        std::cout << Histogram[iBin];
+        sum += Histogram[iBin];
+
+        if (SM.outStream)
+            *SM.outStream << (positionFrom + deltaPosition * iBin) << " " << Histogram[iBin] << std::endl;
+    }
+    std::cout << ']' << std::endl;
+    out("Distribution sum:", sum);
+    out("Underflows:", numUnderflows);
+    out("Overflows:", numOverflows);
+}
+
+G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
+{
+    return new SteppingAction_AnnihilationTester;
+}
+
+void SimModeAnnihilTest::addPosition(const G4ThreeVector & v, int parentID, double energy)
+{
+    out("ParentId:", parentID, "Energy:", energy);
+    if (ParentTrackId == -1) ParentTrackId = parentID;
+    else
+    {
+        if (parentID != ParentTrackId) return;
+    }
+
+    AnnihilationPositions.push_back(v);
+}

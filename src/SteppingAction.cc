@@ -131,3 +131,23 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
     SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
     Mode->addDirection(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
 }
+
+// ---
+
+void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    if (step->GetTrack()->GetParticleDefinition() != SM.GammaPD) return;
+    if (step->GetTrack()->GetCurrentStepNumber() != 1) return;
+
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+
+    G4ThreeVector vec;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc->GetProcessName() == "annihil")
+        vec = postP->GetPosition();
+
+    SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
+    Mode->addPosition(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
+}
