@@ -150,13 +150,6 @@ void SimModeMultipleEvents::run()
     DepositionData.resize(NumScint);
     for(auto & vec : DepositionData) vec.reserve(InitialReserve);
 
-    /*
-    for (int iRun = 0; iRun < NumEvents; iRun++)
-    {
-        if (iRun % 1000 == 0) out("Run #", iRun);
-        SM.runManager->BeamOn(1);
-    }
-    */
     SM.runManager->BeamOn(NumEvents);
 
     saveData();

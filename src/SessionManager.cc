@@ -3,6 +3,7 @@
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "EventAction.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -18,6 +19,12 @@
 #include "G4String.hh"
 #include "G4FastSimulationPhysics.hh"
 #include "G4ios.hh"
+#include "G4SDManager.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "AcollinearGammaModel.hh"
+#include "G4Gamma.hh"
+#include "G4RegionStore.hh"
+#include "G4AutoDelete.hh"
 
 #include <iostream>
 #include <sstream>
@@ -35,12 +42,6 @@ SessionManager::SessionManager()
     runManager = new G4RunManager;
 }
 
-#include "G4SDManager.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "AcollinearGammaModel.hh"
-#include "G4Gamma.hh"
-#include "G4RegionStore.hh"
-#include "G4AutoDelete.hh"
 void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
@@ -81,6 +82,8 @@ void SessionManager::startSession(int argc, char ** argv)
 
     G4UserSteppingAction * StAct = SimMode->getSteppingAction();
     if (StAct) runManager->SetUserAction(StAct);
+
+    runManager->SetUserAction(new EventAction);
 
     // ---
     runManager->Initialize();
