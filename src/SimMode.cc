@@ -350,9 +350,16 @@ SimModeAnnihilTest::SimModeAnnihilTest(int numRuns, const std::string & fileName
     SM.FileName    = fileName;
 }
 
-void SimModeAnnihilTest::run()
+G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
+{
+    return new SteppingAction_AnnihilationTester;
+}
+
+void SimModeAnnihilTest::addPosition(double x)
 {
     SessionManager& SM = SessionManager::getInstance();
+
+    AnnihilationPositions.push_back(x);
 
     Histogram.resize(numBins);
     for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
@@ -364,24 +371,16 @@ void SimModeAnnihilTest::run()
 
         SM.runManager->BeamOn(1);
 
-        //if (GammaDirections.size() == 2) //multiple gamma annihilation is included in the model?
-        if (AnnihilationPositions.size() >= 2)
+        double position = x;
+        int index = (position - positionFrom) / deltaPosition;
+        if      (index <  0)
         {
-            double position = AnnihilationPositions[0].angle(AnnihilationPositions[1]) / mm - 1e-10; // -1e-10 to get 10 mm in the previous bin
-            int index = (position - positionFrom) / deltaPosition;
-            if      (index <  0)
-            {
-                numUnderflows++;
-                out("Underflow position:", position);
-            }
-            else if (index >= numBins) numOverflows++;
-            else Histogram[index]++;
+            numUnderflows++;
+            out("Underflow position:", position);
         }
-        else
-        {
-            out("Unexpected: number of annihalitions is", AnnihilationPositions.size());
-            for (auto & v : AnnihilationPositions) out(v);
-        }
+        else if (index >= numBins) numOverflows++;
+        else Histogram[index]++;
+
         AnnihilationPositions.clear();
     }
 
@@ -401,21 +400,4 @@ void SimModeAnnihilTest::run()
     out("Distribution sum:", sum);
     out("Underflows:", numUnderflows);
     out("Overflows:", numOverflows);
-}
-
-G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
-{
-    return new SteppingAction_AnnihilationTester;
-}
-
-void SimModeAnnihilTest::addPosition(const G4ThreeVector & v, int parentID, double energy)
-{
-    out("ParentId:", parentID, "Energy:", energy);
-    if (ParentTrackId == -1) ParentTrackId = parentID;
-    else
-    {
-        if (parentID != ParentTrackId) return;
-    }
-
-    AnnihilationPositions.push_back(v);
 }

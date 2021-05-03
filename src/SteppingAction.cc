@@ -137,11 +137,8 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
 void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
 {
     SessionManager & SM = SessionManager::getInstance();
-    if (step->GetTrack()->GetParticleDefinition() != SM.GammaPD) return;
-    if (step->GetTrack()->GetCurrentStepNumber() != 1) return;
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
-    const G4StepPoint * preP   = step->GetPreStepPoint();
 
     G4ThreeVector vec;
     const G4VProcess  * proc = postP->GetProcessDefinedStep();
@@ -149,5 +146,5 @@ void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
         vec = postP->GetPosition();
 
     SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
-    Mode->addPosition(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
+    Mode->addPosition(vec[0]);
 }

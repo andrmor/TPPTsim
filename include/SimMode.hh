@@ -154,12 +154,12 @@ public:
 
     G4UserSteppingAction * getSteppingAction() override;
 
-    void addPosition(const G4ThreeVector & v, int parentID, double energy);
+    void addPosition(double x);
 
 protected:
     int NumRuns = 1;
 
-    std::vector<G4ThreeVector> AnnihilationPositions;
+    std::vector<double> AnnihilationPositions;
 
     std::vector<double> Histogram;
     int numBins = 10;
