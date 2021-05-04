@@ -140,11 +140,13 @@ void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
 
-    G4ThreeVector vec;
+
     const G4VProcess  * proc = postP->GetProcessDefinedStep();
     if (proc->GetProcessName() == "annihil")
-        vec = postP->GetPosition();
+    {
+        G4ThreeVector vec = postP->GetPosition();
 
-    SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
-    Mode->addPosition(vec[0]);
+        SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
+        Mode->addPosition(vec[0]);
+    }
 }

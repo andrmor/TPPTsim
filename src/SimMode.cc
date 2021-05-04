@@ -355,37 +355,17 @@ G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
     return new SteppingAction_AnnihilationTester;
 }
 
-void SimModeAnnihilTest::addPosition(double x)
+void SimModeAnnihilTest::run()
 {
-    SessionManager& SM = SessionManager::getInstance();
-
-    AnnihilationPositions.push_back(x);
+    SessionManager & SM = SessionManager::getInstance();
 
     Histogram.resize(numBins);
     for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
 
-    for (int iRun = 0; iRun < NumRuns; iRun++)
-    {
-        ParentTrackId = -1;
-        out("Run #", iRun);
-
-        SM.runManager->BeamOn(1);
-
-        double position = x;
-        int index = (position - positionFrom) / deltaPosition;
-        if      (index <  0)
-        {
-            numUnderflows++;
-            out("Underflow position:", position);
-        }
-        else if (index >= numBins) numOverflows++;
-        else Histogram[index]++;
-
-        AnnihilationPositions.clear();
-    }
+    SM.runManager->BeamOn(NumRuns);
 
     outFlush();
-    out("\nDistribution of annihilation positions (from", positionFrom,"to 10 mm):");
+    out("\nDistribution of annihilation positions (from", positionFrom,"to 4 mm):");
     int sum = 0;
     for (int iBin = 0; iBin < numBins; iBin++)
     {
@@ -400,4 +380,16 @@ void SimModeAnnihilTest::addPosition(double x)
     out("Distribution sum:", sum);
     out("Underflows:", numUnderflows);
     out("Overflows:", numOverflows);
+}
+
+void SimModeAnnihilTest::addPosition(double x)
+{
+    int index = (x - positionFrom) / deltaPosition;
+    if      (index <  0)
+    {
+        numUnderflows++;
+        out("Underflow position:", x);
+    }
+    else if (index >= numBins) numOverflows++;
+    else Histogram[index]++;
 }

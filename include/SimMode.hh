@@ -159,12 +159,10 @@ public:
 protected:
     int NumRuns = 1;
 
-    std::vector<double> AnnihilationPositions;
-
     std::vector<double> Histogram;
-    int numBins = 10;
-    double positionFrom = 0;
-    double deltaPosition = 0.01;
+    int numBins = 1000;
+    double positionFrom = -10;
+    double deltaPosition = 0.02;
     int numUnderflows = 0;
     int numOverflows  = 0;
     int ParentTrackId = -1;
