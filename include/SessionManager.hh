@@ -65,13 +65,14 @@ class SessionManager
         std::vector<DetComp> DetectorComposition;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
-        std::string FileName = "TpptSim_DefaultSaveName.txt";
+        std::string FileName  = "TpptSim_DefaultSaveName.txt";
 
-        bool bBinOutput   = false;
+        bool bBinOutput       = false;
 
-        long Seed         = 0;
-        bool bG4Verbose   = false;
-        bool bDebug       = false;
+        long Seed             = 0;
+        bool bG4Verbose       = false;
+        bool bDebug           = false;
+        bool bShowEventNumber = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
         G4ParticleDefinition * GammaPD = nullptr;

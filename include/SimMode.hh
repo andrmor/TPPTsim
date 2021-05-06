@@ -116,7 +116,14 @@ public:
 };
 
 // ---
+struct DirAndEnergy
+{
+    DirAndEnergy(G4ThreeVector Dir, double Energy) : dir(Dir), energy(Energy) {}
+    DirAndEnergy(){}
 
+    G4ThreeVector dir;
+    double        energy;
+};
 class SimModeAcollinTest : public SimModeBase
 {
 public:
@@ -131,7 +138,7 @@ public:
 protected:
     int NumRuns = 1;
 
-    std::vector<G4ThreeVector> GammaDirections;
+    std::vector<DirAndEnergy> Gammas;
 
     std::vector<double> Histogram;
     int numBins = 100;
@@ -140,6 +147,7 @@ protected:
     int numUnderflows = 0;
     int numOverflows  = 0;
     int ParentTrackId = -1;
+    int numNotTherm = 0;
 
 };
 
