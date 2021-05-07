@@ -3,6 +3,7 @@
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "EventAction.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -18,6 +19,12 @@
 #include "G4String.hh"
 #include "G4FastSimulationPhysics.hh"
 #include "G4ios.hh"
+#include "G4SDManager.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "AcollinearGammaModel.hh"
+#include "G4Gamma.hh"
+#include "G4RegionStore.hh"
+#include "G4AutoDelete.hh"
 
 #include <iostream>
 #include <sstream>
@@ -35,12 +42,6 @@ SessionManager::SessionManager()
     runManager = new G4RunManager;
 }
 
-#include "G4SDManager.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "AcollinearGammaModel.hh"
-#include "G4Gamma.hh"
-#include "G4RegionStore.hh"
-#include "G4AutoDelete.hh"
 void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
@@ -66,7 +67,7 @@ void SessionManager::startSession(int argc, char ** argv)
 
     G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    physicsList->SetDefaultCutValue(0.1*mm);  // Margarida, think about defining Geant4's "regions" - Phantom and the Detector, and using different cut-offs
+    physicsList->SetDefaultCutValue(0.1*mm);  // see createPhntomRegion and createScintRegion for specific cuts!
     if (bSimAcollinearity)
     {
         G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
@@ -81,6 +82,8 @@ void SessionManager::startSession(int argc, char ** argv)
 
     G4UserSteppingAction * StAct = SimMode->getSteppingAction();
     if (StAct) runManager->SetUserAction(StAct);
+
+    runManager->SetUserAction(new EventAction);
 
     // ---
     runManager->Initialize();
@@ -129,6 +132,30 @@ void SessionManager::registerAcollinearGammaModel(G4Region * region)
 {
     AcollinearGammaModel * mod = new AcollinearGammaModel("AcollinearGammas", region);
     G4AutoDelete::Register(mod);
+}
+
+void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
+{
+    regPhantom = new G4Region("Phantom");
+    regPhantom->AddRootLogicalVolume(logVolPhantom);
+
+    if (bSimAcollinearity) registerAcollinearGammaModel(regPhantom);
+
+    G4ProductionCuts * cuts = new G4ProductionCuts();
+    cuts->SetProductionCut(0.5*mm, G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(1.0*mm, G4ProductionCuts::GetIndex("e-"));
+    regPhantom->SetProductionCuts(cuts);
+}
+
+void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
+{
+    regScint = new G4Region("Scintillators");
+    regScint->AddRootLogicalVolume(logVolScint);
+
+    G4ProductionCuts * cuts = new G4ProductionCuts();
+    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e-"));
+    regPhantom->SetProductionCuts(cuts);
 }
 
 int SessionManager::countScintillators() const

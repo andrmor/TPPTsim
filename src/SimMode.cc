@@ -126,12 +126,12 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary)
+SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary)
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
-    NumRuns = numRuns;
+    NumEvents = numEvents;
 
     SessionManager & SM = SessionManager::getInstance();
     SM.bBinOutput  = bBinary;
@@ -150,12 +150,7 @@ void SimModeMultipleEvents::run()
     DepositionData.resize(NumScint);
     for(auto & vec : DepositionData) vec.reserve(InitialReserve);
 
-
-    for (int iRun = 0; iRun < NumRuns; iRun++)
-    {
-        if (iRun % 1000 == 0) out("Run #", iRun);
-        SM.runManager->BeamOn(1);
-    }
+    SM.runManager->BeamOn(NumEvents);
 
     saveData();
 
@@ -276,29 +271,43 @@ void SimModeAcollinTest::run()
     for (int iRun = 0; iRun < NumRuns; iRun++)
     {
         ParentTrackId = -1;
-        out("Run #", iRun);
+        //out("Run #", iRun);
 
         SM.runManager->BeamOn(1);
 
-        //if (GammaDirections.size() == 2) //multiple gamma annihilation is included in the model?
-        if (GammaDirections.size() >= 2)
+        if (Gammas.size() >= 2)
         {
-            double angle = GammaDirections[0].angle(GammaDirections[1]) / deg - 1e-10; // -1e-10 to get 180 deg in the previous bin
+            double angle = Gammas[0].dir.angle(Gammas[1].dir) / deg - 1e-10; // -1e-10 to get 180 deg in the previous bin
             int index = (angle - angleFrom) / deltaAngle;
             if      (index <  0)
             {
                 numUnderflows++;
-                out("Undeflow angle:", angle);
+
+                if (Gammas[0].energy > 0.511 || Gammas[0].energy < 0.51 ||
+                    Gammas[1].energy > 0.511 || Gammas[1].energy < 0.51)
+                {
+                    numNotTherm++;
+                    //out("Not thermalized positron");
+                    //out("Undeflow angle:", angle);
+                    //out("Dir/Energies:");
+                    //for (const DirAndEnergy & de : Gammas) std::cout << de.dir << " " << de.energy << std::endl;
+                }
+                else
+                {
+                    out("strange event!");
+                    out("Undeflow angle:", angle);
+                    out("Dir/Energies:");
+                    for (const DirAndEnergy & de : Gammas) std::cout << de.dir << " " << de.energy << std::endl;
+                }
             }
             else if (index >= numBins) numOverflows++;
             else Histogram[index]++;
         }
         else
         {
-            out("Unexpected: number of gammas is", GammaDirections.size());
-            for (auto & v : GammaDirections) out(v);
+            //out("Unexpected: number of gammas is", Gammas.size());
         }
-        GammaDirections.clear();
+        Gammas.clear();
     }
 
     outFlush();
@@ -311,12 +320,13 @@ void SimModeAcollinTest::run()
         sum += Histogram[iBin];
 
         if (SM.outStream)
-            *SM.outStream << (angleFrom + deltaAngle * iBin) << " " << Histogram[iBin] << std::endl;
+            *SM.outStream << (angleFrom + deltaAngle * (iBin+0.5)) << " " << Histogram[iBin] << std::endl;
     }
     std::cout << ']' << std::endl;
     out("Distribution sum:", sum);
     out("Underflows:", numUnderflows);
     out("Overflows:", numOverflows);
+    out("NotThermalized:", numNotTherm);
 }
 
 G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
@@ -327,14 +337,14 @@ G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
 void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, double energy)
 {
     // the first gamma to track will be annihilation one, some of the following ones can be secondary ones!
-    out("ParentId:", parentID, "Energy:", energy);
+    //out("ParentId:", parentID, "Energy:", energy);
     if (ParentTrackId == -1) ParentTrackId = parentID;
     else
     {
         if (parentID != ParentTrackId) return;
     }
 
-    GammaDirections.push_back(v);
+    Gammas.push_back( DirAndEnergy(v, energy) );
 }
 
 // ---

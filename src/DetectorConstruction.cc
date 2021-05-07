@@ -71,19 +71,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
     G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
-    if (phantom)
-    {
-        G4Region * regPhantom = new G4Region("Phantom");
-        regPhantom->AddRootLogicalVolume(phantom);
-
-        if (SM.bSimAcollinearity) SM.registerAcollinearGammaModel(regPhantom);
-    }
+    if (phantom) SM.createPhantomRegion(phantom);
 
     if ( SM.detectorContains(DetComp::Scintillators) )
     {
         solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
         logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
         logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
+
+        SM.createScintillatorRegion(logicScint);
 
         /*  positive Z is facing the phantom:
         G4Box * b   = new G4Box("b", 1.0*mm, 1.0*mm, 1.0*mm);

@@ -4,6 +4,9 @@
 #include "DefinedParticles.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
+#include "out.hh"
+
+#include <chrono>
 
 int main(int argc, char** argv)
 {
@@ -13,12 +16,14 @@ int main(int argc, char** argv)
 
   // General settings
     SM.Seed              = 0;
-    SM.bSimAcollinearity = false;  // only for the phantom region!
+    SM.bSimAcollinearity = true;  // only for the phantom region!
 
-    //SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
-    SM.WorkingDirectory = "/data/margarida/Data";
+    SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+    //SM.WorkingDirectory = "/data/margarida/Data";
+
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
+    SM.bShowEventNumber  = false;
 
   // Phantom
     //SM.PhantomMode      = new PhantomNone;
@@ -40,12 +45,11 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
-    //SM.SimMode          = new SimModeAcollinTest(10000, "AcolTest.txt");
-    //SM.SimMode          = new SimModeAnnihilTest(1e5, "AnnihilTest.txt");
+    //SM.SimMode          = new SimModeAcollinTest(100000, "AcolTest.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
@@ -53,6 +57,9 @@ int main(int argc, char** argv)
 // --- END of user init ---
 
     SM.startSession(argc, argv);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     SM.SimMode->run();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    out("Run time", (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count())*1e-6, "s");
     SM.endSession();
 }

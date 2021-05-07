@@ -88,7 +88,7 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(int numRuns, const std::string & FileName, bool bBinary = false);
+    SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary = false);
 
     void run() override;
 
@@ -96,7 +96,7 @@ public:
 
     void saveData(); //might be called multiple times!
 
-    int    NumRuns        = 1;
+    int    NumEvents        = 1;
     bool   bDoCluster     = true; // only considers consequtive nodes!
     double MaxTimeDif     = 0.2;
     size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
@@ -116,7 +116,14 @@ public:
 };
 
 // ---
+struct DirAndEnergy
+{
+    DirAndEnergy(G4ThreeVector Dir, double Energy) : dir(Dir), energy(Energy) {}
+    DirAndEnergy(){}
 
+    G4ThreeVector dir;
+    double        energy;
+};
 class SimModeAcollinTest : public SimModeBase
 {
 public:
@@ -131,7 +138,7 @@ public:
 protected:
     int NumRuns = 1;
 
-    std::vector<G4ThreeVector> GammaDirections;
+    std::vector<DirAndEnergy> Gammas;
 
     std::vector<double> Histogram;
     int numBins = 100;
@@ -140,6 +147,7 @@ protected:
     int numUnderflows = 0;
     int numOverflows  = 0;
     int ParentTrackId = -1;
+    int numNotTherm = 0;
 
 };
 

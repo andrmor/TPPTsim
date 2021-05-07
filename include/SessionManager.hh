@@ -48,6 +48,8 @@ class SessionManager
         void configureVerbosity();
         void scanMaterials();
         void registerAcollinearGammaModel(G4Region * region);
+        void createPhantomRegion(G4LogicalVolume * logVolPhantom);
+        void createScintillatorRegion(G4LogicalVolume * logVolScint);
 
         int  countScintillators() const;
 
@@ -63,13 +65,14 @@ class SessionManager
         std::vector<DetComp> DetectorComposition;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
-        std::string FileName = "TpptSim_DefaultSaveName.txt";
+        std::string FileName  = "TpptSim_DefaultSaveName.txt";
 
-        bool bBinOutput   = false;
+        bool bBinOutput       = false;
 
-        long Seed         = 0;
-        bool bG4Verbose   = false;
-        bool bDebug       = false;
+        long Seed             = 0;
+        bool bG4Verbose       = false;
+        bool bDebug           = false;
+        bool bShowEventNumber = false;
 
         std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
         G4ParticleDefinition * GammaPD = nullptr;
@@ -110,6 +113,9 @@ class SessionManager
         G4LogicalVolume     * logicWorld  = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
         G4LogicalVolume     * logicScint  = nullptr;
+
+        G4Region            * regPhantom  = nullptr;
+        G4Region            * regScint    = nullptr;
 
         G4ParticleGun       * ParticleGun = nullptr;
 
