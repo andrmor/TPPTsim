@@ -20,6 +20,7 @@ int main(int argc, char** argv)
 
     SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
+
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
     SM.bShowEventNumber  = false;
@@ -36,8 +37,8 @@ int main(int argc, char** argv)
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
-    //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0});
-    SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
+    SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 20.4*60.0*s), {0, 0, SM.GlobalZ0});
+    //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
     //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");

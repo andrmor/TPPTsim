@@ -151,4 +151,30 @@ protected:
 
 };
 
+// ---
+
+class SimModeAnnihilTest : public SimModeBase
+{
+public:
+    SimModeAnnihilTest(int numRuns, const std::string &fileName);
+
+    void run() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    void addPosition(double x);
+
+protected:
+    int NumRuns = 1;
+
+    std::vector<double> Histogram;
+    int numBins = 1000;
+    double positionFrom = -10;
+    double deltaPosition = 0.02;
+    int numUnderflows = 0;
+    int numOverflows  = 0;
+    int ParentTrackId = -1;
+
+};
+
 #endif // SimulationMode_h

@@ -346,3 +346,60 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
 
     Gammas.push_back( DirAndEnergy(v, energy) );
 }
+
+// ---
+
+SimModeAnnihilTest::SimModeAnnihilTest(int numRuns, const std::string & fileName) :
+    NumRuns(numRuns)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.bBinOutput  = false;
+    SM.FileName    = fileName;
+}
+
+G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
+{
+    return new SteppingAction_AnnihilationTester;
+}
+
+void SimModeAnnihilTest::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    Histogram.resize(numBins);
+    for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
+
+    SM.runManager->BeamOn(NumRuns);
+
+    outFlush();
+    out("\nDistribution of annihilation positions (from", positionFrom,"to 4 mm):");
+    int sum = 0;
+    for (int iBin = 0; iBin < numBins; iBin++)
+    {
+        std::cout << (iBin == 0 ? '[' : ',');
+        std::cout << Histogram[iBin];
+        sum += Histogram[iBin];
+
+        if (SM.outStream)
+            *SM.outStream << (positionFrom + deltaPosition * iBin) << " " << Histogram[iBin] << std::endl;
+    }
+    std::cout << ']' << std::endl;
+    out("Distribution sum:", sum);
+    out("Underflows:", numUnderflows);
+    out("Overflows:", numOverflows);
+}
+
+void SimModeAnnihilTest::addPosition(double x)
+{
+    int index = (x - positionFrom) / deltaPosition;
+    if      (index <  0)
+    {
+        numUnderflows++;
+        out("Underflow position:", x);
+    }
+    else if (index >= numBins) numOverflows++;
+    else Histogram[index]++;
+}
