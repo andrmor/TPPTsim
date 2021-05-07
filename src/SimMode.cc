@@ -349,8 +349,8 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
 
 // ---
 
-SimModeAnnihilTest::SimModeAnnihilTest(int numRuns, const std::string & fileName) :
-    NumRuns(numRuns)
+SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, const std::string & fileName) :
+    NumEvents(numEvents)
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -372,10 +372,10 @@ void SimModeAnnihilTest::run()
     Histogram.resize(numBins);
     for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
 
-    SM.runManager->BeamOn(NumRuns);
+    SM.runManager->BeamOn(NumEvents);
 
     outFlush();
-    out("\nDistribution of annihilation positions (from", positionFrom,"to 4 mm):");
+    out("\nDistribution of annihilation positions (from", positionFrom, "to", positionFrom + deltaPosition * numBins, "mm):");
     int sum = 0;
     for (int iBin = 0; iBin < numBins; iBin++)
     {

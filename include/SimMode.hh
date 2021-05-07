@@ -156,7 +156,7 @@ protected:
 class SimModeAnnihilTest : public SimModeBase
 {
 public:
-    SimModeAnnihilTest(int numRuns, const std::string &fileName);
+    SimModeAnnihilTest(int numEvents, const std::string & fileName);
 
     void run() override;
 
@@ -165,7 +165,7 @@ public:
     void addPosition(double x);
 
 protected:
-    int NumRuns = 1;
+    int NumEvents = 1;
 
     std::vector<double> Histogram;
     int numBins = 1000;
