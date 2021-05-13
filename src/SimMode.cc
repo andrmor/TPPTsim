@@ -3,6 +3,7 @@
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
+#include "Hist1D.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -250,23 +251,19 @@ G4UserSteppingAction * SimModeTracing::getSteppingAction()
 
 // ---
 
-SimModeAcollinTest::SimModeAcollinTest(int numRuns, const std::string & fileName) :
+SimModeAcollinTest::SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName) :
     NumRuns(numRuns)
 {
-    bNeedGui    = false;
-    bNeedOutput = true;
+    From = 180.0 - range;
+    Hist = new Hist1D(numBins, From, 180.0);
 
     SessionManager & SM = SessionManager::getInstance();
-    SM.bBinOutput  = false;
-    SM.FileName    = fileName;
+    FileName = SM.WorkingDirectory + '/' + fileName;
 }
 
 void SimModeAcollinTest::run()
 {
     SessionManager& SM = SessionManager::getInstance();
-
-    Histogram.resize(numBins);
-    for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
 
     for (int iRun = 0; iRun < NumRuns; iRun++)
     {
@@ -278,11 +275,10 @@ void SimModeAcollinTest::run()
         if (Gammas.size() >= 2)
         {
             double angle = Gammas[0].dir.angle(Gammas[1].dir) / deg - 1e-10; // -1e-10 to get 180 deg in the previous bin
-            int index = (angle - angleFrom) / deltaAngle;
-            if      (index <  0)
-            {
-                numUnderflows++;
+            Hist->fill(angle);
 
+            if (angle < From)
+            {
                 if (Gammas[0].energy > 0.511 || Gammas[0].energy < 0.51 ||
                     Gammas[1].energy > 0.511 || Gammas[1].energy < 0.51)
                 {
@@ -300,8 +296,6 @@ void SimModeAcollinTest::run()
                     for (const DirAndEnergy & de : Gammas) std::cout << de.dir << " " << de.energy << std::endl;
                 }
             }
-            else if (index >= numBins) numOverflows++;
-            else Histogram[index]++;
         }
         else
         {
@@ -311,22 +305,10 @@ void SimModeAcollinTest::run()
     }
 
     outFlush();
-    out("\nDistribution of inter-gamma angles (from", angleFrom,"to 180 deg):");
-    int sum = 0;
-    for (int iBin = 0; iBin < numBins; iBin++)
-    {
-        std::cout << (iBin == 0 ? '[' : ',');
-        std::cout << Histogram[iBin];
-        sum += Histogram[iBin];
-
-        if (SM.outStream)
-            *SM.outStream << (angleFrom + deltaAngle * (iBin+0.5)) << " " << Histogram[iBin] << std::endl;
-    }
-    std::cout << ']' << std::endl;
-    out("Distribution sum:", sum);
-    out("Underflows:", numUnderflows);
-    out("Overflows:", numOverflows);
+    out("\nDistribution of inter-gamma angles (from", From,"to 180 deg):");
+    Hist->report();
     out("NotThermalized:", numNotTherm);
+    Hist->save(FileName);
 }
 
 G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
@@ -349,18 +331,21 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
 
 // ---
 
-SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, const std::string & fileName) :
+SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName) :
     NumEvents(numEvents)
 {
-    bNeedGui    = false;
-    bNeedOutput = true;
+    Hist = new Hist1D(numBins, -range, range);
 
     SessionManager & SM = SessionManager::getInstance();
-    SM.bBinOutput  = false;
-    SM.FileName    = fileName;
+    FileName = SM.WorkingDirectory + '/' + fileName;
 }
 
-G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
+SimModeAnnihilTest::~SimModeAnnihilTest()
+{
+    delete Hist;
+}
+
+G4UserSteppingAction * SimModeAnnihilTest::getSteppingAction()
 {
     return new SteppingAction_AnnihilationTester;
 }
@@ -368,38 +353,15 @@ G4UserSteppingAction *SimModeAnnihilTest::getSteppingAction()
 void SimModeAnnihilTest::run()
 {
     SessionManager & SM = SessionManager::getInstance();
-
-    Histogram.resize(numBins);
-    for (int iBin = 0; iBin < numBins; iBin++) Histogram[iBin] = 0;
-
     SM.runManager->BeamOn(NumEvents);
 
     outFlush();
-    out("\nDistribution of annihilation positions (from", positionFrom, "to", positionFrom + deltaPosition * numBins, "mm):");
-    int sum = 0;
-    for (int iBin = 0; iBin < numBins; iBin++)
-    {
-        std::cout << (iBin == 0 ? '[' : ',');
-        std::cout << Histogram[iBin];
-        sum += Histogram[iBin];
-
-        if (SM.outStream)
-            *SM.outStream << (positionFrom + deltaPosition * iBin) << " " << Histogram[iBin] << std::endl;
-    }
-    std::cout << ']' << std::endl;
-    out("Distribution sum:", sum);
-    out("Underflows:", numUnderflows);
-    out("Overflows:", numOverflows);
+    out("\nDistribution of annihilation positions:");
+    Hist->report();
+    Hist->save(FileName);
 }
 
 void SimModeAnnihilTest::addPosition(double x)
 {
-    int index = (x - positionFrom) / deltaPosition;
-    if      (index <  0)
-    {
-        numUnderflows++;
-        out("Underflow position:", x);
-    }
-    else if (index >= numBins) numOverflows++;
-    else Histogram[index]++;
+    Hist->fill(x);
 }

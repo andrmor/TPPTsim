@@ -7,6 +7,7 @@
 
 class G4UserSteppingAction;
 class G4VSensitiveDetector;
+class Hist1D;
 
 class SimModeBase
 {
@@ -127,7 +128,7 @@ struct DirAndEnergy
 class SimModeAcollinTest : public SimModeBase
 {
 public:
-    SimModeAcollinTest(int numRuns, const std::string &fileName);
+    SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName); //range: degrees from 180.0
 
     void run() override;
 
@@ -137,18 +138,14 @@ public:
 
 protected:
     int NumRuns = 1;
+    std::string FileName  = "dummy.txt";
+    int From = 0;
 
+    Hist1D * Hist = nullptr;
     std::vector<DirAndEnergy> Gammas;
 
-    std::vector<double> Histogram;
-    int numBins = 100;
-    double angleFrom = 178.0;
-    double deltaAngle = 0.02;
-    int numUnderflows = 0;
-    int numOverflows  = 0;
     int ParentTrackId = -1;
     int numNotTherm = 0;
-
 };
 
 // ---
@@ -156,7 +153,8 @@ protected:
 class SimModeAnnihilTest : public SimModeBase
 {
 public:
-    SimModeAnnihilTest(int numEvents, const std::string & fileName);
+    SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName);
+    ~SimModeAnnihilTest();
 
     void run() override;
 
@@ -165,16 +163,10 @@ public:
     void addPosition(double x);
 
 protected:
-    int NumEvents = 1;
+    int         NumEvents = 1;
+    std::string FileName  = "dummy.txt";
 
-    std::vector<double> Histogram;
-    int numBins = 1000;
-    double positionFrom = -10;
-    double deltaPosition = 0.02;
-    int numUnderflows = 0;
-    int numOverflows  = 0;
-    int ParentTrackId = -1;
-
+    Hist1D    * Hist      = nullptr;
 };
 
 #endif // SimulationMode_h

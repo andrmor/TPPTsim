@@ -49,11 +49,11 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
-    //SM.SimMode          = new SimModeAcollinTest(100000, "AcolTest.txt");
-    SM.SimMode          = new SimModeAnnihilTest(100000, "SpatialDistr.txt");
+    //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
+    //SM.SimMode          = new SimModeAnnihilTest(100000, 10.0, 1000, "SpatialDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
-    //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+    SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
 
 // --- END of user init ---
 
