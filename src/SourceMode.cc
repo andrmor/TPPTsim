@@ -187,11 +187,32 @@ NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
     SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo))
 {
     bIsotropicDirection = false;
+
+    SessionManager & SM = SessionManager::getInstance();
+    ScintMaxRadius = sqrt( 0.25*(SM.ScintSizeX*SM.ScintSizeX + SM.ScintSizeY*SM.ScintSizeY + SM.ScintSizeZ*SM.ScintSizeZ) );
+    out("---Max scint radius:", ScintMaxRadius);
 }
 
 void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
 {
-    G4ThreeVector pos(0,0,0);
+    SessionManager & SM = SessionManager::getInstance();
+    const int numScint = SM.ScintCenterPositions.size();
+    if (numScint == 0) return;
+
+    const int iScint = G4UniformRand() * numScint; // check: flat() excludes 1 or not
+    //out("---Randomly selected scint#", iScint);
+
+    G4ThreeVector pos;
+    int iCopy = -1;
+    do
+    {
+        for (int i = 0; i < 3; i++)
+            pos[i] = SM.ScintCenterPositions[iScint][i] + ScintMaxRadius * ( -1.0 + 2.0 * G4UniformRand() );
+
+        G4VPhysicalVolume * vol = Navigator->LocateGlobalPointAndSetup(pos);
+        iCopy = vol->GetCopyNo();
+    }
+    while (iCopy != iScint);
     ParticleGun->SetParticlePosition(pos);
 
     SourceModeBase::GeneratePrimaries(anEvent);   // this will generate Hf176[596.820]
@@ -210,4 +231,11 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     ParticleGun->SetParticleMomentumDirection(tmpMdir);
     ParticleGun->SetParticleEnergy(tmpEnergy);
     ParticleGun->SetParticleDefinition(tmpPD);
+}
+
+void NaturalLysoSource::customPostInit()
+{
+    Navigator = new G4Navigator();
+    SessionManager & SM = SessionManager::getInstance();
+    Navigator->SetWorldVolume(SM.physWorld);
 }

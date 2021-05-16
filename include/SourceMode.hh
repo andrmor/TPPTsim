@@ -90,6 +90,14 @@ public:
     NaturalLysoSource(double timeFrom, double timeTo);
 
     void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    double ScintMaxRadius = 0;
+
+    //run-time
+    G4Navigator * Navigator = nullptr;
+
+    virtual void customPostInit();
 };
 
 #endif // SourceMode_h

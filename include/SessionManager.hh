@@ -74,7 +74,8 @@ class SessionManager
         bool bDebug           = false;
         bool bShowEventNumber = false;
 
-        std::vector<G4ThreeVector> ScintPositions; //Scintillator positions, calculated during DetectorConstruction
+        std::vector<G4ThreeVector> ScintPositions;       //Scintillator front face positions, calculated during DetectorConstruction
+        std::vector<G4ThreeVector> ScintCenterPositions; //Scintillator center positions, calculated during DetectorConstruction
         G4ParticleDefinition * GammaPD = nullptr;
 
      // Geometry
