@@ -53,6 +53,8 @@ class SessionManager
 
         int  countScintillators() const;
 
+        int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
+
         bool detectorContains(DetComp component) const;
 
      // Main settings
@@ -77,6 +79,9 @@ class SessionManager
         std::vector<G4ThreeVector> ScintPositions;       //Scintillator front face positions, calculated during DetectorConstruction
         std::vector<G4ThreeVector> ScintCenterPositions; //Scintillator center positions, calculated during DetectorConstruction
         G4ParticleDefinition * GammaPD = nullptr;
+
+     // Misc
+        double activityLYSO = 281.0; // decay per second per cm3
 
      // Geometry
         int    NumScintX  = 8;

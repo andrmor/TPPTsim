@@ -18,10 +18,13 @@ int main(int argc, char** argv)
     SM.Seed              = 0;
     SM.bSimAcollinearity = true;  // only for the phantom region!
 
+    double timeFrom = 0;
+    double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
+
     SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
 
-    SM.bG4Verbose        = true;
+    SM.bG4Verbose        = false;
     SM.bDebug            = false;
     SM.bShowEventNumber  = false;
 
@@ -43,7 +46,7 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
-    SM.SourceMode       = new NaturalLysoSource(0, 100.0); // WORK IN PROGRESS!
+    SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo); // WORK IN PROGRESS!
 
   // Operation mode
     SM.SimMode          = new SimModeGui();
@@ -55,6 +58,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+    SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
 
 // --- END of user init ---
 

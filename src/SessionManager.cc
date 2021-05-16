@@ -163,6 +163,20 @@ int SessionManager::countScintillators() const
     return NumScintX * NumScintY * NumRows * NumSegments * 2.0;
 }
 
+int SessionManager::getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const
+{
+    double volume_cm3 = ScintSizeX/cm * ScintSizeY/cm * ScintSizeZ/cm;
+    out("---Volume of one scintillator =", volume_cm3, "cm3");
+    volume_cm3 *= countScintillators();
+    out("---Total LYSO volume = ", volume_cm3, "cm3");
+    double decaysPerSecond = activityLYSO * volume_cm3;
+    out("---Decays per second = ", decaysPerSecond);
+
+    const int numEvents = decaysPerSecond * 1e-9 * (timeToInNs - timeFromInNs);
+    out("---Decays for time range from", timeFromInNs, "ns to", timeToInNs, "ns =", numEvents);
+    return numEvents;
+}
+
 bool SessionManager::detectorContains(DetComp component) const
 {
     return std::count(DetectorComposition.begin(), DetectorComposition.end(), component); // pre-c++20 ugly version of "contains"

@@ -223,7 +223,7 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     const G4ThreeVector    tmpMdir   = ParticleGun->GetParticleMomentumDirection();
 
     ParticleGun->SetParticleDefinition(G4Electron::Definition());
-    ParticleGun->SetParticleEnergy(100.0*keV);
+    ParticleGun->SetParticleEnergy(100.0*keV);  // ***!!! TODO: distribution!
     ParticleGun->SetParticleMomentumDirection(generateDirectionIsotropic());
     ParticleGun->GeneratePrimaryVertex(anEvent);
 
