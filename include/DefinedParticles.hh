@@ -53,9 +53,12 @@ class Isotope : public ParticleBase
 {
 public:
     Isotope(int z, int a);
+    Isotope(int z, int a, double excitationEnergy);
+
     G4ParticleDefinition * getParticleDefinition() const override;
 
     int Z, A;
+    double ExcitationEnergy = 0;
 };
 
 class C10 : public Isotope
@@ -86,6 +89,14 @@ class N12 : public Isotope
 {
 public:
     N12() : Isotope(7, 12) {Name = "N12";}
+};
+
+// ---
+
+class Lu176 : public Isotope
+{
+public:
+    Lu176() : Isotope(72, 176, 596.820*keV){Name = "Hf176exc";}
 };
 
 // ---

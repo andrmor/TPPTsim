@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
 
-    SM.bG4Verbose        = false;
+    SM.bG4Verbose        = true;
     SM.bDebug            = false;
     SM.bShowEventNumber  = false;
 
@@ -38,14 +38,15 @@ int main(int argc, char** argv)
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 20.4*60.0*s), {0, 0, SM.GlobalZ0});
-    SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
+    //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
     //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
+    SM.SourceMode       = new NaturalLysoSource(0, 100.0); // WORK IN PROGRESS!
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeAnnihilTest(100000, 10.0, 1000, "SpatialDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
-    SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
 
 // --- END of user init ---
 

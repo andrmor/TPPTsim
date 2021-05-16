@@ -7,6 +7,7 @@
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
+#include "G4Electron.hh"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -48,10 +49,11 @@ void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
     ParticleGun->SetParticleMomentumDirection(Direction);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
-    if (bGeneratePair) generateSecond(anEvent);
+
+    if (bGeneratePair) generateSecondGamma(anEvent);
 }
 
-void SourceModeBase::generateSecond(G4Event * anEvent)
+void SourceModeBase::generateSecondGamma(G4Event * anEvent)
 {
     /*
     if (bAcollinearity)
@@ -179,4 +181,33 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
     }
 
     SourceModeBase::GeneratePrimaries(anEvent);
+}
+
+NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
+    SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo))
+{
+    bIsotropicDirection = false;
+}
+
+void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
+{
+    G4ThreeVector pos(0,0,0);
+    ParticleGun->SetParticlePosition(pos);
+
+    SourceModeBase::GeneratePrimaries(anEvent);   // this will generate Hf176[596.820]
+
+    // have to leave the gun properties ready to fire the next event!
+    G4ParticleDefinition * tmpPD     = ParticleGun->GetParticleDefinition();
+    double                 tmpEnergy = ParticleGun->GetParticleEnergy();
+    const G4ThreeVector    tmpMdir   = ParticleGun->GetParticleMomentumDirection();
+
+    ParticleGun->SetParticleDefinition(G4Electron::Definition());
+    ParticleGun->SetParticleEnergy(100.0*keV);
+    ParticleGun->SetParticleMomentumDirection(generateDirectionIsotropic());
+    ParticleGun->GeneratePrimaryVertex(anEvent);
+
+    //restoring properties
+    ParticleGun->SetParticleMomentumDirection(tmpMdir);
+    ParticleGun->SetParticleEnergy(tmpEnergy);
+    ParticleGun->SetParticleDefinition(tmpPD);
 }

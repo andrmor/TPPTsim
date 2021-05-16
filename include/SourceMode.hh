@@ -28,12 +28,12 @@ protected:
     G4ThreeVector Direction = {0, 0, 1.0};  // more general approach will be realized later!
     bool bIsotropicDirection = true;
 
-    bool bGeneratePair  = false;
+    bool bGeneratePair  = false;    // for second gamma
     //bool bAcollinearity = false;
 
 protected:
     G4ThreeVector generateDirectionIsotropic();
-    void generateSecond(G4Event * anEvent);
+    void generateSecondGamma(G4Event * anEvent);
 
     virtual void customPostInit() {}
 };
@@ -80,6 +80,16 @@ protected:
     std::ofstream * Stream = nullptr;
 
     virtual void customPostInit();
+};
+
+// ---
+
+class NaturalLysoSource : public SourceModeBase
+{
+public:
+    NaturalLysoSource(double timeFrom, double timeTo);
+
+    void GeneratePrimaries(G4Event * anEvent) override;
 };
 
 #endif // SourceMode_h

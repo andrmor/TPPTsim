@@ -28,10 +28,17 @@ Isotope::Isotope(int z, int a) :
     Energy = 0;
 }
 
+Isotope::Isotope(int z, int a, double excitationEnergy) :
+    ParticleBase("ion_" + std::to_string(z) + "_" + std::to_string(a) + '[' + std::to_string(excitationEnergy) + ']', true),
+    Z(z), A(a), ExcitationEnergy(excitationEnergy)
+{
+    Energy = 0;
+}
+
 G4ParticleDefinition * Isotope::getParticleDefinition() const
 {
     G4IonTable * itab = G4IonTable::GetIonTable();
-    return itab->GetIon(Z, A, 0);
+    return itab->GetIon(Z, A, ExcitationEnergy);
 }
 
 // ---
