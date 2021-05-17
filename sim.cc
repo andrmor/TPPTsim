@@ -49,16 +49,16 @@ int main(int argc, char** argv)
     SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo); // WORK IN PROGRESS!
 
   // Operation mode
-    SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
     //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
-    //SM.SimMode          = new SimModeAnnihilTest(100000, 10.0, 1000, "SpatialDistr.txt");
+    SM.SimMode          = new SimModeNatRadTest(10000, 100, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
-    SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
 
 // --- END of user init ---
 

@@ -116,9 +116,7 @@ class SessionManager
 
      // External resources
         G4Material          * ScintMat    = nullptr;
-        G4LogicalVolume     * logicWorld  = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
-        G4LogicalVolume     * logicScint  = nullptr;
 
         G4Region            * regPhantom  = nullptr;
         G4Region            * regScint    = nullptr;

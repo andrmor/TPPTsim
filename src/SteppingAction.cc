@@ -145,3 +145,32 @@ void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
         Mode->addPosition(postP->GetPosition()[0]);
     }
 }
+
+// ---
+
+void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
+{
+    const double depo = step->GetTotalEnergyDeposit(); // in MeV
+    if (depo == 0) return;
+
+    // note that energy deposition cam be on exiting scintillator!
+
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+
+    bool bTransport = false;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc) bTransport = ( (proc->GetProcessType() == fTransportation) );
+
+    G4Material * mat = (bTransport ? preP ->GetPhysicalVolume()->GetLogicalVolume()->GetMaterial()
+                                   : postP->GetPhysicalVolume()->GetLogicalVolume()->GetMaterial() );
+
+    SessionManager & SM = SessionManager::getInstance();
+    if (mat != SM.ScintMat) return;
+
+    const int iScint = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
+                                   : postP->GetPhysicalVolume()->GetCopyNo() );
+
+    SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
+    Mode->addEnergy(iScint, depo);
+}

@@ -169,4 +169,26 @@ protected:
     Hist1D    * Hist      = nullptr;
 };
 
+// ---
+
+class SimModeNatRadTest : public SimModeBase
+{
+public:
+    SimModeNatRadTest(int numEvents, int numBins, const std::string & fileName);
+    ~SimModeNatRadTest();
+
+    void run() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    void addEnergy(int iScint, double energy);
+
+protected:
+    int         NumEvents = 1;
+    std::string FileName  = "dummy.txt";
+
+    Hist1D    * Hist      = nullptr;
+    std::vector<double> Deposition;
+};
+
 #endif // SimulationMode_h

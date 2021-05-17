@@ -365,3 +365,54 @@ void SimModeAnnihilTest::addPosition(double x)
 {
     Hist->fill(x);
 }
+
+// ---
+
+SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::string &fileName) :
+    NumEvents(numEvents)
+{
+    Hist = new Hist1D(numBins, 0, 1.3);
+
+    SessionManager & SM = SessionManager::getInstance();
+    FileName = SM.WorkingDirectory + '/' + fileName;
+}
+
+SimModeNatRadTest::~SimModeNatRadTest()
+{
+    delete Hist;
+}
+
+void SimModeNatRadTest::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    const int numScint = SM.countScintillators();
+    Deposition.resize(numScint);
+
+    for (int iEv = 0; iEv < NumEvents; iEv++)
+    {
+        for (int iSc = 0; iSc < numScint; iSc++)
+            Deposition[iSc] = 0;
+
+        SM.runManager->BeamOn(1);
+
+        for (int iSc = 0; iSc < numScint; iSc++)
+            if (Deposition[iSc] != 0)
+                Hist->fill(Deposition[iSc]);
+    }
+
+    outFlush();
+    out("\nDistribution of deposited energies[MeV] per scintillator per event:");
+    Hist->report();
+    Hist->save(FileName);
+}
+
+G4UserSteppingAction * SimModeNatRadTest::getSteppingAction()
+{
+    return new SteppingAction_NatRadTester;
+}
+
+void SimModeNatRadTest::addEnergy(int iScint, double energy)
+{
+    Deposition[iScint] += energy;
+}
