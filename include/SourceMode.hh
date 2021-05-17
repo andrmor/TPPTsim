@@ -11,6 +11,7 @@ class G4ParticleGun;
 class G4Event;
 class G4Material;
 class G4Navigator;
+class Hist1DSampler;
 
 class SourceModeBase
 {
@@ -90,6 +91,7 @@ class NaturalLysoSource : public SourceModeBase
 {
 public:
     NaturalLysoSource(double timeFrom, double timeTo);
+    ~NaturalLysoSource();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
@@ -98,7 +100,8 @@ protected:
     std::vector<std::pair<double,double>> ElectronSpectrum; //format: energy[keV] relative_probablility
 
     //run-time
-    G4Navigator * Navigator = nullptr;
+    G4Navigator   * Navigator = nullptr;
+    Hist1DSampler * Sampler   = nullptr;
 
     virtual void customPostInit();
 };

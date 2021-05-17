@@ -197,14 +197,21 @@ NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
     Hist1D hist(100, 0, 600.0);
     for (const auto & pair : ElectronSpectrum)
         hist.fill(pair.first+0.001, pair.second);
-    hist.report();
 
-    Hist1DSampler sampler(hist, 123456);
+    Sampler = new Hist1DSampler(hist, 1234);
+    /*
+    hist.report();
     Hist1D tmpHist(100,0,600.0);
-    for (int i=0; i<200000; i++)
-        tmpHist.fill( sampler.getRandom() );
+    for (int i=0; i<200000; i++) tmpHist.fill(Sampler->getRandom());
     tmpHist.save("/home/andr/WORK/TPPT/testOutput_ED.txt");
     exit(-1);
+    */
+}
+
+NaturalLysoSource::~NaturalLysoSource()
+{
+    delete Sampler;
+    delete Navigator;
 }
 
 void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
@@ -237,7 +244,7 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     const G4ThreeVector    tmpMdir   = ParticleGun->GetParticleMomentumDirection();
 
     ParticleGun->SetParticleDefinition(G4Electron::Definition());
-    ParticleGun->SetParticleEnergy(100.0*keV);  // ***!!! TODO: distribution!
+    ParticleGun->SetParticleEnergy(Sampler->getRandom()*keV);
     ParticleGun->SetParticleMomentumDirection(generateDirectionIsotropic());
     ParticleGun->GeneratePrimaryVertex(anEvent);
 

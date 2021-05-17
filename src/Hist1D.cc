@@ -84,10 +84,9 @@ Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed)
 double Hist1DSampler::getRandom()
 {
     const double rndm = urd(randEngine);  // [0, 1)
-    auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm),
-                                [](const SamplerRec & first, const SamplerRec & second) -> bool {return first.val < second.val;});
-    //return ( res == Cumulative.end() ? Cumulative.back().x : (*res).x );
+    auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
+
     if (res == Cumulative.begin()) return Cumulative.front().x;
     else if (res == Cumulative.end()) return Cumulative.back().x;
-    return (res--)->x;
+    return (res--)->x;  // previous element!
 }

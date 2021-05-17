@@ -39,6 +39,8 @@ struct SamplerRec
 
       SamplerRec(double X, double Val) : x(X), val(Val) {}
       SamplerRec(){}
+
+      bool operator<(const SamplerRec & other) const {return val < other.val;}
 };
 
 class Hist1DSampler
