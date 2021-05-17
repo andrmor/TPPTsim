@@ -198,7 +198,7 @@ NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
     for (const auto & pair : ElectronSpectrum)
         hist.fill(pair.first+0.001, pair.second);
 
-    Sampler = new Hist1DSampler(hist, 1234);
+    Sampler = new Hist1DSampler(hist, 12345);
     /*
     hist.report();
     Hist1D tmpHist(100,0,600.0);

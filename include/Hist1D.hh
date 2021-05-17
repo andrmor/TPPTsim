@@ -34,10 +34,10 @@ protected:
 
 struct SamplerRec
 {
-      double x;
+      size_t index;
       double val;
 
-      SamplerRec(double X, double Val) : x(X), val(Val) {}
+      SamplerRec(size_t Index, double Val) : index(Index), val(Val) {}
       SamplerRec(){}
 
       bool operator<(const SamplerRec & other) const {return val < other.val;}
@@ -52,6 +52,7 @@ public:
     double getRandom();
 
 protected:
+    const Hist1D Hist; // make a copy since original might be already destroyed when random s are generated
     std::vector<SamplerRec> Cumulative;
 
     std::mt19937_64 randEngine;

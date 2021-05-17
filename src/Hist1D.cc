@@ -61,19 +61,15 @@ void Hist1D::save(const std::string & fileName)
 
 // ---
 
-Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed)
+Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed) : Hist(hist)
 {
     randEngine.seed(seed);
 
-    double dBin = (hist.To - hist.From) / hist.NumBins;
     double acc = 0;
     for (size_t iBin = 0; iBin < hist.Data.size(); iBin++)
     {
-        double x   = hist.From + dBin * iBin;
-        double val = hist.Data[iBin];
-
-        acc += val;
-        Cumulative.push_back(SamplerRec(x, acc));
+        Cumulative.push_back(SamplerRec(iBin, acc));
+        acc += hist.Data[iBin];
     }
 
     if (acc != 0)
@@ -86,7 +82,9 @@ double Hist1DSampler::getRandom()
     const double rndm = urd(randEngine);  // [0, 1)
     auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
 
-    if (res == Cumulative.begin()) return Cumulative.front().x;
-    else if (res == Cumulative.end()) return Cumulative.back().x;
-    return (res--)->x;  // previous element!
+    size_t indexAbove = (res == Cumulative.end() ? Cumulative.size()-1
+                                                 : res->index);
+
+    const double dBin = (Hist.To - Hist.From) / Hist.NumBins;
+    return Hist.From + dBin * (indexAbove - urd(randEngine));
 }
