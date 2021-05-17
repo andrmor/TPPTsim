@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <random>
 
 class Hist1D
 {
 public:
+    friend class Hist1DSampler;
+
     Hist1D(int numBins, double from, double to);
     virtual ~Hist1D(){}
 
@@ -25,6 +28,33 @@ protected:
     std::vector<double> Data;
     int NumUnderflows = 0;
     int NumOverflows  = 0;
+};
+
+// ---
+
+struct SamplerRec
+{
+      double x;
+      double val;
+
+      SamplerRec(double X, double Val) : x(X), val(Val) {}
+      SamplerRec(){}
+};
+
+class Hist1DSampler
+{
+public:
+    Hist1DSampler(const Hist1D & hist, long seed);
+    virtual ~Hist1DSampler(){}
+
+    double getRandom();
+
+protected:
+    std::vector<SamplerRec> Cumulative;
+
+    std::mt19937_64 randEngine;
+    std::uniform_real_distribution<double> urd;  // [0,1)
+
 };
 
 #endif // hist1d_h

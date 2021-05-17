@@ -385,7 +385,6 @@ SimModeNatRadTest::~SimModeNatRadTest()
 void SimModeNatRadTest::run()
 {
     SessionManager & SM = SessionManager::getInstance();
-
     const int numScint = SM.countScintillators();
     Deposition.resize(numScint);
 

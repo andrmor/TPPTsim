@@ -3,6 +3,8 @@
 
 #include "G4ThreeVector.hh"
 
+#include <vector>
+
 class ParticleBase;
 class TimeGeneratorBase;
 class G4ParticleGun;
@@ -93,6 +95,7 @@ public:
 
 protected:
     double ScintMaxRadius = 0;
+    std::vector<std::pair<double,double>> ElectronSpectrum; //format: energy[keV] relative_probablility
 
     //run-time
     G4Navigator * Navigator = nullptr;

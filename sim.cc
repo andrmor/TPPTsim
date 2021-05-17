@@ -61,7 +61,6 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
 
 // --- END of user init ---
-
     SM.startSession(argc, argv);
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     SM.SimMode->run();

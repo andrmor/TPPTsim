@@ -3,11 +3,14 @@
 #include <iostream>
 #include <fstream>
 #include <ios>
+#include <algorithm>
 
 Hist1D::Hist1D(int numBins, double from, double to) :
     NumBins(numBins), From(from), To(to)
 {
-    if (NumBins != 0) Step = (To - From) / NumBins;
+    if (NumBins <= 0) NumBins = 1;
+
+    Step = (To - From) / NumBins;
 
     Data.resize(NumBins);
     for (int iBin = 0; iBin < NumBins; iBin++) Data[iBin] = 0;
@@ -54,4 +57,37 @@ void Hist1D::save(const std::string & fileName)
         outStream << (From + Step * iBin) << " " << Data[iBin] << std::endl;
 
     outStream.close();
+}
+
+// ---
+
+Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed)
+{
+    randEngine.seed(seed);
+
+    double dBin = (hist.To - hist.From) / hist.NumBins;
+    double acc = 0;
+    for (size_t iBin = 0; iBin < hist.Data.size(); iBin++)
+    {
+        double x   = hist.From + dBin * iBin;
+        double val = hist.Data[iBin];
+
+        acc += val;
+        Cumulative.push_back(SamplerRec(x, acc));
+    }
+
+    if (acc != 0)
+        for (SamplerRec & rec : Cumulative)
+            rec.val /= acc;
+}
+
+double Hist1DSampler::getRandom()
+{
+    const double rndm = urd(randEngine);  // [0, 1)
+    auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm),
+                                [](const SamplerRec & first, const SamplerRec & second) -> bool {return first.val < second.val;});
+    //return ( res == Cumulative.end() ? Cumulative.back().x : (*res).x );
+    if (res == Cumulative.begin()) return Cumulative.front().x;
+    else if (res == Cumulative.end()) return Cumulative.back().x;
+    return (res--)->x;
 }
