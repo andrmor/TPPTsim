@@ -117,3 +117,27 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
 
     return logicPmma;
 }
+
+// ---
+#include "ParamTest.hh"
+#include "G4PVParameterised.hh"
+G4LogicalVolume * PhantomParam::definePhantom(G4LogicalVolume * logicWorld)
+{
+    SessionManager & SM  = SessionManager::getInstance();
+    G4NistManager  * man = G4NistManager::Instance();
+
+    G4Material        * matVacuum = man->FindOrBuildMaterial("G4_Galactic");
+    G4VSolid          * solidCyl  = new G4Tubs("Phantom_Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
+    G4LogicalVolume   * logicCyl  = new G4LogicalVolume(solidCyl, matVacuum, "Phantom");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCyl, "Phantom_PV", logicWorld, false, 0);
+    logicCyl->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+
+    G4Material      * matBox   = man->FindOrBuildMaterial("G4_TEFLON");
+    G4VSolid        * solidBox = new G4Box("chamber", 5.0*mm, 5.0*mm, 5.0*mm);
+    G4LogicalVolume * logicBox = new G4LogicalVolume(solidBox, matBox, "Box", 0, 0, 0);
+
+    G4VPVParameterisation * param = new TestParameterisation({10.0*mm, 10.0*mm, 10.0*mm}, 100.0*mm, -50.0*mm);
+    new G4PVParameterised("DicomPhant", logicBox, logicCyl, kUndefined, 317*10, param);
+
+    return logicCyl;
+}

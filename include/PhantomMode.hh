@@ -56,4 +56,14 @@ protected:
 
 };
 
+// ---
+
+class PhantomParam : public PhantomModeBase
+{
+public:
+    PhantomParam(){}
+
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
 #endif // PhantomMode_h
