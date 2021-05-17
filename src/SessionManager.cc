@@ -155,7 +155,7 @@ void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("gamma"));
     cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e-"));
-    regPhantom->SetProductionCuts(cuts);
+    regScint->SetProductionCuts(cuts);
 }
 
 int SessionManager::countScintillators() const
