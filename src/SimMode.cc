@@ -375,6 +375,20 @@ SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::stri
 
     SessionManager & SM = SessionManager::getInstance();
     FileName = SM.WorkingDirectory + '/' + fileName;
+
+    /*
+    // This code allows to test a standalone scintillator (will be two on the opposite sides of the ring unless detectorConstructor code is modified!):
+    //bNeedGui = true;
+    SM.NumScintX = 1;
+    SM.NumScintY = 1;
+    SM.NumSegments = 1;
+    SM.NumRows     = 1;
+    SM.ScintSizeX = 57.4;
+    SM.ScintSizeY = 57.4;
+    SM.ScintSizeZ = 10.0;
+    SM.EncapsSizeX = SM.EncapsSizeY = SM.ScintSizeX + 0.2;
+    SM.EncapsSizeZ = SM.ScintSizeZ + 0.2;
+    */
 }
 
 SimModeNatRadTest::~SimModeNatRadTest()
@@ -385,6 +399,7 @@ SimModeNatRadTest::~SimModeNatRadTest()
 void SimModeNatRadTest::run()
 {
     SessionManager & SM = SessionManager::getInstance();
+    //SM.startGUI();
     const int numScint = SM.countScintillators();
     Deposition.resize(numScint);
 
