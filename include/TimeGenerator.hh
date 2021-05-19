@@ -1,6 +1,7 @@
 #ifndef TimeGenerator_h
 #define TimeGenerator_h
 
+class Hist1D;
 class TimeGeneratorBase
 {
 public:
@@ -41,13 +42,16 @@ protected:
 class ExponentialTime : public TimeGeneratorBase
 {
 public:
-    ExponentialTime(double timeFrom, double decayTime) : TimeFrom(timeFrom), DecayTime(decayTime) {}
+    ExponentialTime(double timeFrom, double decayTime);
+    ~ExponentialTime();
 
     double generateTime() override;
 
 protected:
     double TimeFrom  = 0;
     double DecayTime = 0;
+
+    Hist1D    * Hist      = nullptr;
 };
 
 #endif // TimeGenerator_h
