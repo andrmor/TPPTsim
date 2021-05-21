@@ -260,3 +260,27 @@ void NaturalLysoSource::customPostInit()
     SessionManager & SM = SessionManager::getInstance();
     Navigator->SetWorldVolume(SM.physWorld);
 }
+
+BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &origin, const Hist1D &dist, long seed) :
+    PointSource(particle, timeGenerator, origin)
+{
+    Sampler = new Hist1DSampler(dist, seed);
+    Origin = ParticleGun->GetParticlePosition();
+}
+
+BlurredPointSource::~BlurredPointSource()
+{
+    delete Sampler;
+}
+
+void BlurredPointSource::GeneratePrimaries(G4Event *anEvent)
+{
+    G4ThreeVector vec;
+    for (int i=0; i<3; i++)
+    {
+        vec[i] = Sampler->getRandom() + Origin[i];
+    }
+    out(vec);
+    ParticleGun->SetParticlePosition(vec);
+    SourceModeBase::GeneratePrimaries(anEvent);
+}

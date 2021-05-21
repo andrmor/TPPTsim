@@ -21,6 +21,7 @@ ExponentialTime::~ExponentialTime()
 
 double ExponentialTime::generateTime()
 {
-    return TimeFrom + G4RandExponential::shoot(DecayTime);
-    Hist->fill(TimeFrom + G4RandExponential::shoot(DecayTime));
+    const double time = TimeFrom + G4RandExponential::shoot(DecayTime);
+    Hist->fill(time);
+    return time;
 }
