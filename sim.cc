@@ -7,6 +7,9 @@
 #include "out.hh"
 #include "Hist1D.hh"
 
+#include <fstream>
+#include <sstream>
+
 #include <chrono>
 
 int main(int argc, char** argv)
@@ -38,19 +41,35 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    //SM.DetectorComposition = {DetComp::Scintillators};
-    SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
+    SM.DetectorComposition = {DetComp::Scintillators};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0});
     Hist1D dist(21, -10, 10);
-    dist.fill(-10,1);
-    dist.fill(0,1);
-    dist.fill(10,1);
-    //SM.SourceMode        = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, dist, 12345);
+    std::string inputFileName  = "/data/margarida/Data/AnnihilTest.txt";
+    std::ifstream * inStream = new std::ifstream(inputFileName);
+    std::vector<std::pair<double,double>> Input;
+    std::string line;
+
+    while (!inStream->eof())
+    {
+        getline(*inStream, line);
+        //out(line);
+        std::stringstream ss(line);
+        double position, probability;
+        ss >> position >> probability;
+        Input.push_back({position,probability});
+    }
+    for (const auto & pair : Input)
+        dist.fill(pair.first+0.001, pair.second);
+    //dist.fill(-10,1);
+    //dist.fill(0,1);
+    //dist.fill(10,1);
+    SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, dist, 12345);
     //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
-    SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {70.0, 190.0, SM.GlobalZ0+52.5}, {1.0,-1.1,0});
+    //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {70.0, 190.0, SM.GlobalZ0+52.5}, {1.0,-1.1,0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
@@ -59,11 +78,11 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
-    SM.SimMode          = new SimModeTracing();
+    //SM.SimMode          = new SimModeTracing();
     //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
-    //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
+    SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(10e6, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
 
