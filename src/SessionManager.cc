@@ -4,6 +4,7 @@
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "EventAction.hh"
+#include "ScintRecord.hh"
 #include "out.hh"
 
 #include "G4RunManager.hh"
@@ -192,10 +193,7 @@ void SessionManager::saveScintillatorTable(const std::string & fileName)
         return;
     }
 
-    for (size_t i = 0; i < ScintRecords.size(); i++)
-    {
-
-    }
+    for (ScintRecord & rec : ScintRecords) rec.write(stream);
 
     stream.close();
 }

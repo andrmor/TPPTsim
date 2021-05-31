@@ -9,6 +9,8 @@ struct ScintRecord
     G4ThreeVector FacePos;
 
     double Angle;
+
+    void write(std::ofstream & stream);
 };
 
 #endif // scintrecord_h

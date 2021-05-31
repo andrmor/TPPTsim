@@ -119,6 +119,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
             G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
             logicScint->SetSensitiveDetector(pSD_Scint);
         }
+
+        SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
     }
 
     return SM.physWorld;
