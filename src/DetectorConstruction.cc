@@ -89,7 +89,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
         solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
 
-        SM.ScintPositions.clear();
+        SM.ScintRecords.clear();
 
         int iAssembly = 0;
         int iScint    = 0;
@@ -107,8 +107,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                 double RowPitch = SM.EncapsSizeY + SM.RowGap;
                 double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-                positionAssembly(rot,  G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
-                positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
+                positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle, iScint, iAssembly++);
+                positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle, iScint, iAssembly++);
             }
         }
 
@@ -124,7 +124,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     return SM.physWorld;
 }
 
-G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos)
+G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -139,27 +139,25 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             G4ThreeVector ScintPos(X, Y, 0);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
-            //saving scintillator center positions
-            G4ThreeVector glob = (*AssemblyRot).inverse()(ScintPos);
-            glob[0] += AssemblyPos[0];
-            glob[1] += AssemblyPos[1];
-            glob[2] += AssemblyPos[2];
-            SM.ScintCenterPositions.push_back(glob);
+            ScintRecord rec;
 
-            //saving center of the face towards the phantom
+            rec.CenterPos = (*AssemblyRot).inverse()(ScintPos);
+            for (int i=0; i<3; i++) rec.CenterPos[i] += AssemblyPos[i];
+
             ScintPos[2] += 0.5 * SM.ScintSizeZ;
-            glob = (*AssemblyRot).inverse()(ScintPos);
-            glob[0] += AssemblyPos[0];
-            glob[1] += AssemblyPos[1];
-            glob[2] += AssemblyPos[2];
-            SM.ScintPositions.push_back(glob);
+            rec.FacePos   = (*AssemblyRot).inverse()(ScintPos);
+            for (int i=0; i<3; i++) rec.FacePos[i]   += AssemblyPos[i];
+
+            rec.Angle = Angle;
+
+            SM.ScintRecords.push_back(rec);
         }
 
     return logicEncaps;
 }
 
-void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, int & iScint, int iAssembly)
+void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly)
 {
-    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
+    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
 }
 

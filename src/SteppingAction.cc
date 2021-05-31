@@ -32,7 +32,7 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         double delta = 0;
         for (int i=0; i<3; i++)
         {
-            double d = globCenterPos[i] - SM.ScintPositions[iScint][i];
+            double d = globCenterPos[i] - SM.ScintRecords[iScint].FacePos[i];
             delta += d*d;
         }
         delta = sqrt(delta);
@@ -44,7 +44,7 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         {
             out("Index of the scintillator:",iScint, " Index of the assembly:",iAssembly);
             out("Volume center position:", globCenterPos[0], globCenterPos[1], globCenterPos[2]);
-            out("   --> from ScintPos:  ",SM.ScintPositions[iScint][0], SM.ScintPositions[iScint][1], SM.ScintPositions[iScint][2]); //it's faster (only once in detector construction)
+            out("   --> from ScintPos:  ",SM.ScintRecords[iScint].FacePos[0], SM.ScintRecords[iScint].FacePos[1], SM.ScintRecords[iScint].FacePos[2]); //it's faster (only once in detector construction)
             out("       --> Delta", delta, "mm");
 
         }

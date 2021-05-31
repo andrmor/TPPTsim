@@ -217,7 +217,7 @@ NaturalLysoSource::~NaturalLysoSource()
 void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
-    const int numScint = SM.ScintCenterPositions.size();
+    const int numScint = SM.ScintRecords.size();
     if (numScint == 0) return;
 
     const int iScint = G4UniformRand() * numScint; // check: flat() excludes 1 or not
@@ -228,7 +228,7 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     do
     {
         for (int i = 0; i < 3; i++)
-            pos[i] = SM.ScintCenterPositions[iScint][i] + ScintMaxRadius * ( -1.0 + 2.0 * G4UniformRand() );
+            pos[i] = SM.ScintRecords[iScint].CenterPos[i] + ScintMaxRadius * ( -1.0 + 2.0 * G4UniformRand() );
 
         G4VPhysicalVolume * vol = Navigator->LocateGlobalPointAndSetup(pos);
         iCopy = vol->GetCopyNo();

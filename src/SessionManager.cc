@@ -182,6 +182,24 @@ bool SessionManager::detectorContains(DetComp component) const
     return std::count(DetectorComposition.begin(), DetectorComposition.end(), component); // pre-c++20 ugly version of "contains"
 }
 
+void SessionManager::saveScintillatorTable(const std::string & fileName)
+{
+    std::ofstream stream;
+    stream.open(fileName);
+    if (!stream.is_open() || stream.fail() || stream.bad())
+    {
+        std::cout  << "Cannot open file to store scintillator data: " << fileName << std::endl;
+        return;
+    }
+
+    for (size_t i = 0; i < ScintRecords.size(); i++)
+    {
+
+    }
+
+    stream.close();
+}
+
 void SessionManager::startGUI()
 {
     visManager->Initialize();
