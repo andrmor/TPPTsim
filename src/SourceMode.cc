@@ -266,6 +266,7 @@ BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase
 {
     Sampler = new Hist1DSampler(dist, seed);
     Origin = ParticleGun->GetParticlePosition();
+    //Distribution in the beggining of the construction
 }
 
 BlurredPointSource::~BlurredPointSource()
