@@ -184,9 +184,12 @@ void SimModeMultipleEvents::saveData()
             {
                 *SM.outStream << char(0xee);
                 SM.outStream->write((char*)&iScint, sizeof(int));
-                SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[0], sizeof(double));
-                SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[1], sizeof(double));
-                SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[2], sizeof(double));
+                if (bSaveScintPos)
+                {
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[0], sizeof(double));
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[1], sizeof(double));
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[2], sizeof(double));
+                }
 
                 for (size_t iNodes = 0; iNodes < nodes.size(); iNodes++)
                 {
@@ -206,7 +209,9 @@ void SimModeMultipleEvents::saveData()
 
             if (!nodes.empty())
             {
-                *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+                *SM.outStream << "# " << iScint;
+                if (bSaveScintPos) *SM.outStream << " " << sp[0] << " " << sp[1] << " " << sp[2];
+                *SM.outStream << std::endl;
 
                 for (const DepositionNodeRecord & n : nodes)
                     *SM.outStream << n.time << " " << n.energy << std::endl;
