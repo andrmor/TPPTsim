@@ -41,7 +41,7 @@ protected:
 class ExponentialTime : public TimeGeneratorBase
 {
 public:
-    ExponentialTime(double timeFrom, double decayTime) : TimeFrom(timeFrom), DecayTime(decayTime) {}
+    ExponentialTime(double timeFrom, double HalfLife);
 
     double generateTime() override;
 
