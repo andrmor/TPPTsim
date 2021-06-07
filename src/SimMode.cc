@@ -482,5 +482,5 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy, d
         *SM.outStream << ss.rdbuf() << std::endl;
     }
 
-    out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
+    //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
 }

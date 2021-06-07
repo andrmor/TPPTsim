@@ -18,6 +18,8 @@ public:
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
+    int CountEvents() override;
+
 protected:
     std::ifstream * inStream = nullptr;
     bool bBinary = false;

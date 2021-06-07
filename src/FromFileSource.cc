@@ -122,6 +122,41 @@ void FromFileSource::GeneratePrimaries(G4Event * anEvent)
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
+int FromFileSource::CountEvents()
+{
+    if (!inStream) return 0;
+
+    int iCounter = 0;
+    if (bBinary)
+    {
+        char ch;
+        double buf[8]; //en + pos + dir + time
+        while (inStream->good())
+        {
+            while (*inStream >> ch)
+            {
+                if (ch == 0x00) break;
+            }
+            inStream->read((char*)buf, 8 * sizeof(double));
+            if (inStream->good()) iCounter++;
+        }
+    }
+    else
+    {
+        for( std::string line; std::getline( *inStream, line ); )
+        {
+            if (inStream->fail()) break;
+            iCounter++;
+        }
+    }
+
+    inStream->clear();
+    inStream->seekg(0);
+
+    out("Found particles (events):", iCounter);
+    return iCounter;
+}
+
 G4ParticleDefinition * FromFileSource::makeGeant4Particle(const std::string & particleName)
 {
     G4ParticleDefinition * particle = G4ParticleTable::GetParticleTable()->FindParticle(particleName);

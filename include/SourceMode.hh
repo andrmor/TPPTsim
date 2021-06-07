@@ -23,6 +23,8 @@ public:
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
+    virtual int CountEvents() {return -1;}
+
 protected:
     ParticleBase      * Particle      = nullptr;
     TimeGeneratorBase * TimeGenerator = nullptr;

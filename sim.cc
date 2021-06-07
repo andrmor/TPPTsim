@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
   // Operation mode
-    SM.SimMode          = new SimModeGui();
+    //SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
@@ -62,7 +62,8 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e5, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
-    //SM.SimMode          = new SimModeFirstStage(5, "FirstStage.txt", false);
+    //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
+    SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false);
 
 // --- END of user init ---
     SM.startSession(argc, argv);
