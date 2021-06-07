@@ -1,5 +1,6 @@
 ﻿#include "SessionManager.hh"
 #include "SourceMode.hh"
+#include "FromFileSource.hh"
 #include "TimeGenerator.hh"
 #include "DefinedParticles.hh"
 #include "SimMode.hh"
@@ -37,20 +38,21 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    SM.DetectorComposition = {DetComp::Scintillators};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0});
-    SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
+    //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
-    //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {150.0, 150.0, SM.GlobalZ0-100.0}, {0,0,1.0});
+    //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {0, 1.0, 0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
+    SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
@@ -58,8 +60,9 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(100, "SimOutput.txt", false);
-    SM.SimMode          = new SimModeMultipleEvents(1e5, "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeMultipleEvents(1e5, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeFirstStage(5, "FirstStage.txt", false);
 
 // --- END of user init ---
     SM.startSession(argc, argv);

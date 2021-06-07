@@ -106,4 +106,6 @@ protected:
     virtual void customPostInit();
 };
 
+// --
+
 #endif // SourceMode_h

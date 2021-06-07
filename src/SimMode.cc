@@ -6,7 +6,12 @@
 #include "Hist1D.hh"
 #include "out.hh"
 
+#include "G4String.hh"
 #include "G4RunManager.hh"
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 SimModeGui::SimModeGui()
 {
@@ -434,4 +439,48 @@ G4UserSteppingAction * SimModeNatRadTest::getSteppingAction()
 void SimModeNatRadTest::addEnergy(int iScint, double energy)
 {
     Deposition[iScint] += energy;
+}
+
+// ---
+
+SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary) :
+    NumEvents(numEvents)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    bNeedOutput         = true;
+    SM.FileName         = fileName;
+    SM.bBinOutput       = bBinary;
+}
+
+void SimModeFirstStage::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+}
+
+void SimModeFirstStage::saveParticle(const G4String & particle, double energy, double * PosDir, double time)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    if (SM.bBinOutput)
+    {
+        //SM.outStream << char(0xff);
+        *SM.outStream << particle << char(0x00);
+        SM.outStream->write((char*)&energy,  sizeof(double));
+        SM.outStream->write((char*)PosDir, 6*sizeof(double));
+        SM.outStream->write((char*)&time,    sizeof(double));
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << particle << ' ';
+        ss << energy << ' ';
+        ss << PosDir[0] << ' ' << PosDir[1] << ' ' << PosDir[2] << ' ';     //position
+        ss << PosDir[3] << ' ' << PosDir[4] << ' ' << PosDir[5] << ' ';     //direction
+        ss << time;
+
+        *SM.outStream << ss.rdbuf() << std::endl;
+    }
+
+    out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
 }

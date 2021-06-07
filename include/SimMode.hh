@@ -193,4 +193,20 @@ protected:
     std::vector<double> Deposition;
 };
 
+// ---
+
+class SimModeFirstStage : public SimModeBase
+{
+public:
+    SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary);
+
+    void run() override;
+
+    void saveParticle(const G4String & particle, double energy, double *PosDir, double time);
+
+protected:
+    int         NumEvents = 1;
+};
+
+
 #endif // SimulationMode_h

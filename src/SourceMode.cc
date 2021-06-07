@@ -20,13 +20,16 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
 
     //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
 
-    bIsotropicDirection = !particle->bSkipDirection; // can be overwriten by the concrete source type!
+    if (Particle)
+    {
+        bIsotropicDirection = !Particle->bSkipDirection; // can be overwriten by the concrete source type!
 
-    GammaPair * pair = dynamic_cast<GammaPair*>(particle);
-    bGeneratePair = pair;
-    //if (pair) bAcollinearity = pair->bAcollineraity;
+        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
+        bGeneratePair = pair;
+        //if (pair) bAcollinearity = pair->bAcollineraity;
 
-    ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+    }
 }
 
 SourceModeBase::~SourceModeBase()
@@ -38,7 +41,7 @@ SourceModeBase::~SourceModeBase()
 
 void SourceModeBase::initialize()
 {
-    ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+    if (Particle) ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
     customPostInit();
 }
 
@@ -260,3 +263,5 @@ void NaturalLysoSource::customPostInit()
     SessionManager & SM = SessionManager::getInstance();
     Navigator->SetWorldVolume(SM.physWorld);
 }
+
+// ---
