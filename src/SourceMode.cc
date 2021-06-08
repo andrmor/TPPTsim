@@ -261,12 +261,28 @@ void NaturalLysoSource::customPostInit()
     Navigator->SetWorldVolume(SM.physWorld);
 }
 
-BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &origin, const Hist1D &dist, long seed) :
+BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &origin, G4String fileName) :
     PointSource(particle, timeGenerator, origin)
 {
-    Sampler = new Hist1DSampler(dist, seed);
+    Hist1D dist(21, -10, 10);
+    std::ifstream * inStream = new std::ifstream(fileName);
+    std::vector<std::pair<double,double>> Input;
+    std::string line;
+
+    while (!inStream->eof())
+    {
+        getline(*inStream, line);
+        //out(line);
+        std::stringstream ss(line);
+        double position, probability;
+        ss >> position >> probability;
+        Input.push_back({position,probability});
+    }
+    for (const auto & pair : Input)
+        dist.fill(pair.first+0.001, pair.second);
+
+    Sampler = new Hist1DSampler(dist, 12345);
     Origin = ParticleGun->GetParticlePosition();
-    //Distribution in the beggining of the construction
 }
 
 BlurredPointSource::~BlurredPointSource()

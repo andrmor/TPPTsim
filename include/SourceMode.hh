@@ -112,7 +112,7 @@ protected:
 class BlurredPointSource : public PointSource
 {
 public:
-    BlurredPointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, string FileName,const Hist1D & dist, long seed);
+    BlurredPointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, G4String fileName);
     ~BlurredPointSource();
 
     void GeneratePrimaries(G4Event * anEvent) override;

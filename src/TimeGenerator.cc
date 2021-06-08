@@ -9,7 +9,7 @@ double UniformTime::generateTime()
     return TimeFrom + (TimeTo - TimeFrom) * G4UniformRand();
 }
 
-ExponentialTime::ExponentialTime(double timeFrom, double decayTime) : TimeFrom(timeFrom), DecayTime(decayTime)
+ExponentialTime::ExponentialTime(double timeFrom, double HalfLife) : TimeFrom(timeFrom), DecayTime(HalfLife/log(2))
 {
     Hist = new Hist1D(100,0,2e11);
 }
