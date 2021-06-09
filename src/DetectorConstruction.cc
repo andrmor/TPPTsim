@@ -4,6 +4,7 @@
 #include "SessionManager.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
+#include "out.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
@@ -23,7 +24,10 @@
 #include "G4SDManager.hh"
 
 #include "G4GDMLParser.hh"
-#include "out.hh"
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     G4NistManager * man = G4NistManager::Instance();
@@ -134,8 +138,8 @@ void DetectorConstruction::addScintillators()
             double RowPitch = SM.EncapsSizeY + SM.RowGap;
             double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle, iScint, iAssembly++);
-            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle, iScint, iAssembly++);
+            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,             iScint, iAssembly++);
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + 0.5*M_PI , iScint, iAssembly++);
         }
     }
 
