@@ -32,6 +32,9 @@ protected:
 
     G4ParticleDefinition * makeGeant4Particle(const std::string & particleName);
     bool extractIonInfo(const std::string & text, int & Z, int & A, double & E);
+
+    void prepareStream();
+    void addPrimary(G4Event * anEvent);
 };
 
 #endif // fromfilesource_h

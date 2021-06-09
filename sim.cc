@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
-    SM.bShowEventNumber  = false; SM.EvNumberInterval = 10000;
+    SM.bShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
   // Phantom
     //SM.PhantomMode      = new PhantomNone;
@@ -38,20 +38,20 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    SM.DetectorComposition = {DetComp::Scintillators};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
+    //SM.DetectorComposition = {DetComp::Scintillators};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
     //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, "/data/margarida/Data/AnnihilTest.txt");
-    SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
+    //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
     //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
-    //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
+    SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
   // Operation mode
     //SM.SimMode          = new SimModeGui();
@@ -62,11 +62,11 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeAnnihilTest(1e6, 10, 1000, "AnnihilTest.txt");
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
-    SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
+    //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e5, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
     //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
-    //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false);
+    SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false);
 
 // --- END of user init ---
     SM.startSession(argc, argv);

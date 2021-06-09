@@ -18,6 +18,8 @@ public:
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
+    virtual void onEventStarted() {}
+
     bool bNeedGui    = false;
     bool bNeedOutput = false;
 };
@@ -203,8 +205,11 @@ public:
 
     void saveParticle(const G4String & particle, double energy, double *PosDir, double time);
 
+    void onEventStarted() override;
+
 protected:
-    int         NumEvents = 1;
+    int NumEvents    = 1;
+    int CurrentEvent = 0;
 };
 
 

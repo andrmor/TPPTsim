@@ -447,6 +447,7 @@ SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName
 void SimModeFirstStage::run()
 {
     SessionManager & SM = SessionManager::getInstance();
+    CurrentEvent = 0;
     SM.runManager->BeamOn(NumEvents);
 }
 
@@ -456,7 +457,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy, d
 
     if (SM.bBinOutput)
     {
-        //SM.outStream << char(0xff);
+        *SM.outStream << char(0xFF);
         *SM.outStream << particle << char(0x00);
         SM.outStream->write((char*)&energy,  sizeof(double));
         SM.outStream->write((char*)PosDir, 6*sizeof(double));
@@ -475,4 +476,18 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy, d
     }
 
     //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
+}
+
+void SimModeFirstStage::onEventStarted()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    if (SM.bBinOutput)
+    {
+        *SM.outStream << char(0xEE);
+        SM.outStream->write((char*)&CurrentEvent, sizeof(int));
+    }
+    else
+        *SM.outStream << '#' << CurrentEvent << std::endl;
+
+    CurrentEvent++;
 }

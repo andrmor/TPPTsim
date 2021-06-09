@@ -217,6 +217,8 @@ void SessionManager::configureOutput()
     if (!outStream->is_open() || outStream->fail() || outStream->bad())
     {
         out("Cannot open file to store output data!");
+        outFlush();
+        exit(1);
         delete outStream; outStream = nullptr;
     }
     else out("\nSaving output to file", fullFileName);

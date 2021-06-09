@@ -21,8 +21,10 @@ FromFileSource::FromFileSource(const std::string & fileName, bool bBinaryFile) :
     if (!inStream->is_open())
     {
         out("Cannot open input file with particles:" + fileName);
+        exit(1000);
         delete inStream; inStream = nullptr;
     }
+    prepareStream();
 
     std::vector<std::string> allElements = {"H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr","Rf","Db","Sg","Bh","Hs"};
     for (size_t i = 0; i < allElements.size(); i++)
@@ -34,6 +36,36 @@ FromFileSource::~FromFileSource()
     delete inStream;
 }
 
+void FromFileSource::prepareStream()
+{
+    inStream->clear();
+    inStream->seekg(0);
+
+    bool bError = true;
+    if (bBinary)
+    {
+        char ch = 0;
+        int iEv;
+        inStream->get(ch);
+        if (ch == (char)0xEE)
+        {
+            inStream->read((char*)&iEv, sizeof(int));
+            bError = false;
+        }
+    }
+    else
+    {
+        std::string line;
+        std::getline(*inStream, line);
+        if (line.size() > 1 && line[0] == '#') bError = false;
+    }
+
+    if (bError)
+    {
+        out("Input file for FromFileSource does not start with the event marker!");
+        exit(1002);
+    }
+}
 
 void FromFileSource::GeneratePrimaries(G4Event * anEvent)
 {
@@ -57,61 +89,88 @@ void FromFileSource::GeneratePrimaries(G4Event * anEvent)
     if (bBinary)
     {
         char ch;
-        name.clear();
-        while (*inStream >> ch)
+        int iEv;
+        while (inStream->get(ch))
         {
-            if (ch == 0x00) break;
-            name += ch;
-        }
-        inStream->read((char*)&energy, sizeof(double));
-        inStream->read((char*)&pos[0], sizeof(double));
-        inStream->read((char*)&pos[1], sizeof(double));
-        inStream->read((char*)&pos[2], sizeof(double));
-        inStream->read((char*)&dir[0], sizeof(double));
-        inStream->read((char*)&dir[1], sizeof(double));
-        inStream->read((char*)&dir[2], sizeof(double));
-        inStream->read((char*)&time,   sizeof(double));
+            if (inStream->eof()) break;
 
-        if (inStream->eof())
-        {
-            out("---End of file reached!");
-            return;
-        }
+            if (ch == (char)0xEE)
+            {
+                inStream->read((char*)&iEv, sizeof(int));
+                //event finished
+                break;
+            }
+            else if (ch == (char)0xFF)
+            {
+                name.clear();
+                while (inStream->get(ch))
+                {
+                    if (ch == (char)0x00) break;
+                    name += ch;
+                }
 
-        if (!inStream->good())
-        {
-            out("Error in reading particle data from file!");
-            exit(111);
+                inStream->read((char*)&energy, sizeof(double));
+                inStream->read((char*)&pos[0], sizeof(double));
+                inStream->read((char*)&pos[1], sizeof(double));
+                inStream->read((char*)&pos[2], sizeof(double));
+                inStream->read((char*)&dir[0], sizeof(double));
+                inStream->read((char*)&dir[1], sizeof(double));
+                inStream->read((char*)&dir[2], sizeof(double));
+                inStream->read((char*)&time,   sizeof(double));
+
+                if (inStream->eof())
+                {
+                    out("---End of file reached!");
+                    return;
+                }
+
+                if (!inStream->good())
+                {
+                    out("Error in reading particle data from file!");
+                    exit(111);
+                }
+
+                addPrimary(anEvent);
+            }
         }
     }
     else
     {
-        std::string line;
-        std::getline(*inStream, line);
-        //std::cout << line << std::endl;
-
-        if (inStream->eof())
+        for (std::string line; std::getline(*inStream, line); )
         {
-            out("---End of file reached!");
-            return;
-        }
+            std::cout << "line=>" << line << "<=" << std::endl;
+            if (line.size() < 1) continue; //allow empty lines
 
-        std::stringstream ss(line);  // units in file are mm MeV and ns
-        ss >> name
-                >> energy
-                >> pos[0] >> pos[1] >> pos[2]
-                >> dir[0] >> dir[1] >> dir[2]
-                >> time;
-        if (ss.fail())
-        {
-            out("Unexpected format of a line in the file with the input particles");
-            exit(211);
+            if (line[0] == '#') break; //event finished
+
+            if (inStream->eof())
+            {
+                out("---End of file reached!");
+                return;
+            }
+
+            std::stringstream ss(line);  // units in file are mm MeV and ns
+            ss >> name
+               >> energy
+               >> pos[0] >> pos[1] >> pos[2]
+               >> dir[0] >> dir[1] >> dir[2]
+               >> time;
+            if (ss.fail())
+            {
+                out("Unexpected format of a line in the file with the input particles");
+                exit(2111);
+            }
+
+            addPrimary(anEvent);
         }
     }
+}
 
+void FromFileSource::addPrimary(G4Event * anEvent)
+{
     pd = makeGeant4Particle(name);
 
-    out("->", pd->GetParticleName(), energy, pos, dir, time);
+    //out("->", pd->GetParticleName(), energy, pos, dir, time);
 
     ParticleGun->SetParticleDefinition(pd);
     ParticleGun->SetParticleEnergy(energy*MeV);
@@ -126,19 +185,47 @@ int FromFileSource::CountEvents()
 {
     if (!inStream) return 0;
 
+    inStream->clear();
+    inStream->seekg(0);
+
     int iCounter = 0;
     if (bBinary)
     {
         char ch;
+        int iEv;
         double buf[8]; //en + pos + dir + time
-        while (inStream->good())
+        while (inStream->get(ch))
         {
-            while (*inStream >> ch)
+            if (inStream->eof()) break;
+
+            if (ch == (char)0xEE)
             {
-                if (ch == 0x00) break;
+                inStream->read((char*)&iEv, sizeof(int));
+                iCounter++;
+                continue;
             }
-            inStream->read((char*)buf, 8 * sizeof(double));
-            if (inStream->good()) iCounter++;
+            else if (ch == (char)0xFF)
+            {
+                while (inStream->get(ch))
+                {
+                    if (ch == (char)0x00) break;
+                }
+
+                inStream->read((char*)buf, 8 * sizeof(double));
+
+                if (inStream->eof()) break;
+
+                if (!inStream->good())
+                {
+                    out("Format error in binary particle data file!");
+                    exit(111);
+                }
+            }
+            else
+            {
+                out("Data header char error in binary particle data file!");
+                exit(111);
+            }
         }
     }
     else
@@ -146,14 +233,13 @@ int FromFileSource::CountEvents()
         for( std::string line; std::getline( *inStream, line ); )
         {
             if (inStream->fail()) break;
-            iCounter++;
+            if (line.length() > 0 && line[0] == '#') iCounter++;
         }
     }
 
-    inStream->clear();
-    inStream->seekg(0);
+    prepareStream();
 
-    out("Found particles (events):", iCounter);
+    out("Found events:", iCounter);
     return iCounter;
 }
 
