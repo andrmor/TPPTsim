@@ -51,7 +51,7 @@ protected:
     double TimeFrom  = 0;
     double DecayTime = 0;
 
-    Hist1D    * Hist      = nullptr;
+    Hist1D * Hist = nullptr;
 };
 
 #endif // TimeGenerator_h

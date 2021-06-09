@@ -38,7 +38,8 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
+    SM.DetectorComposition = {DetComp::Scintillators};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
