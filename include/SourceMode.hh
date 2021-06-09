@@ -11,6 +11,7 @@ class G4ParticleGun;
 class G4Event;
 class G4Material;
 class G4Navigator;
+class Hist1D;
 class Hist1DSampler;
 
 class SourceModeBase
@@ -84,7 +85,7 @@ protected:
     G4Navigator   * Navigator = nullptr;
     std::ofstream * Stream = nullptr;
 
-    virtual void customPostInit();
+    void customPostInit() override;
 };
 
 // ---
@@ -105,7 +106,22 @@ protected:
     G4Navigator   * Navigator = nullptr;
     Hist1DSampler * Sampler   = nullptr;
 
-    virtual void customPostInit();
+    void customPostInit() override;
+};
+
+// ---
+
+class BlurredPointSource : public PointSource
+{
+public:
+    BlurredPointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, G4String fileName);
+    ~BlurredPointSource();
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    Hist1DSampler * Sampler   = nullptr;
+    G4ThreeVector Origin;
 };
 
 // --
