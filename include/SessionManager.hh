@@ -78,13 +78,14 @@ class SessionManager
         bool bG4Verbose       = false;
         bool bDebug           = false;
         bool bShowEventNumber = false;
+        int  EvNumberInterval = 1000;
 
         std::vector<ScintRecord> ScintRecords;
 
         G4ParticleDefinition * GammaPD = nullptr;
 
      // Misc
-        double activityLYSO = 281.0; // decay per second per cm3
+        double activityLYSO = 281.0; // decays per second per cm3
 
      // Geometry
         int    NumScintX  = 8;

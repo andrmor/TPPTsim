@@ -9,6 +9,6 @@ void EventAction::BeginOfEventAction(const G4Event * event)
     if (SM.bShowEventNumber)
     {
         int id = event->GetEventID();
-        if (id % 10000 == 0) out("--- event #", id, "---");
+        if (id % SM.EvNumberInterval == 0) out("--- event #", id, "---");
     }
 }
