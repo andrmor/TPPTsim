@@ -1,5 +1,6 @@
 #include "DetectorConstruction.hh"
 #include "SensitiveDetectorScint.hh"
+#include "SensitiveDetectorFSM.hh"
 #include "SessionManager.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
@@ -73,58 +74,83 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
     if (phantom) SM.createPhantomRegion(phantom);
 
-    if ( SM.detectorContains(DetComp::Scintillators) )
-    {
-        solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
-        logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
-        logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
-
-        SM.createScintillatorRegion(logicScint);
-
-        /*  positive Z is facing the phantom:
-        G4Box * b   = new G4Box("b", 1.0*mm, 1.0*mm, 1.0*mm);
-        G4LogicalVolume * lb  = new G4LogicalVolume(b, matVacuum, "bb");
-        new G4PVPlacement(nullptr, {0, 0, 5}, lb, "ss", logicScint, false, 0);
-        */
-
-        solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
-
-        SM.ScintPositions.clear();
-
-        int iAssembly = 0;
-        int iScint    = 0;
-        for (int iA = 0; iA < SM.NumSegments; iA++)
-        {
-            double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ);
-            double Angle  = SM.AngularStep * iA + SM.Angle0;
-            double X = Radius * sin(Angle);
-            double Y = Radius * cos(Angle);
-            G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
-            G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
-
-            for (int iZ = 0; iZ < SM.NumRows; iZ++)
-            {
-                double RowPitch = SM.EncapsSizeY + SM.RowGap;
-                double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
-
-                positionAssembly(rot,  G4ThreeVector( X,  Y, Z), iScint, iAssembly++);
-                positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), iScint, iAssembly++);
-            }
-        }
-
-        // Sensitive Detector
-        G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
-        if (pSD_Scint)
-        {
-            G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
-            logicScint->SetSensitiveDetector(pSD_Scint);
-        }
-    }
+    if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
+    if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM(matVacuum);
 
     return SM.physWorld;
 }
 
-G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos)
+void DetectorConstruction::addFSM(G4Material * material)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double OuterRadius = 0.5 * SM.InnerDiam - 2.0*mm;
+    double InnerRadius = OuterRadius - 1.0*mm;
+    double Height      = 5.0 * SM.EncapsSizeX; // Margarida, please calculate the minimum size
+
+    G4VSolid          * solidFSM = new G4Tubs("FSM_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
+    G4LogicalVolume   * logicFSM = new G4LogicalVolume(solidFSM, material, "FSM");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicFSM, "FSM_PV", logicWorld, false, 0);
+    logicFSM->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+
+    G4VSensitiveDetector * pSD_FSM = new SensitiveDetectorFSM("SD_FSM");
+    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_FSM);
+    logicFSM->SetSensitiveDetector(pSD_FSM);
+}
+
+void DetectorConstruction::addScintillators()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
+    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
+    logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
+
+    SM.createScintillatorRegion(logicScint);
+
+    /*  just to check that positive Z is towards the phantom:
+    G4Box * b   = new G4Box("b", 1.0*mm, 1.0*mm, 1.0*mm);
+    G4LogicalVolume * lb  = new G4LogicalVolume(b, matVacuum, "bb");
+    new G4PVPlacement(nullptr, {0, 0, 5}, lb, "ss", logicScint, false, 0);
+    */
+
+    solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
+
+    SM.ScintRecords.clear();
+
+    int iAssembly = 0;
+    int iScint    = 0;
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ);
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        {
+            double RowPitch = SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle, iScint, iAssembly++);
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle, iScint, iAssembly++);
+        }
+    }
+
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
+        logicScint->SetSensitiveDetector(pSD_Scint);
+    }
+
+    SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
+}
+
+G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -139,27 +165,24 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             G4ThreeVector ScintPos(X, Y, 0);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
-            //saving scintillator center positions
-            G4ThreeVector glob = (*AssemblyRot).inverse()(ScintPos);
-            glob[0] += AssemblyPos[0];
-            glob[1] += AssemblyPos[1];
-            glob[2] += AssemblyPos[2];
-            SM.ScintCenterPositions.push_back(glob);
+            ScintRecord rec;
 
-            //saving center of the face towards the phantom
+            rec.CenterPos = (*AssemblyRot).inverse()(ScintPos);
+            for (int i=0; i<3; i++) rec.CenterPos[i] += AssemblyPos[i];
+
             ScintPos[2] += 0.5 * SM.ScintSizeZ;
-            glob = (*AssemblyRot).inverse()(ScintPos);
-            glob[0] += AssemblyPos[0];
-            glob[1] += AssemblyPos[1];
-            glob[2] += AssemblyPos[2];
-            SM.ScintPositions.push_back(glob);
+            rec.FacePos   = (*AssemblyRot).inverse()(ScintPos);
+            for (int i=0; i<3; i++) rec.FacePos[i]   += AssemblyPos[i];
+
+            rec.Angle = Angle;
+
+            SM.ScintRecords.push_back(rec);
         }
 
     return logicEncaps;
 }
 
-void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, int & iScint, int iAssembly)
+void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly)
 {
-    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
+    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
 }
-

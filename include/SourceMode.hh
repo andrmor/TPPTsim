@@ -24,6 +24,8 @@ public:
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
+    virtual int CountEvents() {return -1;}
+
 protected:
     ParticleBase      * Particle      = nullptr;
     TimeGeneratorBase * TimeGenerator = nullptr;
@@ -121,5 +123,7 @@ protected:
     Hist1DSampler * Sampler   = nullptr;
     G4ThreeVector Origin;
 };
+
+// --
 
 #endif // SourceMode_h

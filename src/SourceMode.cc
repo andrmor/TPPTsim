@@ -20,13 +20,16 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
 
     //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
 
-    bIsotropicDirection = !particle->bSkipDirection; // can be overwriten by the concrete source type!
+    if (Particle)
+    {
+        bIsotropicDirection = !Particle->bSkipDirection; // can be overwriten by the concrete source type!
 
-    GammaPair * pair = dynamic_cast<GammaPair*>(particle);
-    bGeneratePair = pair;
-    //if (pair) bAcollinearity = pair->bAcollineraity;
+        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
+        bGeneratePair = pair;
+        //if (pair) bAcollinearity = pair->bAcollineraity;
 
-    ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+    }
 }
 
 SourceModeBase::~SourceModeBase()
@@ -38,7 +41,7 @@ SourceModeBase::~SourceModeBase()
 
 void SourceModeBase::initialize()
 {
-    ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+    if (Particle) ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
     customPostInit();
 }
 
@@ -217,7 +220,7 @@ NaturalLysoSource::~NaturalLysoSource()
 void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
 {
     SessionManager & SM = SessionManager::getInstance();
-    const int numScint = SM.ScintCenterPositions.size();
+    const int numScint = SM.ScintRecords.size();
     if (numScint == 0) return;
 
     const int iScint = G4UniformRand() * numScint; // check: flat() excludes 1 or not
@@ -228,7 +231,7 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     do
     {
         for (int i = 0; i < 3; i++)
-            pos[i] = SM.ScintCenterPositions[iScint][i] + ScintMaxRadius * ( -1.0 + 2.0 * G4UniformRand() );
+            pos[i] = SM.ScintRecords[iScint].CenterPos[i] + ScintMaxRadius * ( -1.0 + 2.0 * G4UniformRand() );
 
         G4VPhysicalVolume * vol = Navigator->LocateGlobalPointAndSetup(pos);
         iCopy = vol->GetCopyNo();
@@ -301,3 +304,4 @@ void BlurredPointSource::GeneratePrimaries(G4Event *anEvent)
     ParticleGun->SetParticlePosition(vec);
     SourceModeBase::GeneratePrimaries(anEvent);
 }
+

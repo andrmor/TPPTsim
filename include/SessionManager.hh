@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Modes.hh"
+#include "ScintRecord.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 
@@ -57,6 +58,8 @@ class SessionManager
 
         bool detectorContains(DetComp component) const;
 
+        void saveScintillatorTable(const std::string & fileName);
+
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
@@ -76,8 +79,8 @@ class SessionManager
         bool bDebug           = false;
         bool bShowEventNumber = false;
 
-        std::vector<G4ThreeVector> ScintPositions;       //Scintillator front face positions, calculated during DetectorConstruction
-        std::vector<G4ThreeVector> ScintCenterPositions; //Scintillator center positions, calculated during DetectorConstruction
+        std::vector<ScintRecord> ScintRecords;
+
         G4ParticleDefinition * GammaPD = nullptr;
 
      // Misc

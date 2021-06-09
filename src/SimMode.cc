@@ -6,7 +6,12 @@
 #include "Hist1D.hh"
 #include "out.hh"
 
+#include "G4String.hh"
 #include "G4RunManager.hh"
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 SimModeGui::SimModeGui()
 {
@@ -47,7 +52,7 @@ void SimModeScintPosTest::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
-    SM.runManager->BeamOn(1);
+    SM.runManager->BeamOn(10000);
 
     outFlush();
     if (Hits > 1) SumDelta /= Hits;
@@ -98,7 +103,7 @@ void SimModeSingleEvents::run()
                 const int iScint = hits[i];
                 const double Time   = ScintData[iScint][0] / ns;
                 const double Energy = ScintData[iScint][1] / MeV;
-                const G4ThreeVector & Pos   = SM.ScintPositions.at(iScint);
+                const G4ThreeVector & Pos   = SM.ScintRecords.at(iScint).FacePos;
                 const double X = Pos[0] / mm;
                 const double Y = Pos[1] / mm;
                 const double Z = Pos[2] / mm;
@@ -184,11 +189,14 @@ void SimModeMultipleEvents::saveData()
             {
                 *SM.outStream << char(0xee);
                 SM.outStream->write((char*)&iScint, sizeof(int));
-                SM.outStream->write((char*)&SM.ScintPositions[iScint][0], sizeof(double));
-                SM.outStream->write((char*)&SM.ScintPositions[iScint][1], sizeof(double));
-                SM.outStream->write((char*)&SM.ScintPositions[iScint][2], sizeof(double));
+                if (bSaveScintPos)
+                {
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[0], sizeof(double));
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[1], sizeof(double));
+                    SM.outStream->write((char*)&SM.ScintRecords[iScint].FacePos[2], sizeof(double));
+                }
 
-                for (int iNodes = 0; iNodes < nodes.size(); iNodes++)
+                for (size_t iNodes = 0; iNodes < nodes.size(); iNodes++)
                 {
                     *SM.outStream << char(0xff);
                     SM.outStream->write((char*)&DepositionData[iScint][iNodes].time,   sizeof(double));
@@ -201,12 +209,14 @@ void SimModeMultipleEvents::saveData()
     {
         for (int iScint = 0; iScint < numScint; iScint++)
         {
-            const G4ThreeVector & sp = SM.ScintPositions[iScint];
+            const G4ThreeVector & sp = SM.ScintRecords[iScint].FacePos;
             auto & nodes = DepositionData[iScint];
 
             if (!nodes.empty())
             {
-                *SM.outStream << "# " << iScint << " " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+                *SM.outStream << "# " << iScint;
+                if (bSaveScintPos) *SM.outStream << " " << sp[0] << " " << sp[1] << " " << sp[2];
+                *SM.outStream << std::endl;
 
                 for (const DepositionNodeRecord & n : nodes)
                     *SM.outStream << n.time << " " << n.energy << std::endl;
@@ -429,4 +439,48 @@ G4UserSteppingAction * SimModeNatRadTest::getSteppingAction()
 void SimModeNatRadTest::addEnergy(int iScint, double energy)
 {
     Deposition[iScint] += energy;
+}
+
+// ---
+
+SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary) :
+    NumEvents(numEvents)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    bNeedOutput         = true;
+    SM.FileName         = fileName;
+    SM.bBinOutput       = bBinary;
+}
+
+void SimModeFirstStage::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+}
+
+void SimModeFirstStage::saveParticle(const G4String & particle, double energy, double * PosDir, double time)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    if (SM.bBinOutput)
+    {
+        //SM.outStream << char(0xff);
+        *SM.outStream << particle << char(0x00);
+        SM.outStream->write((char*)&energy,  sizeof(double));
+        SM.outStream->write((char*)PosDir, 6*sizeof(double));
+        SM.outStream->write((char*)&time,    sizeof(double));
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << particle << ' ';
+        ss << energy << ' ';
+        ss << PosDir[0] << ' ' << PosDir[1] << ' ' << PosDir[2] << ' ';     //position
+        ss << PosDir[3] << ' ' << PosDir[4] << ' ' << PosDir[5] << ' ';     //direction
+        ss << time;
+
+        *SM.outStream << ss.rdbuf() << std::endl;
+    }
+
+    //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
 }

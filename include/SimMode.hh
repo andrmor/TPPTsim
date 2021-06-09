@@ -97,10 +97,12 @@ public:
 
     void saveData(); //might be called multiple times!
 
-    int    NumEvents        = 1;
+    int    NumEvents      = 1;
     bool   bDoCluster     = true; // only considers consequtive nodes!
     double MaxTimeDif     = 0.2;
     size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
+    bool   bSaveScintPos  = false;
+
     std::vector< std::vector<DepositionNodeRecord> > DepositionData;
 };
 
@@ -190,5 +192,21 @@ protected:
     Hist1D    * Hist      = nullptr;
     std::vector<double> Deposition;
 };
+
+// ---
+
+class SimModeFirstStage : public SimModeBase
+{
+public:
+    SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary);
+
+    void run() override;
+
+    void saveParticle(const G4String & particle, double energy, double *PosDir, double time);
+
+protected:
+    int         NumEvents = 1;
+};
+
 
 #endif // SimulationMode_h
