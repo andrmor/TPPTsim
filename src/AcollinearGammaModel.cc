@@ -7,9 +7,8 @@
 
 G4bool AcollinearGammaModel::IsApplicable(const G4ParticleDefinition & particle)
 {
-    // in principle, not needed since it is now activated only for gammas
-    bool applicable = (&particle == G4Gamma::GammaDefinition());
-    //out("isApplicable called", particle.GetParticleName(), applicable);
+    const bool applicable = (&particle == G4Gamma::GammaDefinition());
+    out("Acollin isApplicable called", particle.GetParticleName(), applicable);
     return applicable;
 }
 

@@ -22,7 +22,6 @@
 #include "G4ios.hh"
 #include "G4SDManager.hh"
 #include "G4LogicalVolumeStore.hh"
-#include "AcollinearGammaModel.hh"
 #include "G4Gamma.hh"
 #include "G4RegionStore.hh"
 #include "G4AutoDelete.hh"
@@ -68,16 +67,9 @@ void SessionManager::startSession(int argc, char ** argv)
 
     G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    physicsList->SetDefaultCutValue(0.1*mm);  // see createPhntomRegion and createScintRegion for specific cuts!
-    if (bSimAcollinearity)
-    {
-        G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
-        // see registerAcollinearGammaModel()
-        //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
-        fsm->ActivateFastSimulation("gamma");
-        physicsList->RegisterPhysics(fsm);
-    }
+    physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
+    if (bSimAcollinearity || bKillNeutrinos) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
@@ -129,9 +121,28 @@ void SessionManager::scanMaterials()
     out("<--Material scan completed");
 }
 
+void SessionManager::createFastSimulationPhysics(G4VModularPhysicsList * physicsList)
+{
+    G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
+    //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
+    // see registerAcollinearGammaModel() and registerParticleKillerModel()
+
+    if (bSimAcollinearity) fsm->ActivateFastSimulation("gamma");
+    if (bKillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
+    physicsList->RegisterPhysics(fsm);
+}
+
+#include "AcollinearGammaModel.hh"
 void SessionManager::registerAcollinearGammaModel(G4Region * region)
 {
     AcollinearGammaModel * mod = new AcollinearGammaModel("AcollinearGammas", region);
+    G4AutoDelete::Register(mod);
+}
+
+#include "ParticleKiller.hh"
+void SessionManager::registerParticleKillerModel(G4Region *region)
+{
+    ParticleKillerModel * mod = new ParticleKillerModel("ParticleKiller", region);
     G4AutoDelete::Register(mod);
 }
 
@@ -141,6 +152,7 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     regPhantom->AddRootLogicalVolume(logVolPhantom);
 
     if (bSimAcollinearity) registerAcollinearGammaModel(regPhantom);
+    if (bKillNeutrinos)    registerParticleKillerModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(0.5*mm, G4ProductionCuts::GetIndex("gamma"));

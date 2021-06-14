@@ -23,6 +23,7 @@ class G4VPhysicalVolume;
 class G4ParticleGun;
 class G4ParticleDefinition;
 class G4Region;
+class G4VModularPhysicsList;
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
@@ -48,7 +49,9 @@ class SessionManager
         void initializeSource();
         void configureVerbosity();
         void scanMaterials();
+        void createFastSimulationPhysics(G4VModularPhysicsList * physicsList);
         void registerAcollinearGammaModel(G4Region * region);
+        void registerParticleKillerModel(G4Region * region);
         void createPhantomRegion(G4LogicalVolume * logVolPhantom);
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
 
@@ -66,6 +69,7 @@ class SessionManager
         PhantomModeBase  * PhantomMode   = nullptr;
 
         bool bSimAcollinearity = false;
+        bool bKillNeutrinos    = false;
 
         std::vector<DetComp> DetectorComposition;
 
