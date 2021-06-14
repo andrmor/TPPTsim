@@ -8,7 +8,7 @@
 G4bool AcollinearGammaModel::IsApplicable(const G4ParticleDefinition & particle)
 {
     const bool applicable = (&particle == G4Gamma::GammaDefinition());
-    out("Acollin isApplicable called", particle.GetParticleName(), applicable);
+    //out("Acollin isApplicable called", particle.GetParticleName(), applicable);
     return applicable;
 }
 
