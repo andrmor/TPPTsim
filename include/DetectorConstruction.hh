@@ -15,10 +15,10 @@ public:
     G4VPhysicalVolume * Construct();
 
 private:
-    G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle);
+    G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber);
     void addFSM(G4Material *material);
     void addScintillators();
-    void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly);
+    void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
 
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;

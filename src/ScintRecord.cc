@@ -9,7 +9,7 @@ void ScintRecord::write(std::ofstream & stream)
     Norm = Norm.unit();
 
     stream << FacePos[0] << " " << FacePos[1] << " " << FacePos[2] << " "
-           << Angle << " "
-           << Norm[0] << " " << Norm[1] << " " << Norm[2]
-           << std::endl;
+           << Norm[0] << " " << Norm[1] << " " << Norm[2] << " "
+           << HeadNumber << " "
+           << Angle << std::endl;
 }

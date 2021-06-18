@@ -138,8 +138,8 @@ void DetectorConstruction::addScintillators()
             double RowPitch = SM.EncapsSizeY + SM.RowGap;
             double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,             iScint, iAssembly++);
-            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + 0.5*M_PI , iScint, iAssembly++);
+            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,             iScint, iAssembly++, 0);
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + 0.5*M_PI , iScint, iAssembly++, 1);
         }
     }
 
@@ -154,7 +154,7 @@ void DetectorConstruction::addScintillators()
     SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
 }
 
-G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle)
+G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -179,6 +179,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
             for (int i=0; i<3; i++) rec.FacePos[i]   += AssemblyPos[i];
 
             rec.Angle = Angle;
+            rec.HeadNumber = headNumber;
 
             SM.ScintRecords.push_back(rec);
         }
@@ -186,7 +187,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
     return logicEncaps;
 }
 
-void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly)
+void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber)
 {
-    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
+    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle, headNumber), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
 }
