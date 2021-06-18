@@ -173,7 +173,7 @@ void FromFileSource::addPrimary(G4Event * anEvent)
     //out("->", pd->GetParticleName(), energy, pos, dir, time);
 
     ParticleGun->SetParticleDefinition(pd);
-    ParticleGun->SetParticleEnergy(energy*MeV);
+    ParticleGun->SetParticleEnergy(energy*keV);
     ParticleGun->SetParticleTime(time*ns);
     ParticleGun->SetParticlePosition(pos);
     ParticleGun->SetParticleMomentumDirection(dir);

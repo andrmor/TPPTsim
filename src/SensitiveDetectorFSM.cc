@@ -30,7 +30,7 @@ G4bool SensitiveDetectorFSM::ProcessHits(G4Step * step, G4TouchableHistory *)
     if (mode)
     {
         mode->saveParticle(step->GetTrack()->GetParticleDefinition()->GetParticleName(),
-                           postP->GetKineticEnergy()/MeV,
+                           postP->GetKineticEnergy()/keV,
                            buf,
                            postP->GetGlobalTime()/ns);
     }

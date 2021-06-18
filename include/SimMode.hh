@@ -203,7 +203,7 @@ public:
 
     void run() override;
 
-    void saveParticle(const G4String & particle, double energy, double *PosDir, double time);
+    void saveParticle(const G4String & particle, double energy_keV, double *PosDir, double time);
 
     void onEventStarted() override;
 

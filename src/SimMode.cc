@@ -451,7 +451,7 @@ void SimModeFirstStage::run()
     SM.runManager->BeamOn(NumEvents);
 }
 
-void SimModeFirstStage::saveParticle(const G4String & particle, double energy, double * PosDir, double time)
+void SimModeFirstStage::saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -459,7 +459,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy, d
     {
         *SM.outStream << char(0xFF);
         *SM.outStream << particle << char(0x00);
-        SM.outStream->write((char*)&energy,  sizeof(double));
+        SM.outStream->write((char*)&energy_keV,  sizeof(double));
         SM.outStream->write((char*)PosDir, 6*sizeof(double));
         SM.outStream->write((char*)&time,    sizeof(double));
     }
@@ -467,7 +467,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy, d
     {
         std::stringstream ss;
         ss << particle << ' ';
-        ss << energy << ' ';
+        ss << energy_keV << ' ';
         ss << PosDir[0] << ' ' << PosDir[1] << ' ' << PosDir[2] << ' ';     //position
         ss << PosDir[3] << ' ' << PosDir[4] << ' ' << PosDir[5] << ' ';     //direction
         ss << time;
