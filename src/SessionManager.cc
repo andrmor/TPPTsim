@@ -155,8 +155,9 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     if (bKillNeutrinos)    registerParticleKillerModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
-    cuts->SetProductionCut(0.5*mm, G4ProductionCuts::GetIndex("gamma"));
-    cuts->SetProductionCut(1.0*mm, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
+    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("e-"));
     regPhantom->SetProductionCuts(cuts);
 }
 
@@ -168,6 +169,7 @@ void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("gamma"));
     cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
     regScint->SetProductionCuts(cuts);
 }
 
