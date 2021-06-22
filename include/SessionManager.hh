@@ -63,6 +63,8 @@ class SessionManager
 
         void saveScintillatorTable(const std::string & fileName);
 
+        int isDirExists(const std::string & dirName);
+
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;

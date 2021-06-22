@@ -46,20 +46,25 @@ void SessionManager::startSession(int argc, char ** argv)
 {
     out("\n\n---------");
 
+    if (!isDirExists(WorkingDirectory))
+    {
+        out("Provided working directory does not exist:\n", WorkingDirectory);
+        exit(1);
+    }
     if (!SourceMode)
     {
         out("Source mode not provided!");
-        exit(1);
+        exit(2);
     }
     if (!SimMode)
     {
         out("Simulation mode not provided!");
-        exit(2);
+        exit(3);
     }
     if (!PhantomMode)
     {
         out("Phantom mode not provided!");
-        exit(3);
+        exit(4);
     }
 
     DetectorConstruction * theDetector = new DetectorConstruction();
@@ -277,4 +282,16 @@ void SessionManager::endSession()
     delete visManager;
     delete runManager;
     delete ui;
+}
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+int SessionManager::isDirExists(const std::string & dirName)
+{
+    struct stat info;
+
+    if (stat(dirName.data(), &info) != 0) return false;
+    else if (info.st_mode & S_IFDIR)      return true;
+    else                                  return false;
 }
