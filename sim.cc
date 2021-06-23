@@ -23,8 +23,9 @@ int main(int argc, char** argv)
     double timeFrom = 0;
     double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-    SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+    //SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
+    SM.WorkingDirectory = "/home/hugos/g4/TPPTsim_dcm";
 
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
