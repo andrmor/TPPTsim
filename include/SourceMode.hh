@@ -54,6 +54,20 @@ public:
 
 // ---
 
+class LineSource : public SourceModeBase
+{
+public:
+    LineSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint);
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    G4ThreeVector StartPoint;
+    G4ThreeVector EndPoint;
+};
+
+// ---
+
 class PencilBeam : public SourceModeBase
 {
 public:

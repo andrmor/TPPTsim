@@ -300,8 +300,23 @@ void BlurredPointSource::GeneratePrimaries(G4Event *anEvent)
     {
         vec[i] = Sampler->getRandom() + Origin[i];
     }
-    out(vec);
+    //out(vec);
     ParticleGun->SetParticlePosition(vec);
     SourceModeBase::GeneratePrimaries(anEvent);
 }
 
+// ---
+
+LineSource::LineSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &startPoint, const G4ThreeVector &endPoint) :
+    SourceModeBase(particle, timeGenerator), StartPoint(startPoint), EndPoint(endPoint) {}
+
+void LineSource::GeneratePrimaries(G4Event *anEvent)
+{
+    double rand = G4UniformRand();
+    G4ThreeVector pos;
+    for (int i=0; i<3; i++)
+        pos[i] = StartPoint[i] + (EndPoint[i] - StartPoint[i]) * rand;
+    //out(pos);
+    ParticleGun->SetParticlePosition(pos);
+    SourceModeBase::GeneratePrimaries(anEvent);
+}
