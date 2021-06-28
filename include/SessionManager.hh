@@ -91,7 +91,7 @@ class SessionManager
      // Misc
         double activityLYSO = 281.0; // decays per second per cm3
 
-     // Geometry
+     // Geometry - Scintillators + Encapsulation
         int    NumScintX  = 8;
         int    NumScintY  = 8;
 
@@ -117,7 +117,13 @@ class SessionManager
 
         double InnerDiam   = 335.4 * mm;
 
-        double GlobalZ0    = 58.85 * mm;
+        double GlobalZ0    = 55.675 * mm; // (BaseHeight + SystHeight) / 2
+
+     // Geometry - Base
+        double RMin        = 16.3 * cm;
+        double RMax        = 25.0 * cm;
+        double SystHeight  = EncapsSizeX * 4 + RowGap * 3;
+        double BaseHeight  = 6.35 * mm;
 
      // Internal resources
         std::ofstream       * outStream  = nullptr;

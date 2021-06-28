@@ -23,8 +23,8 @@ int main(int argc, char** argv)
     double timeFrom = 0;
     double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-    SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
-    //SM.WorkingDirectory = "/data/margarida/Data";
+    //SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+    SM.WorkingDirectory = "/data/margarida/Data";
 
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
@@ -39,9 +39,13 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    SM.DetectorComposition = {DetComp::Scintillators};
+    //SM.DetectorComposition = {DetComp::Scintillators};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::PCB};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base, DetComp::SIPM, DetComp::PCB};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});

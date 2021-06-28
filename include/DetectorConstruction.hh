@@ -19,6 +19,9 @@ private:
     void addFSM(G4Material *material);
     void addScintillators();
     void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
+    void addBase();
+    void addSIPM();
+    void addPCB();
 
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;

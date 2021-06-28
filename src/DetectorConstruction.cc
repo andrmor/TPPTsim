@@ -80,6 +80,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
     if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM(matVacuum);
+    if (SM.detectorContains(DetComp::Base))              addBase();
+    if (SM.detectorContains(DetComp::SIPM))              addSIPM();
+    if (SM.detectorContains(DetComp::PCB))               addPCB();
 
     return SM.physWorld;
 }
@@ -191,3 +194,166 @@ void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVecto
 {
     new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle, headNumber), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
 }
+
+void DetectorConstruction::addBase()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    //Material Aluminum
+    G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
+
+    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, 54, 360.0 / 3.0 * deg);
+    G4LogicalVolume * logicBase   = new G4LogicalVolume(solidBase, matAluminum, "Base");
+
+    G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg, 0, 0);
+    G4RotationMatrix * rot1 = new CLHEP::HepRotation(-90.0*deg, 0, 0);
+
+    new G4PVPlacement(rot, {0, 0, 0}, logicBase, "Base_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot1, {0, 0, 0}, logicBase, "Base_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot, {0, 0, SM.BaseHeight + SM.SystHeight}, logicBase, "Base_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot1, {0, 0, SM.BaseHeight + SM.SystHeight}, logicBase, "Base_PV", logicWorld, false, 0);
+}
+
+void DetectorConstruction::addSIPM()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    //Material Silicon
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("Si"); natoms.push_back(1);
+    elements.push_back("O") ; natoms.push_back(2);
+    G4Material * matSilicon = man->ConstructNewMaterial("Silicon", elements, natoms, 2.329*g/cm3);
+
+    G4Box * solidSIPM   = new G4Box("SIPM", 0.5 * 25.8*mm, 0.5 * 25.8*mm, 1*mm);
+    G4LogicalVolume * logicSIPM   = new G4LogicalVolume(solidSIPM, matSilicon, "SIPM");
+    logicSIPM ->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 1*mm);
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        {
+            double RowPitch = SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X,  Y, Z), logicSIPM, "SIPM", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, Z), logicSIPM, "SIPM", logicWorld, false, 0);
+        }
+    }
+}
+
+void DetectorConstruction::addPCB()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    //Material PBC (Epoxy + Fiber Glass)
+    /*std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+
+    elements.push_back("C"); natoms.push_back(21);
+    elements.push_back("H") ; natoms.push_back(25);
+    elements.push_back("Cl") ; natoms.push_back(1);
+    elements.push_back("O") ; natoms.push_back(5);
+    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.4*g/cm3);
+
+    natoms.clear();
+    elements.clear();
+    elements.push_back("Si"); natoms.push_back(1);
+    elements.push_back("O") ; natoms.push_back(2);
+    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.329*g/cm3);*/
+
+    //Aluminum will be replaced by PCB
+    G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
+
+    G4Box * solidPCB1   = new G4Box("PCB1", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 3.175*mm);
+    G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matAluminum, "PCB1");
+    logicPCB1 ->SetVisAttributes(G4VisAttributes({1, 0, 0}));
+
+    G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 5*cm);
+    G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matAluminum, "PCB2");
+    logicPCB2 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+
+    G4Box * solidPCB3   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 2*mm);
+    G4LogicalVolume * logicPCB3   = new G4LogicalVolume(solidPCB3, matAluminum, "PCB3");
+    logicPCB3 ->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Radius1 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 3.175); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Radius2 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 5*cm);
+        double Radius3 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm + 2*mm);
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X1 = Radius1 * sin(Angle);
+        double Y1 = Radius1 * cos(Angle);
+        double X2 = Radius2 * sin(Angle);
+        double Y2 = Radius2 * cos(Angle);
+        double X3 = Radius3 * sin(Angle);
+        double Y3 = Radius3 * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < SM.NumRows / 2; iZ++) //Criar uma NumRows = 2 para os elementos de PCB
+        {
+            double RowPitch = 52.2*mm + SM.RowGap; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows / 2 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicPCB1, "PCB1", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicPCB1, "PCB1", logicWorld, false, 0);
+
+            new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+
+            new G4PVPlacement(rot, G4ThreeVector( X3,  Y3, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X3, -Y3, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+        }
+    }
+}
+
+   /* for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < SM.NumRows / 2; iZ++)
+        {
+            double RowPitch = 52.2*mm + SM.RowGap; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows / 2 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X,  Y, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+        }
+    }
+
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < SM.NumRows / 2; iZ++)
+        {
+            double RowPitch = 52.2*mm + SM.RowGap; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows / 2 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X,  Y, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+        }
+    }
+}*/
