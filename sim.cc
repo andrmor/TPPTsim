@@ -23,8 +23,8 @@ int main(int argc, char** argv)
     double timeFrom = 0;
     double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-    SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
-    //SM.WorkingDirectory = "/data/margarida/Data";
+    //SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+    SM.WorkingDirectory = "/data/margarida/Data";
 
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
@@ -39,8 +39,9 @@ int main(int argc, char** argv)
 
   // Detector
     //SM.DetectorComposition = {};
-    SM.DetectorComposition = {DetComp::Scintillators};
+    //SM.DetectorComposition = {DetComp::Scintillators};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::CoincidencesMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
 
   // Source
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
-    SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
     //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file

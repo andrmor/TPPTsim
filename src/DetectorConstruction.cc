@@ -78,8 +78,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
     if (phantom) SM.createPhantomRegion(phantom);
 
-    if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
-    if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM(matVacuum);
+    if (SM.detectorContains(DetComp::Scintillators))       addScintillators();
+    if (SM.detectorContains(DetComp::FirstStageMonitor))   addFSM(matVacuum);
+    if (SM.detectorContains(DetComp::CoincidencesMonitor)) addCoincMonitor(matVacuum);
 
     return SM.physWorld;
 }
@@ -100,6 +101,24 @@ void DetectorConstruction::addFSM(G4Material * material)
     G4VSensitiveDetector * pSD_FSM = new SensitiveDetectorFSM("SD_FSM");
     G4SDManager::GetSDMpointer()->AddNewDetector(pSD_FSM);
     logicFSM->SetSensitiveDetector(pSD_FSM);
+}
+
+void DetectorConstruction::addCoincMonitor(G4Material * material)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double OuterRadius = 0.5 * (SM.InnerDiam + 30) * mm;
+    double InnerRadius = 0.5 * SM.InnerDiam * mm;
+    double Height = 105 * mm;
+
+    G4VSolid          * solidCoincMonitor = new G4Tubs("CoincMonitor", InnerRadius, OuterRadius, 0.5 * Height, SM.Angle0, 360.0 / 3.0 * deg);
+    G4LogicalVolume   * logicCoincMonitor = new G4LogicalVolume(solidCoincMonitor, material, "CoincMonitor");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor_PV", logicWorld, false, 0);
+    logicCoincMonitor->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+
+    G4VSensitiveDetector * pSD_CoincMonitor = new SensitiveDetectorFSM("SD_CoincMonitor");
+    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_CoincMonitor);
+    logicCoincMonitor->SetSensitiveDetector(pSD_CoincMonitor);
 }
 
 void DetectorConstruction::addScintillators()
