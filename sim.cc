@@ -70,6 +70,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
     //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
+    SM.SimMode          = new SimModeCoincProbabilityTest();
 
 // --- END of user init ---
     SM.startSession(argc, argv);

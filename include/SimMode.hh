@@ -212,5 +212,22 @@ protected:
     int CurrentEvent = 0;
 };
 
+// ---
+
+class SimModeCoincProbabilityTest : public SimModeBase
+{
+public:
+    SimModeCoincProbabilityTest();
+    ~SimModeCoincProbabilityTest();
+
+    void run() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    int NumEvents = 10000;
+
+    int    Hits     = 0;
+};
+
 
 #endif // SimulationMode_h

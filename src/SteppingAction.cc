@@ -174,3 +174,26 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
     SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
     Mode->addEnergy(iScint, depo);
 }
+
+void SteppingAction_CoincidencesProbability::UserSteppingAction(const G4Step * step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SimModeCoincProbabilityTest * Mode = static_cast<SimModeCoincProbabilityTest*>(SM.SimMode);
+
+    G4Track * track = step->GetTrack() ;
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+
+    if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "Gamma" && postP->GetPhysicalVolume()->GetName() == "CoincMonitor1_PV" && postP->GetPhysicalVolume()->GetName() == "CoincMonitor2_PV")
+    {
+        Mode->Hits++;
+        track->SetTrackStatus(fStopAndKill);
+    }
+
+    int hits;
+    Mode->Hits = hits;
+
+    if(SM.bDebug)
+    {
+        out("Number of Hits: ", hits);
+    }
+}
