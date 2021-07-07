@@ -225,8 +225,6 @@ public:
     G4UserSteppingAction * getSteppingAction() override;
 
     int NumEvents = 10000;
-
-    int    Hits     = 0;
 };
 
 
