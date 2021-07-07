@@ -218,13 +218,15 @@ class SimModeCoincProbabilityTest : public SimModeBase
 {
 public:
     SimModeCoincProbabilityTest();
-    ~SimModeCoincProbabilityTest();
+    //~SimModeCoincProbabilityTest();
 
     void run() override;
 
     G4UserSteppingAction * getSteppingAction() override;
 
-    int NumEvents = 10000;
+    int NumRuns   = 10000;
+    int Hits      = 0;
+    int Coinc     = 0;
 };
 
 

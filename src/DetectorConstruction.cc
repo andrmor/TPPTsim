@@ -113,8 +113,8 @@ void DetectorConstruction::addCoincMonitor(G4Material * material)
 
     G4VSolid          * solidCoincMonitor = new G4Tubs("CoincMonitor", InnerRadius, OuterRadius, 0.5 * Height, SM.Angle0 - 4.5 * deg, 108 * deg);
     G4LogicalVolume   * logicCoincMonitor = new G4LogicalVolume(solidCoincMonitor, material, "CoincMonitor");
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor_PV", logicWorld, false, 0);
-    new G4PVPlacement(new CLHEP::HepRotation(-90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor1_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(-90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor2_PV", logicWorld, false, 0);
     logicCoincMonitor->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 
     G4VSensitiveDetector * pSD_CoincMonitor = new SensitiveDetectorFSM("SD_CoincMonitor");

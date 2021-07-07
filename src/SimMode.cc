@@ -491,3 +491,34 @@ void SimModeFirstStage::onEventStarted()
 
     CurrentEvent++;
 }
+
+// ---
+
+SimModeCoincProbabilityTest::SimModeCoincProbabilityTest():SimModeBase()
+{
+    bNeedGui    = false;
+}
+
+void SimModeCoincProbabilityTest::run()
+{
+    SessionManager& SM = SessionManager::getInstance();
+
+    for (int iRun = 0; iRun < NumRuns; iRun++)
+    {
+        SM.runManager->BeamOn(1);
+
+        if (Hits == 2)
+        {
+            Coinc++;
+        }
+
+        Hits = 0;
+    }
+
+    out("Total number of coincidences: ", Coinc);
+}
+
+G4UserSteppingAction *SimModeCoincProbabilityTest::getSteppingAction()
+{
+    return new SteppingAction_CoincidencesProbability();
+}

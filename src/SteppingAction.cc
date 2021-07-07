@@ -180,21 +180,11 @@ void SteppingAction_CoincidencesProbability::UserSteppingAction(const G4Step * s
     SessionManager & SM = SessionManager::getInstance();
     SimModeCoincProbabilityTest * Mode = static_cast<SimModeCoincProbabilityTest*>(SM.SimMode);
 
-    int hits = 0;
-    int coinc = 0;
-
     const G4StepPoint * postP  = step->GetPostStepPoint();
 
-    if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "Gamma" && postP->GetPhysicalVolume()->GetName() == "CoincMonitor_PV")
+    if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "Gamma" && postP->GetPhysicalVolume()->GetLogicalVolume()->GetName() == "CoincMonitor")
     {
-        hits++;
-
-        if (hits == 2)
-        {
-            coinc++;
-            step->GetTrack()->SetTrackStatus(fStopAndKill);
-        }
-
-        out("Total number of Coincidences: ", coinc);
+        Mode->Hits++;
+        step->GetTrack()->SetTrackStatus(fStopAndKill);
     }
 }
