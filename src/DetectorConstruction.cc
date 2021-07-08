@@ -116,10 +116,6 @@ void DetectorConstruction::addCoincMonitor(G4Material * material)
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor1_PV", logicWorld, false, 0);
     new G4PVPlacement(new CLHEP::HepRotation(-90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicCoincMonitor, "CoincMonitor2_PV", logicWorld, false, 0);
     logicCoincMonitor->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
-
-    G4VSensitiveDetector * pSD_CoincMonitor = new SensitiveDetectorFSM("SD_CoincMonitor");
-    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_CoincMonitor);
-    logicCoincMonitor->SetSensitiveDetector(pSD_CoincMonitor);
 }
 
 void DetectorConstruction::addScintillators()

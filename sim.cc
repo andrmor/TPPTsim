@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
     SM.bG4Verbose        = false;
     SM.bDebug            = false;
-    SM.bShowEventNumber  = true; SM.EvNumberInterval = 10000;
+    SM.bShowEventNumber  = false; SM.EvNumberInterval = 10000;
 
   // Phantom
     //SM.PhantomMode      = new PhantomNone;

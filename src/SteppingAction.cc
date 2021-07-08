@@ -181,8 +181,10 @@ void SteppingAction_CoincidencesProbability::UserSteppingAction(const G4Step * s
     SimModeCoincProbabilityTest * Mode = static_cast<SimModeCoincProbabilityTest*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
+    if (!postP) return;
+    if (!postP->GetPhysicalVolume()) return;
 
-    if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "Gamma" && postP->GetPhysicalVolume()->GetLogicalVolume()->GetName() == "CoincMonitor")
+    if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "gamma" && postP->GetPhysicalVolume()->GetLogicalVolume()->GetName() == "CoincMonitor")
     {
         Mode->Hits++;
         step->GetTrack()->SetTrackStatus(fStopAndKill);
