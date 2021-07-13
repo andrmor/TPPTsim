@@ -44,8 +44,8 @@ int main(int argc, char** argv)
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::PCB};
-    SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base, DetComp::SIPM, DetComp::PCB};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::PCB};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base, DetComp::SIPM, DetComp::PCB};
 
   // Source
     //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});

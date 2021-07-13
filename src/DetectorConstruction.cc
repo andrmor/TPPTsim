@@ -203,7 +203,7 @@ void DetectorConstruction::addBase()
     //Material Aluminum
     G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
 
-    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, 54, 360.0 / 3.0 * deg);
+    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, SM.Angle0 - 9.0 * deg, 117.0 * deg);
     G4LogicalVolume * logicBase   = new G4LogicalVolume(solidBase, matAluminum, "Base");
 
     G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg, 0, 0);
@@ -279,7 +279,7 @@ void DetectorConstruction::addPCB()
     G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matAluminum, "PCB1");
     logicPCB1 ->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
-    G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 5*cm);
+    G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 1*mm, 0.5 * 45*mm);
     G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matAluminum, "PCB2");
     logicPCB2 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
@@ -310,11 +310,17 @@ void DetectorConstruction::addPCB()
             new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicPCB1, "PCB1", logicWorld, false, 0);
             new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicPCB1, "PCB1", logicWorld, false, 0);
 
-            new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
-
             new G4PVPlacement(rot, G4ThreeVector( X3,  Y3, Z), logicPCB3, "PCB3", logicWorld, false, 0);
             new G4PVPlacement(rot1, G4ThreeVector(-X3, -Y3, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+        }
+
+        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        {
+            double RowPitch = 1*mm + 20.88 * mm; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
         }
     }
 }
