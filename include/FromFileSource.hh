@@ -20,21 +20,26 @@ public:
 
     int CountEvents() override;
 
-protected:
-    std::ifstream * inStream = nullptr;
-    bool bBinary = false;
-    std::map<std::string, int> ElementToZ;
+    std::string getTypeName() const override {return "FromFileSource";}
 
-    std::string name;
-    G4ParticleDefinition * pd;
-    double energy, time;
-    G4ThreeVector pos, dir;
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
 
     G4ParticleDefinition * makeGeant4Particle(const std::string & particleName);
     bool extractIonInfo(const std::string & text, int & Z, int & A, double & E);
 
     void prepareStream();
     void addPrimary(G4Event * anEvent);
+
+    std::string FileName;
+    bool bBinary = false;
+    std::ifstream * inStream = nullptr;
+    std::map<std::string, int> ElementToZ;
+
+    std::string name;
+    G4ParticleDefinition * pd;
+    double energy, time;
+    G4ThreeVector pos, dir;
 };
 
 #endif // fromfilesource_h

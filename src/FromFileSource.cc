@@ -13,7 +13,7 @@
 #include <fstream>
 
 FromFileSource::FromFileSource(const std::string & fileName, bool bBinaryFile) :
-    SourceModeBase(nullptr, nullptr), bBinary(bBinaryFile)
+    SourceModeBase(nullptr, nullptr), FileName(fileName), bBinary(bBinaryFile)
 {
     if (bBinary) inStream = new std::ifstream(fileName, std::ios::in | std::ios::binary);
     else         inStream = new std::ifstream(fileName);
@@ -241,6 +241,12 @@ int FromFileSource::CountEvents()
 
     out("Found events:", iCounter);
     return iCounter;
+}
+
+void FromFileSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["FileName"] = FileName;
+    json["bBinary"]  = bBinary;
 }
 
 G4ParticleDefinition * FromFileSource::makeGeant4Particle(const std::string & particleName)

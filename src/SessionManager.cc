@@ -318,6 +318,7 @@ void SessionManager::saveConfig(const std::string & fileName)
         jsCuts["CutScintPositron"]   = CutScintPositron;
     json["Cuts"] = jsCuts;
 
+    // TODO when implementation updated
     //double timeFrom = 0;
     //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
@@ -346,7 +347,7 @@ void SessionManager::saveConfig(const std::string & fileName)
     // Source
     {
         json11::Json::object js;
-        //SourceMode->writeToJson(js);
+        SourceMode->writeToJson(js);
         json["SourceMode"] = js;
     }
 

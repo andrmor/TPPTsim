@@ -26,7 +26,6 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
 
         GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
         bGeneratePair = pair;
-        //if (pair) bAcollinearity = pair->bAcollineraity;
 
         ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
     }
@@ -57,20 +56,25 @@ void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
     if (bGeneratePair) generateSecondGamma(anEvent);
 }
 
+void SourceModeBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+
+    if (Particle)
+    {
+        // TODO: save particle
+    }
+
+    if (TimeGenerator)
+    {
+        // TODO: save generator
+    }
+
+    doWriteToJson(json);
+}
+
 void SourceModeBase::generateSecondGamma(G4Event * anEvent)
 {
-    /*
-    if (bAcollinearity)
-    {
-        G4ThreeVector v = -Direction;
-        constexpr double Sigma = 0.5*deg / 2.35482;
-        double angle = G4RandGauss::shoot(0, Sigma);
-        v.rotate(angle, v.orthogonal());
-        v.rotate(G4UniformRand()*2.0*M_PI, Direction);
-        ParticleGun->SetParticleMomentumDirection(v);
-    }
-    else
-    */
     ParticleGun->SetParticleMomentumDirection(-Direction);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
@@ -99,20 +103,38 @@ G4ThreeVector SourceModeBase::generateDirectionIsotropic()
 // ---
 
 PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin) :
-    SourceModeBase(particle, timeGenerator)
+    SourceModeBase(particle, timeGenerator), Origin(origin)
 {
     ParticleGun->SetParticlePosition(origin);
+}
+
+void PointSource::doWriteToJson(json11::Json::object &json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
 }
 
 // ---
 
 PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
-    SourceModeBase(particle, timeGenerator)
+    SourceModeBase(particle, timeGenerator), Origin(origin)
 {
     ParticleGun->SetParticlePosition(origin);
 
     Direction = direction;
     bIsotropicDirection = false;
+}
+
+void PencilBeam::doWriteToJson(json11::Json::object & json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+
+    json["DirectionX"] = Direction.x();
+    json["DirectionY"] = Direction.y();
+    json["DirectionZ"] = Direction.z();
 }
 
 // ---
@@ -187,8 +209,24 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
     SourceModeBase::GeneratePrimaries(anEvent);
 }
 
+void MaterialLimitedSource::doWriteToJson(json11::Json::object &json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+
+    json["BoundingBoxX"] = BoundingBox.x();
+    json["BoundingBoxY"] = BoundingBox.y();
+    json["BoundingBoxZ"] = BoundingBox.z();
+
+    json["Material"] = Material;
+    json["FileName"] = FileName;
+}
+
+// ---
+
 NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
-    SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo))
+    SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo)), TimeFrom(timeFrom), TimeTo(timeTo)
 {
     bIsotropicDirection = false;
 
@@ -257,6 +295,12 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     ParticleGun->SetParticleDefinition(tmpPD);
 }
 
+void NaturalLysoSource::doWriteToJson(json11::Json::object &json) const
+{
+    json["TimeFrom"] = TimeFrom;
+    json["TimeTo"]   = TimeTo;
+}
+
 void NaturalLysoSource::customPostInit()
 {
     Navigator = new G4Navigator();
@@ -265,7 +309,7 @@ void NaturalLysoSource::customPostInit()
 }
 
 BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &origin, G4String fileName) :
-    PointSource(particle, timeGenerator, origin)
+    PointSource(particle, timeGenerator, origin), FileName(fileName)
 {
     Hist1D dist(21, -10, 10);
     std::ifstream * inStream = new std::ifstream(fileName);
@@ -285,7 +329,6 @@ BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase
         dist.fill(pair.first+0.001, pair.second);
 
     Sampler = new Hist1DSampler(dist, 12345);
-    Origin = ParticleGun->GetParticlePosition();
 }
 
 BlurredPointSource::~BlurredPointSource()
@@ -305,6 +348,12 @@ void BlurredPointSource::GeneratePrimaries(G4Event *anEvent)
     SourceModeBase::GeneratePrimaries(anEvent);
 }
 
+void BlurredPointSource::doWriteToJson(json11::Json::object &json) const
+{
+    PointSource::doWriteToJson(json);
+    json["FileName"] = FileName;
+}
+
 // ---
 
 LineSource::LineSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &startPoint, const G4ThreeVector &endPoint) :
@@ -319,4 +368,15 @@ void LineSource::GeneratePrimaries(G4Event *anEvent)
     //out(pos);
     ParticleGun->SetParticlePosition(pos);
     SourceModeBase::GeneratePrimaries(anEvent);
+}
+
+void LineSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["StartPointX"] = StartPoint.x();
+    json["StartPointY"] = StartPoint.y();
+    json["StartPointZ"] = StartPoint.z();
+
+    json["EndPointX"] = EndPoint.x();
+    json["EndPointY"] = EndPoint.y();
+    json["EndPointZ"] = EndPoint.z();
 }
