@@ -41,10 +41,24 @@ G4ParticleDefinition * Isotope::getParticleDefinition() const
     return itab->GetIon(Z, A, ExcitationEnergy);
 }
 
+void Isotope::doWriteToJson(json11::Json::object & json) const
+{
+    json["Z"] = Z;
+    json["A"] = A;
+    json["ExcitationEnergy"] = ExcitationEnergy;
+}
+
 // ---
 
 G4ParticleDefinition *Proton::getParticleDefinition() const
 {
     G4ParticleTable * ptab = G4ParticleTable::GetParticleTable();
     return ptab->FindParticle("proton");
+}
+
+void ParticleBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+    json["Energy"] = Energy;
+    doWriteToJson(json);
 }

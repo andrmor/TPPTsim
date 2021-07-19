@@ -1,6 +1,8 @@
 #ifndef definedparticles_h
 #define definedparticles_h
 
+#include "json11.hh"
+
 #include <string>
 
 #include "G4SystemOfUnits.hh"
@@ -18,6 +20,11 @@ public:
     double      Energy = 1.0;
 
     virtual G4ParticleDefinition * getParticleDefinition() const = 0;
+
+    void writeToJson(json11::Json::object & json) const;
+    virtual std::string getTypeName() const = 0;
+protected:
+    virtual void doWriteToJson(json11::Json::object & json) const = 0;
 };
 
 // ---
@@ -27,6 +34,10 @@ class Geantino : public ParticleBase
 public:
     Geantino() : ParticleBase("geantino") {}
     G4ParticleDefinition * getParticleDefinition() const override;
+
+    std::string getTypeName() const override {return "Geantino";}
+protected:
+    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 class Gamma : public ParticleBase
@@ -34,17 +45,21 @@ class Gamma : public ParticleBase
 public:
     Gamma(double energy = 0.511*MeV) : ParticleBase("gamma") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
+
+    std::string getTypeName() const override {return "Gamma";}
+protected:
+    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 class GammaPair : public ParticleBase
 {
 public:
-    GammaPair(double energy = 0.511*MeV) //, bool acollinearity = false) :
-        : ParticleBase("gammaPair")      //, bAcollineraity(acollinearity)
-          {Energy = energy; }
+    GammaPair(double energy = 0.511*MeV) : ParticleBase("gammaPair") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
 
-    //bool bAcollineraity = false;
+    std::string getTypeName() const override {return "GammaPair";}
+protected:
+    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 // ---
@@ -56,6 +71,10 @@ public:
     Isotope(int z, int a, double excitationEnergy);
 
     G4ParticleDefinition * getParticleDefinition() const override;
+
+    std::string getTypeName() const override {return "Isotope";}
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
 
     int Z, A;
     double ExcitationEnergy = 0;
@@ -93,10 +112,10 @@ public:
 
 // ---
 
-class Lu176 : public Isotope
+class Hf176exc : public Isotope
 {
 public:
-    Lu176() : Isotope(72, 176, 596.820*keV){Name = "Hf176exc";}
+    Hf176exc() : Isotope(72, 176, 596.820*keV) {Name = "Hf176exc";}
 };
 
 // ---
@@ -106,6 +125,10 @@ class Proton : public ParticleBase
 public:
     Proton(double energy = 100.0*MeV) : ParticleBase("proton") {Energy = energy;}
     G4ParticleDefinition * getParticleDefinition() const override;
+
+    std::string getTypeName() const override {return "Proton";}
+protected:
+    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 #endif // definedparticles_h

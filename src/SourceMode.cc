@@ -62,7 +62,9 @@ void SourceModeBase::writeToJson(json11::Json::object & json) const
 
     if (Particle)
     {
-        // TODO: save particle
+        json11::Json::object js;
+            Particle->writeToJson(js);
+        json["Particle"] = js;
     }
 
     if (TimeGenerator)
@@ -228,7 +230,7 @@ void MaterialLimitedSource::doWriteToJson(json11::Json::object &json) const
 // ---
 
 NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
-    SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo)), TimeFrom(timeFrom), TimeTo(timeTo)
+    SourceModeBase(new Hf176exc, new UniformTime(timeFrom, timeTo)), TimeFrom(timeFrom), TimeTo(timeTo)
 {
     bIsotropicDirection = false;
 
