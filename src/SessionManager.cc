@@ -306,8 +306,8 @@ void SessionManager::saveConfig(const std::string & fileName)
 
     json["Seed"] = Seed;
 
-    json["Acollinearity"] = bSimAcollinearity;
-    json["KillNeutrinos"] = bKillNeutrinos;
+    json["bSimAcollinearity"] = bSimAcollinearity;
+    json["bKillNeutrinos"]    = bKillNeutrinos;
 
     json11::Json::object jsCuts;
         jsCuts["CutPhantomGamma"]    = CutPhantomGamma;
@@ -318,16 +318,12 @@ void SessionManager::saveConfig(const std::string & fileName)
         jsCuts["CutScintPositron"]   = CutScintPositron;
     json["Cuts"] = jsCuts;
 
-    // TODO when implementation updated
-    //double timeFrom = 0;
-    //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
-
     json["WorkingDirectory"] = WorkingDirectory;
 
-    json["G4Verbose"] = bG4Verbose;
-    json["Debug"]     = bDebug;
+    json["bG4Verbose"] = bG4Verbose;
+    json["bDebug"]     = bDebug;
 
-    json["ShowEventNumber"]  = bShowEventNumber;
+    json["bShowEventNumber"] = bShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
 
     //Phantom mode

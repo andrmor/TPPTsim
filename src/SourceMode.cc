@@ -67,7 +67,9 @@ void SourceModeBase::writeToJson(json11::Json::object & json) const
 
     if (TimeGenerator)
     {
-        // TODO: save generator
+        json11::Json::object js;
+            TimeGenerator->writeToJson(js);
+        json["TimeGenerator"] = js;
     }
 
     doWriteToJson(json);
