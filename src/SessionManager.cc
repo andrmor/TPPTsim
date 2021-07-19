@@ -350,7 +350,7 @@ void SessionManager::saveConfig(const std::string & fileName)
     // Simulation mode
     {
         json11::Json::object js;
-        //SimMode->writeToJson(js);
+        SimMode->writeToJson(js);
         json["SimMode"] = js;
     }
 

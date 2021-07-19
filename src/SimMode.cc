@@ -13,6 +13,14 @@
 #include <sstream>
 #include <fstream>
 
+void SimModeBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+    doWriteToJson(json);
+}
+
+// ---
+
 SimModeGui::SimModeGui()
 {
     bNeedGui    = true;
@@ -38,6 +46,11 @@ void SimModeShowEvent::run()
     SessionManager& SM = SessionManager::getInstance();
     if (iEvent != 0) SM.runManager->BeamOn(iEvent);
     SimModeGui::run();
+}
+
+void SimModeShowEvent::doWriteToJson(json11::Json::object & json) const
+{
+    json["iEvent"] = iEvent;
 }
 
 // ---
@@ -66,12 +79,12 @@ G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
 
 // ---
 
-SimModeSingleEvents::SimModeSingleEvents()
+SimModeSingleEvents::SimModeSingleEvents(int numEvents)
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
-    NumEvents   = 10000;
+    NumEvents   = numEvents;
 
     SessionManager& SM = SessionManager::getInstance();
     SM.FileName = "Coincidence-GammaPairs-Test1.txt";
@@ -130,9 +143,14 @@ G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
     return new SensitiveDetectorScint_SingleEvents("Scint");
 }
 
+void SimModeSingleEvents::doWriteToJson(json11::Json::object & json) const
+{
+    json["NumEvents"] = NumEvents;
+}
+
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary)
+SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary)
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -140,9 +158,9 @@ SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & 
     NumEvents = numEvents;
 
     SessionManager & SM = SessionManager::getInstance();
-    SM.bBinOutput  = bBinary;
-    SM.FileName    = FileName;
-    InitialReserve = 10000;
+    SM.bBinOutput  = binary;
+    SM.FileName    = fileName;
+    MaxCapacity = 10000;
 
     bDoCluster     = true;
     MaxTimeDif     = 0.1 * ns;
@@ -154,7 +172,7 @@ void SimModeMultipleEvents::run()
 
     const int NumScint = SM.countScintillators();
     DepositionData.resize(NumScint);
-    for(auto & vec : DepositionData) vec.reserve(InitialReserve);
+    for(auto & vec : DepositionData) vec.reserve(MaxCapacity);
 
     SM.runManager->BeamOn(NumEvents);
 
@@ -218,6 +236,17 @@ void SimModeMultipleEvents::saveData()
     }
 }
 
+void SimModeMultipleEvents::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumEvents"]   = NumEvents;
+    json["FileName"]    = FileName;
+    json["bBinary"]     = bBinary;
+
+    json["bDoCluster"]  = bDoCluster;
+    json["MaxTimeDif"]  = MaxTimeDif;
+    json["MaxCapacity"] = (int)MaxCapacity;
+}
+
 void DepositionNodeRecord::merge(const DepositionNodeRecord & other)
 {
     if (other.energy <= 0) return;
@@ -254,7 +283,7 @@ G4UserSteppingAction * SimModeTracing::getSteppingAction()
 // ---
 
 SimModeAcollinTest::SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName) :
-    NumRuns(numRuns)
+    NumRuns(numRuns), NumBins(numBins)
 {
     From = 180.0 - range;
     Hist = new Hist1D(numBins, From, 180.0);
@@ -331,10 +360,18 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
     Gammas.push_back( DirAndEnergy(v, energy) );
 }
 
+void SimModeAcollinTest::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumRuns"]  = NumRuns;
+    json["From"]     = From;
+    json["NumBins"]  = NumBins;
+    json["FileName"] = FileName;
+}
+
 // ---
 
 SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName) :
-    NumEvents(numEvents)
+    NumEvents(numEvents), Range(range), NumBins(numBins)
 {
     Hist = new Hist1D(numBins, -range, range);
 
@@ -368,10 +405,18 @@ void SimModeAnnihilTest::addPosition(double x)
     Hist->fill(x);
 }
 
+void SimModeAnnihilTest::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumEvents"] = NumEvents;
+    json["Range"]     = Range;
+    json["NumBins"]   = NumBins;
+    json["FileName"]  = FileName;
+}
+
 // ---
 
-SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::string &fileName) :
-    NumEvents(numEvents)
+SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::string & fileName) :
+    NumEvents(numEvents), NumBins(numBins)
 {
     Hist = new Hist1D(numBins, 0, 1.3);
 
@@ -433,6 +478,13 @@ void SimModeNatRadTest::addEnergy(int iScint, double energy)
     Deposition[iScint] += energy;
 }
 
+void SimModeNatRadTest::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumEvents"] = NumEvents;
+    json["NumBins"]   = NumBins;
+    json["FileName"]  = FileName;
+}
+
 // ---
 
 SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary) :
@@ -490,4 +542,13 @@ void SimModeFirstStage::onEventStarted()
         *SM.outStream << '#' << CurrentEvent << std::endl;
 
     CurrentEvent++;
+}
+
+void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    json["NumEvents"] = NumEvents;
+    json["FileName"]  = SM.FileName;
+    json["bBimnary"]  = SM.bBinOutput;
 }

@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
     //SM.SimMode          = new SimModeAnnihilTest(1e6, 10, 1000, "AnnihilTest.txt");
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
-    //SM.SimMode          = new SimModeSingleEvents();
+    //SM.SimMode          = new SimModeSingleEvents(10000);
     //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
     //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
