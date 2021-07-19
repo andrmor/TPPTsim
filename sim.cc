@@ -20,6 +20,13 @@ int main(int argc, char** argv)
     SM.bSimAcollinearity = true;  // only for the phantom region!
     SM.bKillNeutrinos    = true;
 
+    SM.CutPhantomGamma    = 10.0*mm;
+    SM.CutPhantomElectron = 10.0*mm;
+    SM.CutPhantomPositron = 0.1 *mm;
+    SM.CutScintGamma      = 0.1 *mm;
+    SM.CutScintElectron   = 0.1 *mm;
+    SM.CutScintPositron   = 0.1 *mm;
+
     double timeFrom = 0;
     double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
@@ -56,7 +63,7 @@ int main(int argc, char** argv)
     //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
   // Operation mode
-    //SM.SimMode          = new SimModeGui();
+    SM.SimMode          = new SimModeGui();
     //SM.SimMode          = new SimModeShowEvent(119);
     //SM.SimMode          = new SimModeScintPosTest();
     //SM.SimMode          = new SimModeTracing();
@@ -65,7 +72,7 @@ int main(int argc, char** argv)
     //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
     //SM.SimMode          = new SimModeSingleEvents();
     //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
-    SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+    //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
     //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
     //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file

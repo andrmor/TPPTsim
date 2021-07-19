@@ -54,16 +54,12 @@ class SessionManager
         void registerParticleKillerModel(G4Region * region);
         void createPhantomRegion(G4LogicalVolume * logVolPhantom);
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
-
         int  countScintillators() const;
-
         int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
-
         bool detectorContains(DetComp component) const;
-
         void saveScintillatorTable(const std::string & fileName);
-
-        int isDirExists(const std::string & dirName);
+        int  isDirExists(const std::string & dirName);
+        void saveConfig(const std::string & fileName);
 
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
@@ -80,7 +76,7 @@ class SessionManager
 
         bool bBinOutput       = false;
 
-        long Seed             = 0;
+        int  Seed             = 0;      // long->int because of json11
         bool bG4Verbose       = false;
         bool bDebug           = false;
         bool bShowEventNumber = false;
@@ -89,6 +85,14 @@ class SessionManager
         std::vector<ScintRecord> ScintRecords;
 
         G4ParticleDefinition * GammaPD = nullptr;
+
+     // Cuts
+        double CutPhantomGamma    = 10.0*mm;
+        double CutPhantomElectron = 10.0*mm;
+        double CutPhantomPositron = 0.1 *mm;
+        double CutScintGamma      = 0.1 *mm;
+        double CutScintElectron   = 0.1 *mm;
+        double CutScintPositron   = 0.1 *mm;
 
      // Misc
         double activityLYSO = 281.0; // decays per second per cm3
@@ -123,13 +127,12 @@ class SessionManager
 
      // Internal resources
         std::ofstream       * outStream  = nullptr;
+        G4Region            * regPhantom  = nullptr;
+        G4Region            * regScint    = nullptr;
 
      // External resources
         G4Material          * ScintMat    = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
-
-        G4Region            * regPhantom  = nullptr;
-        G4Region            * regScint    = nullptr;
 
         G4ParticleGun       * ParticleGun = nullptr;
 

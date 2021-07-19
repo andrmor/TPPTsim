@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "PhantomMode.hh"
 #include "SourceMode.hh"
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
@@ -93,6 +94,8 @@ void SessionManager::startSession(int argc, char ** argv)
     if (SimMode->bNeedGui)    configureGUI(argc, argv);
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
+
+    saveConfig(WorkingDirectory + "/Sim-lastRunConfig.json");
 }
 
 SessionManager::~SessionManager() {}
@@ -160,9 +163,9 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     if (bKillNeutrinos)    registerParticleKillerModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
-    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("gamma"));
-    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutPhantomGamma,    G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(CutPhantomElectron, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutPhantomPositron, G4ProductionCuts::GetIndex("e+"));
     regPhantom->SetProductionCuts(cuts);
 }
 
@@ -172,9 +175,9 @@ void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
     regScint->AddRootLogicalVolume(logVolScint);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("gamma"));
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e-"));
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
+    cuts->SetProductionCut(CutScintGamma,    G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(CutScintElectron, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutScintPositron, G4ProductionCuts::GetIndex("e+"));
     regScint->SetProductionCuts(cuts);
 }
 
@@ -294,4 +297,70 @@ int SessionManager::isDirExists(const std::string & dirName)
     if (stat(dirName.data(), &info) != 0) return false;
     else if (info.st_mode & S_IFDIR)      return true;
     else                                  return false;
+}
+
+#include "json11.hh"
+void SessionManager::saveConfig(const std::string & fileName)
+{
+    json11::Json::object json;
+
+    json["Seed"] = Seed;
+
+    json["Acollinearity"] = bSimAcollinearity;
+    json["KillNeutrinos"] = bKillNeutrinos;
+
+    json11::Json::object jsCuts;
+        jsCuts["CutPhantomGamma"]    = CutPhantomGamma;
+        jsCuts["CutPhantomElectron"] = CutPhantomElectron;
+        jsCuts["CutPhantomPositron"] = CutPhantomPositron;
+        jsCuts["CutScintGamma"]      = CutScintGamma;
+        jsCuts["CutScintElectron"]   = CutScintElectron;
+        jsCuts["CutScintPositron"]   = CutScintPositron;
+    json["Cuts"] = jsCuts;
+
+    //double timeFrom = 0;
+    //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
+
+    json["WorkingDirectory"] = WorkingDirectory;
+
+    json["G4Verbose"] = bG4Verbose;
+    json["Debug"]     = bDebug;
+
+    json["ShowEventNumber"]  = bShowEventNumber;
+    json["EvNumberInterval"] = EvNumberInterval;
+
+    //Phantom mode
+    {
+        json11::Json::object js;
+        PhantomMode->writeToJson(js);
+        json["PhantomMode"] = js;
+    }
+
+    // Detector composition
+    {
+        json11::Json::array ar;
+        for (const DetComp & el : DetectorComposition) ar.push_back(static_cast<int>(el));
+        json["DetectorComposition"] = ar;
+    }
+
+    // Source
+    {
+        json11::Json::object js;
+        //SourceMode->writeToJson(js);
+        json["SourceMode"] = js;
+    }
+
+    // Simulation mode
+    {
+        json11::Json::object js;
+        //SimMode->writeToJson(js);
+        json["SimMode"] = js;
+    }
+
+    std::string json_str = json11::Json(json).dump();
+    std::ofstream confStream;
+    confStream.open(fileName);
+    if (confStream.is_open())
+        confStream << json_str << std::endl;
+    confStream.close();
 }

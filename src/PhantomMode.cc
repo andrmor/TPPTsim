@@ -14,9 +14,15 @@
 #include "G4Colour.hh"
 #include "out.hh"
 
-#include <vector>
-#include <string>
 #include <math.h>
+
+void PhantomModeBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+    doWriteToJson(json);
+}
+
+// ---
 
 G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
 {
@@ -118,7 +124,24 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
     return logicPmma;
 }
 
+void PhantomDerenzo::doWriteToJson(json11::Json::object &json) const
+{
+    json["Diameter"] = Diameter;
+    json["Height"] = Height;
+    json11::Json::array ar; for (double d : HoleDiameters) ar.push_back(d);
+    json["HoleDiameters"] = ar;
+    json["RadialOffset"] = RadialOffset;
+    json["Margin"] = Margin;
+    json["DPhi"] = DPhi;
+}
+
+void PhantomDerenzo::readFromJson(const json11::Json & json)
+{
+    Diameter = json["Diameter"].number_value();
+}
+
 // ---
+
 #include "ParamTest.hh"
 #include "G4PVParameterised.hh"
 G4LogicalVolume * PhantomParam::definePhantom(G4LogicalVolume * logicWorld)
