@@ -59,7 +59,8 @@ class SessionManager
         bool detectorContains(DetComp component) const;
         void saveScintillatorTable(const std::string & fileName);
         int  isDirExists(const std::string & dirName);
-        void saveConfig(const std::string & fileName);
+        void saveConfig(const std::string & fileName) const;
+        void loadConfig(const std::string & fileName);
 
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;

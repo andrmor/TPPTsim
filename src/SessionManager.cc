@@ -300,7 +300,7 @@ int SessionManager::isDirExists(const std::string & dirName)
 }
 
 #include "json11.hh"
-void SessionManager::saveConfig(const std::string & fileName)
+void SessionManager::saveConfig(const std::string & fileName) const
 {
     json11::Json::object json;
 
@@ -360,4 +360,128 @@ void SessionManager::saveConfig(const std::string & fileName)
     if (confStream.is_open())
         confStream << json_str << std::endl;
     confStream.close();
+}
+
+void assertKey(const json11::Json & json, const std::string & key)
+{
+    if (json.object_items().count(key) == 0)
+    {
+        out("Config json does not contain required key:", key);
+        exit(1);
+    }
+}
+
+void SessionManager::loadConfig(const std::string & fileName)
+{
+    out("Reading config file:", fileName);
+
+    std::ifstream in(fileName);
+    std::stringstream sstr;
+    sstr << in.rdbuf();
+    std::string cs = sstr.str();
+
+    std::string err;
+    json11::Json json = json11::Json::parse(cs, err);
+    if (!err.empty())
+    {
+        out(err);
+        exit(1);
+    }
+
+    assertKey(json, "Seed");
+    Seed = json["Seed"].int_value();
+    out("Seed:", Seed);
+
+    assertKey(json, "bSimAcollinearity");
+    bSimAcollinearity = json["bSimAcollinearity"].bool_value();
+    out("bSimAcollinearity:", bSimAcollinearity);
+
+    assertKey(json, "bKillNeutrinos");
+    bKillNeutrinos = json["bKillNeutrinos"].bool_value();
+    out("bKillNeutrinos:", bKillNeutrinos);
+
+    assertKey(json, "Cuts");
+    json11::Json::object jsCuts = json["Cuts"].object_items();
+    {
+        assertKey(json, "CutPhantomGamma");
+        CutPhantomGamma = json["CutPhantomGamma"].number_value();
+        out("CutPhantomGamma:", CutPhantomGamma);
+        assertKey(json, "CutPhantomElectron");
+        CutPhantomElectron = json["CutPhantomElectron"].number_value();
+        out("CutPhantomElectron:", CutPhantomElectron);
+        assertKey(json, "aaa");
+        CutPhantomPositron = json["CutPhantomPositron"].number_value();
+        out("CutPhantomPositron:", CutPhantomPositron);
+        assertKey(json, "CutPhantomPositron");
+        CutScintGamma = json["CutScintGamma"].number_value();
+        out("CutScintGamma:", CutScintGamma);
+        assertKey(json, "CutScintGamma");
+        CutScintElectron = json["CutScintElectron"].number_value();
+        out("CutScintElectron:", CutScintElectron);
+        assertKey(json, "CutScintPositron");
+        CutScintPositron = json["CutScintPositron"].number_value();
+        out("CutScintPositron:", CutScintPositron);
+    }
+
+    assertKey(json, "WorkingDirectory");
+    WorkingDirectory = json["WorkingDirectory"].string_value();
+    out("WorkingDirectory:", WorkingDirectory);
+
+    assertKey(json, "bG4Verbose");
+    bG4Verbose = json["bG4Verbose"].bool_value();
+    out("bG4Verbose:", bG4Verbose);
+
+    assertKey(json, "bDebug");
+    bDebug = json["bDebug"].bool_value();
+    out("bDebug:", bDebug);
+
+    assertKey(json, "bShowEventNumber");
+    bShowEventNumber = json["bShowEventNumber"].bool_value();
+    out("bShowEventNumber:", bShowEventNumber);
+
+    assertKey(json, "EvNumberInterval");
+    EvNumberInterval = json["EvNumberInterval"].int_value();
+    out("EvNumberInterval:", EvNumberInterval);
+
+    //Phantom mode
+    {
+        assertKey(json, "PhantomMode");
+        json11::Json::object js = json["PhantomMode"].object_items();
+        //PhantomMode->writeToJson(js);
+    }
+
+    // Detector composition
+    {
+        assertKey(json, "DetectorComposition");
+        json11::Json::array ar = json["DetectorComposition"].array_items();
+        DetectorComposition.clear();
+
+        out("Detector composition items:");
+        for (size_t i = 0; i < ar.size(); i++)
+        {
+            // TODO: solve possible problem: index is larger than the defined enum! !!!***
+            const json11::Json & arEl = ar[i];
+            int ci = arEl.int_value();
+            out("-->", ci);
+            DetComp el = static_cast<DetComp>(ci);
+            DetectorComposition.push_back(el);
+        }
+        out("Detector composition items end.");
+    }
+
+    // Source
+    {
+        assertKey(json, "SourceMode");
+        json11::Json::object js = json["SourceMode"].object_items();
+        //SourceMode->writeToJson(js);
+    }
+
+    // Simulation mode
+    {
+        assertKey(json, "SimMode");
+        json11::Json::object js = json["SimMode"].object_items();
+        //SimMode->writeToJson(js);
+    }
+
+    out("Load success!");
 }
