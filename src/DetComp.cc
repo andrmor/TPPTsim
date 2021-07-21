@@ -8,6 +8,11 @@ void DetComp::set(const std::vector<std::string> & components)
     EnabledComponents = components;
 }
 
+void DetComp::add(const std::string & component)
+{
+    EnabledComponents.push_back(component);
+}
+
 bool DetComp::isValid(const std::string & component) const
 {
     return (std::find(ValidComponents.begin(), ValidComponents.end(), component) != ValidComponents.end());
