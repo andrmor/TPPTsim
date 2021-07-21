@@ -23,15 +23,21 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     std::string Type;
     jstools::readString(json, "Type", Type);
 
-    if      (Type == "PhantomNone")     return new PhantomNone();
-    else if (Type == "PhantomPMMA")     return new PhantomPMMA();
-    else if (Type == "PhantomTinyCube") return new PhantomTinyCube();
-    else if (Type == "PhantomDerenzo")
+    PhantomModeBase * ph = nullptr;
+
+    if      (Type == "PhantomNone")     ph = new PhantomNone();
+    else if (Type == "PhantomPMMA")     ph = new PhantomPMMA();
+    else if (Type == "PhantomTinyCube") ph = new PhantomTinyCube();
+    else if (Type == "PhantomDerenzo")  ph = new PhantomDerenzo();
+    else if (Type == "PhantomParam")    ph = new PhantomParam();
+    else
     {
-        PhantomDerenzo * ph = new PhantomDerenzo();
-        ph->readFromJson(json);
-        return ph;
+        out("Unknown phantom type!");
+        exit(10);
     }
+
+    if (ph) ph->readFromJson(json);
+    return ph;
 }
 
 // ---

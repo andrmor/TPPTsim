@@ -14,6 +14,7 @@ class FromFileSource : public SourceModeBase
 {
 public:
     FromFileSource(const std::string & fileName, bool bBinaryFile);
+    FromFileSource(const json11::Json & json);
     ~FromFileSource();
 
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -24,7 +25,9 @@ public:
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
 
+    void init();
     G4ParticleDefinition * makeGeant4Particle(const std::string & particleName);
     bool extractIonInfo(const std::string & text, int & Z, int & A, double & E);
 

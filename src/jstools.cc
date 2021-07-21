@@ -10,6 +10,12 @@ void jstools::assertKey(const json11::Json & json, const std::string & key)
     }
 }
 
+bool jstools::contains(const json11::Json & json, const std::string & key)
+{
+    if (!json.is_object()) return false;
+    return (json.object_items().count(key) > 0);
+}
+
 void jstools::readInt(const json11::Json & json, const std::string & key, int & var)
 {
     assertKey(json, key);
@@ -67,4 +73,15 @@ void jstools::readString(const json11::Json &json, const std::string &key, std::
     }
     var = json[key].string_value();
     out(key, var);
+}
+
+void jstools::readObject(const json11::Json &json, const std::string &key, json11::Json::object &var)
+{
+    assertKey(json, key);
+    if (!json[key].is_object())
+    {
+        out(key, "is not an object");
+        exit(2);
+    }
+    var = json[key].object_items();
 }
