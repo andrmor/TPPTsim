@@ -39,10 +39,10 @@ class SessionManager
         SessionManager(SessionManager const&) = delete;
         void operator=(SessionManager const&) = delete;
 
-        void startSession(int argc, char ** argv);
+        void startSession();
         void endSession();
 
-        void configureGUI(int argc, char ** argv);
+        void configureGUI();
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
@@ -67,8 +67,8 @@ class SessionManager
         SimModeBase      * SimMode       = nullptr;
         PhantomModeBase  * PhantomMode   = nullptr;
 
-        bool bSimAcollinearity = false;
-        bool bKillNeutrinos    = false;
+        bool SimAcollinearity = false;
+        bool KillNeutrinos    = false;
 
         std::vector<DetComp> DetectorComposition;
 
@@ -78,9 +78,9 @@ class SessionManager
         bool bBinOutput       = false;
 
         int  Seed             = 0;      // long->int because of json11
-        bool bG4Verbose       = false;
-        bool bDebug           = false;
-        bool bShowEventNumber = false;
+        bool Verbose       = false;
+        bool Debug           = false;
+        bool ShowEventNumber = false;
         int  EvNumberInterval = 1000;
 
         std::vector<ScintRecord> ScintRecords;

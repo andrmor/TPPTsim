@@ -43,10 +43,8 @@ SessionManager::SessionManager()
     runManager = new G4RunManager;
 }
 
-void SessionManager::startSession(int argc, char ** argv)
+void SessionManager::startSession()
 {
-    out("\n\n---------");
-
     if (!isDirExists(WorkingDirectory))
     {
         out("Provided working directory does not exist:\n", WorkingDirectory);
@@ -75,7 +73,7 @@ void SessionManager::startSession(int argc, char ** argv)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
-    if (bSimAcollinearity || bKillNeutrinos) createFastSimulationPhysics(physicsList);
+    if (SimAcollinearity || KillNeutrinos) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
@@ -91,18 +89,20 @@ void SessionManager::startSession(int argc, char ** argv)
     GammaPD = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
     configureRandomGenerator();
     initializeSource();
-    if (SimMode->bNeedGui)    configureGUI(argc, argv);
+    if (SimMode->bNeedGui)    configureGUI();
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
 
-    saveConfig(WorkingDirectory + "/Sim-lastRunConfig.json");
+    saveConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
 
-void SessionManager::configureGUI(int argc, char ** argv)
+void SessionManager::configureGUI()
 {
-    ui         = new G4UIExecutive(argc, argv);
+    char ch = 's';
+    char * ad[] = {&ch};
+    ui         = new G4UIExecutive(1, ad);
     visManager = new G4VisExecutive("Quiet");
 
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
@@ -135,8 +135,8 @@ void SessionManager::createFastSimulationPhysics(G4VModularPhysicsList * physics
     //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
     // see registerAcollinearGammaModel() and registerParticleKillerModel()
 
-    if (bSimAcollinearity) fsm->ActivateFastSimulation("gamma");
-    if (bKillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
+    if (SimAcollinearity) fsm->ActivateFastSimulation("gamma");
+    if (KillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
     physicsList->RegisterPhysics(fsm);
 }
 
@@ -159,8 +159,8 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     regPhantom = new G4Region("Phantom");
     regPhantom->AddRootLogicalVolume(logVolPhantom);
 
-    if (bSimAcollinearity) registerAcollinearGammaModel(regPhantom);
-    if (bKillNeutrinos)    registerParticleKillerModel(regPhantom);
+    if (SimAcollinearity) registerAcollinearGammaModel(regPhantom);
+    if (KillNeutrinos)    registerParticleKillerModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(CutPhantomGamma,    G4ProductionCuts::GetIndex("gamma"));
@@ -261,7 +261,7 @@ void SessionManager::initializeSource()
 void SessionManager::configureVerbosity()
 {
     G4UImanager * UImanager = G4UImanager::GetUIpointer();
-    if (bG4Verbose)
+    if (Verbose)
     {
         UImanager->ApplyCommand("/hits/verbose 2");
         UImanager->ApplyCommand("/tracking/verbose 2");
@@ -274,7 +274,6 @@ void SessionManager::configureVerbosity()
         UImanager->ApplyCommand("/control/verbose 0");
         UImanager->ApplyCommand("/run/verbose 0");
     }
-    //UImanager->ApplyCommand("/run/initialize");
 }
 
 void SessionManager::endSession()
@@ -289,7 +288,6 @@ void SessionManager::endSession()
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
 int SessionManager::isDirExists(const std::string & dirName)
 {
     struct stat info;
@@ -306,8 +304,8 @@ void SessionManager::saveConfig(const std::string & fileName) const
 
     json["Seed"] = Seed;
 
-    json["bSimAcollinearity"] = bSimAcollinearity;
-    json["bKillNeutrinos"]    = bKillNeutrinos;
+    json["SimAcollinearity"] = SimAcollinearity;
+    json["KillNeutrinos"]    = KillNeutrinos;
 
     json11::Json::object jsCuts;
         jsCuts["CutPhantomGamma"]    = CutPhantomGamma;
@@ -320,10 +318,10 @@ void SessionManager::saveConfig(const std::string & fileName) const
 
     json["WorkingDirectory"] = WorkingDirectory;
 
-    json["bG4Verbose"] = bG4Verbose;
-    json["bDebug"]     = bDebug;
+    json["Verbose"] = Verbose;
+    json["Debug"]   = Debug;
 
-    json["bShowEventNumber"] = bShowEventNumber;
+    json["ShowEventNumber"] = ShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
 
     //Phantom mode
@@ -392,13 +390,13 @@ void SessionManager::loadConfig(const std::string & fileName)
     Seed = json["Seed"].int_value();
     out("Seed:", Seed);
 
-    assertKey(json, "bSimAcollinearity");
-    bSimAcollinearity = json["bSimAcollinearity"].bool_value();
-    out("bSimAcollinearity:", bSimAcollinearity);
+    assertKey(json, "SimAcollinearity");
+    SimAcollinearity = json["SimAcollinearity"].bool_value();
+    out("SimAcollinearity:", SimAcollinearity);
 
-    assertKey(json, "bKillNeutrinos");
-    bKillNeutrinos = json["bKillNeutrinos"].bool_value();
-    out("bKillNeutrinos:", bKillNeutrinos);
+    assertKey(json, "KillNeutrinos");
+    KillNeutrinos = json["KillNeutrinos"].bool_value();
+    out("KillNeutrinos:", KillNeutrinos);
 
     assertKey(json, "Cuts");
     json11::Json::object jsCuts = json["Cuts"].object_items();
@@ -427,17 +425,17 @@ void SessionManager::loadConfig(const std::string & fileName)
     WorkingDirectory = json["WorkingDirectory"].string_value();
     out("WorkingDirectory:", WorkingDirectory);
 
-    assertKey(json, "bG4Verbose");
-    bG4Verbose = json["bG4Verbose"].bool_value();
-    out("bG4Verbose:", bG4Verbose);
+    assertKey(json, "Verbose");
+    Verbose = json["Verbose"].bool_value();
+    out("Verbose:", Verbose);
 
-    assertKey(json, "bDebug");
-    bDebug = json["bDebug"].bool_value();
-    out("bDebug:", bDebug);
+    assertKey(json, "Debug");
+    Debug = json["Debug"].bool_value();
+    out("Debug:", Debug);
 
-    assertKey(json, "bShowEventNumber");
-    bShowEventNumber = json["bShowEventNumber"].bool_value();
-    out("bShowEventNumber:", bShowEventNumber);
+    assertKey(json, "ShowEventNumber");
+    ShowEventNumber = json["ShowEventNumber"].bool_value();
+    out("ShowEventNumber:", ShowEventNumber);
 
     assertKey(json, "EvNumberInterval");
     EvNumberInterval = json["EvNumberInterval"].int_value();
