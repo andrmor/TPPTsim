@@ -1,5 +1,4 @@
 #include "SessionManager.hh"
-#include "Modes.hh"
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
@@ -221,7 +220,6 @@ void SimModeMultipleEvents::saveData()
     {
         for (int iScint = 0; iScint < numScint; iScint++)
         {
-            const G4ThreeVector & sp = SM.ScintRecords[iScint].FacePos;
             auto & nodes = DepositionData[iScint];
 
             if (!nodes.empty())

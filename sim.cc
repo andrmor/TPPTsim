@@ -5,6 +5,7 @@
 #include "DefinedParticles.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
+#include "DetComp.hh"
 #include "out.hh"
 
 #include <chrono>
@@ -60,11 +61,10 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
 
-        // Detector
-        //SM.DetectorComposition = {};
-        SM.DetectorComposition = {DetComp::Scintillators};
-        //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
-        //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
+        // Enabled detector components
+        SM.DetectorComposition.set( {DetComp::Scintillators} );
+        //SM.DetectorComposition.set( {DetComp::Scintillators, DetComp::FirstStageMonitor} );
+        //SM.DetectorComposition.set( {DetComp::Scintillators, DetComp::GDML} );
 
         // Source
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});

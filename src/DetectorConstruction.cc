@@ -1,4 +1,5 @@
 #include "DetectorConstruction.hh"
+#include "DetComp.hh"
 #include "SensitiveDetectorScint.hh"
 #include "SensitiveDetectorFSM.hh"
 #include "SessionManager.hh"

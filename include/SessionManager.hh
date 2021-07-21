@@ -1,10 +1,11 @@
 #ifndef SESSIONMANAGER_H
 #define SESSIONMANAGER_H
 
+#include "DetComp.hh"
+
 #include <string>
 #include <vector>
 
-#include "Modes.hh"
 #include "ScintRecord.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
@@ -56,7 +57,7 @@ class SessionManager
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
         int  countScintillators() const;
         int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
-        bool detectorContains(DetComp component) const;
+        bool detectorContains(const std::string & component);
         void saveScintillatorTable(const std::string & fileName);
         int  isDirExists(const std::string & dirName);
         void saveConfig(const std::string & fileName) const;
@@ -70,7 +71,7 @@ class SessionManager
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;
 
-        std::vector<DetComp> DetectorComposition;
+        DetComp DetectorComposition;
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName  = "TpptSim_DefaultSaveName.txt";

@@ -1,4 +1,5 @@
 #include "SessionManager.hh"
+#include "DetComp.hh"
 #include "PhantomMode.hh"
 #include "SourceMode.hh"
 #include "SimMode.hh"
@@ -94,6 +95,7 @@ void SessionManager::startSession()
     configureVerbosity();
 
     saveConfig(WorkingDirectory + "/SimConfig.json");
+    //loadConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
@@ -200,9 +202,9 @@ int SessionManager::getNumberNatRadEvents(double timeFromInNs, double timeToInNs
     return numEvents;
 }
 
-bool SessionManager::detectorContains(DetComp component) const
+bool SessionManager::detectorContains(const std::string & component)
 {
-    return std::count(DetectorComposition.begin(), DetectorComposition.end(), component); // pre-c++20 ugly version of "contains"
+    return DetectorComposition.contains(component);
 }
 
 void SessionManager::saveScintillatorTable(const std::string & fileName)
@@ -334,7 +336,7 @@ void SessionManager::saveConfig(const std::string & fileName) const
     // Detector composition
     {
         json11::Json::array ar;
-        for (const DetComp & el : DetectorComposition) ar.push_back(static_cast<int>(el));
+        DetectorComposition.writeToJsonAr(ar);
         json["DetectorComposition"] = ar;
     }
 
@@ -369,13 +371,49 @@ void assertKey(const json11::Json & json, const std::string & key)
     }
 }
 
+void readInt(const json11::Json & json, const std::string & key, int var)
+{
+    assertKey(json, key);
+    if (!json[key].is_number())
+    {
+        out(key, "is not a number");
+        exit(2);
+    }
+    var = json[key].int_value();
+    out(key, var);
+}
+
+void readDouble(const json11::Json & json, const std::string & key, double var)
+{
+    assertKey(json, key);
+    if (!json[key].is_number())
+    {
+        out(key, "is not a number");
+        exit(2);
+    }
+    var = json[key].number_value();
+    out(key, var);
+}
+
+void readBool(const json11::Json & json, const std::string & key, bool var)
+{
+    assertKey(json, key);
+    if (!json[key].is_bool())
+    {
+        out(key, "is not a bool");
+        exit(2);
+    }
+    var = json[key].bool_value();
+    out(key, (var ? "true" : "false"));
+}
+
 void SessionManager::loadConfig(const std::string & fileName)
 {
-    out("Reading config file:", fileName);
-
+    out("\nReading config file:", fileName);
     std::ifstream in(fileName);
     std::stringstream sstr;
     sstr << in.rdbuf();
+    in.close();
     std::string cs = sstr.str();
 
     std::string err;
@@ -386,60 +424,36 @@ void SessionManager::loadConfig(const std::string & fileName)
         exit(1);
     }
 
-    assertKey(json, "Seed");
-    Seed = json["Seed"].int_value();
-    out("Seed:", Seed);
-
-    assertKey(json, "SimAcollinearity");
-    SimAcollinearity = json["SimAcollinearity"].bool_value();
-    out("SimAcollinearity:", SimAcollinearity);
-
-    assertKey(json, "KillNeutrinos");
-    KillNeutrinos = json["KillNeutrinos"].bool_value();
-    out("KillNeutrinos:", KillNeutrinos);
+    readInt(json, "Seed", Seed);
+    readBool(json, "SimAcollinearity", SimAcollinearity);
+    readBool(json, "KillNeutrinos", KillNeutrinos);
 
     assertKey(json, "Cuts");
     json11::Json::object jsCuts = json["Cuts"].object_items();
     {
-        assertKey(json, "CutPhantomGamma");
-        CutPhantomGamma = json["CutPhantomGamma"].number_value();
-        out("CutPhantomGamma:", CutPhantomGamma);
-        assertKey(json, "CutPhantomElectron");
-        CutPhantomElectron = json["CutPhantomElectron"].number_value();
-        out("CutPhantomElectron:", CutPhantomElectron);
-        assertKey(json, "aaa");
-        CutPhantomPositron = json["CutPhantomPositron"].number_value();
-        out("CutPhantomPositron:", CutPhantomPositron);
-        assertKey(json, "CutPhantomPositron");
-        CutScintGamma = json["CutScintGamma"].number_value();
-        out("CutScintGamma:", CutScintGamma);
-        assertKey(json, "CutScintGamma");
-        CutScintElectron = json["CutScintElectron"].number_value();
-        out("CutScintElectron:", CutScintElectron);
-        assertKey(json, "CutScintPositron");
-        CutScintPositron = json["CutScintPositron"].number_value();
-        out("CutScintPositron:", CutScintPositron);
+        readDouble(jsCuts, "CutPhantomGamma",    CutPhantomGamma);
+        readDouble(jsCuts, "CutPhantomElectron", CutPhantomElectron);
+        readDouble(jsCuts, "CutPhantomPositron", CutPhantomPositron);
+
+        readDouble(jsCuts, "CutScintGamma",      CutScintGamma);
+        readDouble(jsCuts, "CutScintElectron",   CutScintElectron);
+        readDouble(jsCuts, "CutScintPositron",   CutScintPositron);
     }
 
     assertKey(json, "WorkingDirectory");
     WorkingDirectory = json["WorkingDirectory"].string_value();
     out("WorkingDirectory:", WorkingDirectory);
+    if (!isDirExists(WorkingDirectory))
+    {
+        out("Directory does not exist:", WorkingDirectory);
+        exit(3);
+    }
 
-    assertKey(json, "Verbose");
-    Verbose = json["Verbose"].bool_value();
-    out("Verbose:", Verbose);
+    readBool(json, "Verbose", Verbose);
+    readBool(json, "Debug",   Debug);
 
-    assertKey(json, "Debug");
-    Debug = json["Debug"].bool_value();
-    out("Debug:", Debug);
-
-    assertKey(json, "ShowEventNumber");
-    ShowEventNumber = json["ShowEventNumber"].bool_value();
-    out("ShowEventNumber:", ShowEventNumber);
-
-    assertKey(json, "EvNumberInterval");
-    EvNumberInterval = json["EvNumberInterval"].int_value();
-    out("EvNumberInterval:", EvNumberInterval);
+    readBool(json, "ShowEventNumber", ShowEventNumber);
+    readInt(json, "EvNumberInterval", EvNumberInterval);
 
     //Phantom mode
     {
@@ -451,20 +465,13 @@ void SessionManager::loadConfig(const std::string & fileName)
     // Detector composition
     {
         assertKey(json, "DetectorComposition");
-        json11::Json::array ar = json["DetectorComposition"].array_items();
-        DetectorComposition.clear();
-
-        out("Detector composition items:");
-        for (size_t i = 0; i < ar.size(); i++)
+        if (!json["DetectorComposition"].is_array())
         {
-            // TODO: solve possible problem: index is larger than the defined enum! !!!***
-            const json11::Json & arEl = ar[i];
-            int ci = arEl.int_value();
-            out("-->", ci);
-            DetComp el = static_cast<DetComp>(ci);
-            DetectorComposition.push_back(el);
+            out("DetectorComposition is not an array!");
+            exit(6);
         }
-        out("Detector composition items end.");
+        json11::Json::array ar = json["DetectorComposition"].array_items();
+        DetectorComposition.readFromJsonAr(ar);
     }
 
     // Source
@@ -481,5 +488,5 @@ void SessionManager::loadConfig(const std::string & fileName)
         //SimMode->writeToJson(js);
     }
 
-    out("Load success!");
+    out("Load success!", "\n^^^^^^^^^^^^^\n");
 }
