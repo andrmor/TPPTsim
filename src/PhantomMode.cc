@@ -13,8 +13,28 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include <math.h>
+
+PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json & json)
+{
+    out("Reading phantom json");
+    std::string Type;
+    jstools::readString(json, "Type", Type);
+
+    if      (Type == "PhantomNone")     return new PhantomNone();
+    else if (Type == "PhantomPMMA")     return new PhantomPMMA();
+    else if (Type == "PhantomTinyCube") return new PhantomTinyCube();
+    else if (Type == "PhantomDerenzo")
+    {
+        PhantomDerenzo * ph = new PhantomDerenzo();
+        ph->readFromJson(json);
+        return ph;
+    }
+}
+
+// ---
 
 void PhantomModeBase::writeToJson(json11::Json::object & json) const
 {
@@ -137,7 +157,25 @@ void PhantomDerenzo::doWriteToJson(json11::Json::object &json) const
 
 void PhantomDerenzo::readFromJson(const json11::Json & json)
 {
-    Diameter = json["Diameter"].number_value();
+    jstools::readDouble(json, "Diameter",     Diameter);
+    jstools::readDouble(json, "Height",       Height);
+
+    json11::Json::array ar;
+    jstools::readArray(json, "HoleDiameters", ar);
+    HoleDiameters.clear();
+    std::string str;
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        if (i != 0) str += ", ";
+        double dia = ar[i].number_value();
+        HoleDiameters.push_back(dia);
+        str += std::to_string(dia);
+    }
+    out("HoleDiameters:", str);
+
+    jstools::readDouble(json, "RadialOffset", RadialOffset);
+    jstools::readDouble(json, "Margin",       Margin);
+    jstools::readDouble(json, "DPhi",         DPhi);
 }
 
 // ---

@@ -56,9 +56,9 @@ int main(int argc, char** argv)
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
-        SM.PhantomMode      = new PhantomPMMA;
+        //SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomTinyCube;
-        //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
+        SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )

@@ -6,7 +6,14 @@
 #include <string>
 #include <vector>
 
+class PhantomModeBase;
 class G4LogicalVolume;
+
+class PhantomModeFactory // when adding a new mode, do not forget to modify the implementation of the factory!
+{
+public:
+    static PhantomModeBase * makePhantomModeInstance(const json11::Json & json);
+};
 
 class PhantomModeBase
 {
@@ -71,6 +78,7 @@ class PhantomDerenzo : public PhantomModeBase
 public:
     PhantomDerenzo(double diameter, double height, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
         Diameter(diameter), Height(height), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
+    PhantomDerenzo(){}
 
     std::string getTypeName() const override {return "PhantomDerenzo";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;

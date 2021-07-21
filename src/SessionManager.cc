@@ -8,6 +8,7 @@
 #include "EventAction.hh"
 #include "ScintRecord.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include "G4RunManager.hh"
 #include "G4UIExecutive.hh"
@@ -95,7 +96,7 @@ void SessionManager::startSession()
     configureVerbosity();
 
     saveConfig(WorkingDirectory + "/SimConfig.json");
-    //loadConfig(WorkingDirectory + "/SimConfig.json");
+    loadConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
@@ -362,51 +363,6 @@ void SessionManager::saveConfig(const std::string & fileName) const
     confStream.close();
 }
 
-void assertKey(const json11::Json & json, const std::string & key)
-{
-    if (json.object_items().count(key) == 0)
-    {
-        out("Config json does not contain required key:", key);
-        exit(1);
-    }
-}
-
-void readInt(const json11::Json & json, const std::string & key, int var)
-{
-    assertKey(json, key);
-    if (!json[key].is_number())
-    {
-        out(key, "is not a number");
-        exit(2);
-    }
-    var = json[key].int_value();
-    out(key, var);
-}
-
-void readDouble(const json11::Json & json, const std::string & key, double var)
-{
-    assertKey(json, key);
-    if (!json[key].is_number())
-    {
-        out(key, "is not a number");
-        exit(2);
-    }
-    var = json[key].number_value();
-    out(key, var);
-}
-
-void readBool(const json11::Json & json, const std::string & key, bool var)
-{
-    assertKey(json, key);
-    if (!json[key].is_bool())
-    {
-        out(key, "is not a bool");
-        exit(2);
-    }
-    var = json[key].bool_value();
-    out(key, (var ? "true" : "false"));
-}
-
 void SessionManager::loadConfig(const std::string & fileName)
 {
     out("\nReading config file:", fileName);
@@ -424,66 +380,59 @@ void SessionManager::loadConfig(const std::string & fileName)
         exit(1);
     }
 
-    readInt(json, "Seed", Seed);
-    readBool(json, "SimAcollinearity", SimAcollinearity);
-    readBool(json, "KillNeutrinos", KillNeutrinos);
+    jstools::readInt(json, "Seed", Seed);
+    jstools::readBool(json, "SimAcollinearity", SimAcollinearity);
+    jstools::readBool(json, "KillNeutrinos", KillNeutrinos);
 
-    assertKey(json, "Cuts");
+    jstools::assertKey(json, "Cuts");
     json11::Json::object jsCuts = json["Cuts"].object_items();
     {
-        readDouble(jsCuts, "CutPhantomGamma",    CutPhantomGamma);
-        readDouble(jsCuts, "CutPhantomElectron", CutPhantomElectron);
-        readDouble(jsCuts, "CutPhantomPositron", CutPhantomPositron);
+        jstools::readDouble(jsCuts, "CutPhantomGamma",    CutPhantomGamma);
+        jstools::readDouble(jsCuts, "CutPhantomElectron", CutPhantomElectron);
+        jstools::readDouble(jsCuts, "CutPhantomPositron", CutPhantomPositron);
 
-        readDouble(jsCuts, "CutScintGamma",      CutScintGamma);
-        readDouble(jsCuts, "CutScintElectron",   CutScintElectron);
-        readDouble(jsCuts, "CutScintPositron",   CutScintPositron);
+        jstools::readDouble(jsCuts, "CutScintGamma",      CutScintGamma);
+        jstools::readDouble(jsCuts, "CutScintElectron",   CutScintElectron);
+        jstools::readDouble(jsCuts, "CutScintPositron",   CutScintPositron);
     }
 
-    assertKey(json, "WorkingDirectory");
-    WorkingDirectory = json["WorkingDirectory"].string_value();
-    out("WorkingDirectory:", WorkingDirectory);
+    jstools::readString(json, "WorkingDirectory", WorkingDirectory);
     if (!isDirExists(WorkingDirectory))
     {
         out("Directory does not exist:", WorkingDirectory);
         exit(3);
     }
 
-    readBool(json, "Verbose", Verbose);
-    readBool(json, "Debug",   Debug);
+    jstools::readBool(json, "Verbose", Verbose);
+    jstools::readBool(json, "Debug",   Debug);
 
-    readBool(json, "ShowEventNumber", ShowEventNumber);
-    readInt(json, "EvNumberInterval", EvNumberInterval);
+    jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
+    jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
 
     //Phantom mode
     {
-        assertKey(json, "PhantomMode");
+        jstools::assertKey(json, "PhantomMode");
         json11::Json::object js = json["PhantomMode"].object_items();
-        //PhantomMode->writeToJson(js);
+        PhantomMode = PhantomModeFactory::makePhantomModeInstance(js);
     }
 
     // Detector composition
     {
-        assertKey(json, "DetectorComposition");
-        if (!json["DetectorComposition"].is_array())
-        {
-            out("DetectorComposition is not an array!");
-            exit(6);
-        }
-        json11::Json::array ar = json["DetectorComposition"].array_items();
+        json11::Json::array ar;
+        jstools::readArray(json, "DetectorComposition", ar);
         DetectorComposition.readFromJsonAr(ar);
     }
 
     // Source
     {
-        assertKey(json, "SourceMode");
+        jstools::assertKey(json, "SourceMode");
         json11::Json::object js = json["SourceMode"].object_items();
         //SourceMode->writeToJson(js);
     }
 
     // Simulation mode
     {
-        assertKey(json, "SimMode");
+        jstools::assertKey(json, "SimMode");
         json11::Json::object js = json["SimMode"].object_items();
         //SimMode->writeToJson(js);
     }
