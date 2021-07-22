@@ -96,7 +96,7 @@ void SessionManager::startSession()
     configureVerbosity();
 
     saveConfig(WorkingDirectory + "/SimConfig.json");
-    //loadConfig(WorkingDirectory + "/SimConfig.json");
+    loadConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
@@ -434,7 +434,7 @@ void SessionManager::loadConfig(const std::string & fileName)
     {
         jstools::assertKey(json, "SimMode");
         json11::Json::object js = json["SimMode"].object_items();
-        //SimMode->writeToJson(js);
+        SimMode = SimModeFactory::makeSimModeInstance(js);
     }
 
     out("Load success!", "\n^^^^^^^^^^^^^\n");
