@@ -28,6 +28,8 @@ void jstools::readInt(const json11::Json & json, const std::string & key, int & 
     out(key, var);
 }
 
+//#include <sstream>
+//#include <iomanip>
 void jstools::readDouble(const json11::Json & json, const std::string & key, double & var)
 {
     assertKey(json, key);
@@ -37,6 +39,17 @@ void jstools::readDouble(const json11::Json & json, const std::string & key, dou
         exit(102);
     }
     var = json[key].number_value();
+
+    /*
+    //if there will be problems with rounding due to json format-> double
+    std::ostringstream streamObj;
+    streamObj << std::setprecision(8);
+    streamObj << var;
+    std::string str = streamObj.str();
+    out("-=-=->", str);
+    var = stod(str);
+    */
+
     out(key, var);
 }
 

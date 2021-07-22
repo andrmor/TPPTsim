@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     // warning: automatically saves config in working directory as SimConfig.json
     // beware of possible overright!
     //here you can directly provide the config file name
-    //filename = "/home/andr/WORK/TPPT/SimConfigTest.json";
+    filename = "/home/andr/WORK/TPPT/SimConfig1.json";
 
     if (!filename.empty())
     {
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed              = 0;
+        SM.Seed              = 1000;
         SM.SimAcollinearity = true;  // only for the phantom region!
         SM.KillNeutrinos    = true;
 
@@ -47,8 +47,8 @@ int main(int argc, char** argv)
         SM.CutScintElectron   = 0.1 *mm;
         SM.CutScintPositron   = 0.1 *mm;
 
-        double timeFrom = 0;
-        double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
+        //double timeFrom = 0;
+        //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
         SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
         //SM.WorkingDirectory = "/data/margarida/Data";
@@ -73,8 +73,8 @@ int main(int argc, char** argv)
         // Source
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, "/data/margarida/Data/AnnihilTest.txt");
-        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
-        SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, SM.GlobalZ0-20.0}, {20.0, 20.0, SM.GlobalZ0+20.0});
+        SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
+        //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, SM.GlobalZ0-20.0}, {20.0, 20.0, SM.GlobalZ0+20.0});
         //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
         //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
         // Operation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeAnnihilTest(1e6, 10, 1000, "AnnihilTest.txt");
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
-        //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
+        SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
         //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);

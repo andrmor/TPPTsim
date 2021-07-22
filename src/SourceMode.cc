@@ -45,18 +45,8 @@ SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * time
     Particle(particle), TimeGenerator(timeGenerator)
 {
     ParticleGun = new G4ParticleGun(1);
-
     //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
-
-    if (Particle)
-    {
-        bIsotropicDirection = !Particle->bSkipDirection; // can be overwriten by the concrete source type!
-
-        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
-        bGeneratePair = pair;
-
-        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
-    }
+    // the rest of initialization (constructor with json) can also be done there
 }
 
 SourceModeBase::~SourceModeBase()
@@ -68,7 +58,18 @@ SourceModeBase::~SourceModeBase()
 
 void SourceModeBase::initialize()
 {
-    if (Particle) ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+    if (Particle)
+    {
+        ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+
+        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
+        bGeneratePair = (bool)pair;
+
+        Isotope * iso = dynamic_cast<Isotope*>(Particle);
+        if (iso) bIsotropicDirection = false; // save time by not generating direction
+
+        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+    }
     customPostInit();
 }
 

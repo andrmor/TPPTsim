@@ -80,9 +80,9 @@ class SessionManager
         bool bBinOutput       = false;
 
         int  Seed             = 0;      // long->int because of json11
-        bool Verbose       = false;
-        bool Debug           = false;
-        bool ShowEventNumber = false;
+        bool Verbose          = false;
+        bool Debug            = false;
+        bool ShowEventNumber  = false;
         int  EvNumberInterval = 1000;
 
         std::vector<ScintRecord> ScintRecords;

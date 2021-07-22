@@ -65,13 +65,13 @@ G4ParticleDefinition * GammaPair::getParticleDefinition() const
 }
 
 Isotope::Isotope(int z, int a) :
-    ParticleBase("ion_" + std::to_string(z) + "_" + std::to_string(a), true), Z(z), A(a)
+    ParticleBase("ion_" + std::to_string(z) + "_" + std::to_string(a)), Z(z), A(a)
 {
     Energy = 0;
 }
 
 Isotope::Isotope(int z, int a, double excitationEnergy) :
-    ParticleBase("ion_" + std::to_string(z) + "_" + std::to_string(a) + '[' + std::to_string(excitationEnergy) + ']', true),
+    ParticleBase("ion_" + std::to_string(z) + "_" + std::to_string(a) + '[' + std::to_string(excitationEnergy) + ']'),
     Z(z), A(a), ExcitationEnergy(excitationEnergy)
 {
     Energy = 0;

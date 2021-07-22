@@ -19,11 +19,10 @@ public:
 class ParticleBase
 {
 public:
-    ParticleBase(const std::string & name, bool SkipDirection = false) : Name(name), bSkipDirection(SkipDirection) {}
+    ParticleBase(const std::string & name) : Name(name) {}
     virtual ~ParticleBase(){}
 
     std::string Name = "undefined";
-    bool        bSkipDirection = false;
     double      Energy = 1.0;
 
     virtual G4ParticleDefinition * getParticleDefinition() const = 0;
