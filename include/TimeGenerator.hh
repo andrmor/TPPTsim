@@ -6,6 +6,14 @@
 #include <string>
 
 class Hist1D;
+class TimeGeneratorBase;
+
+class TimeGeneratorFactory
+{
+public:
+    static TimeGeneratorBase * makeTimeGeneratorInstance(const json11::Json & json);
+};
+
 class TimeGeneratorBase
 {
 public:
@@ -15,6 +23,7 @@ public:
 
     virtual std::string getTypeName() const = 0;
     void writeToJson(json11::Json::object & json) const;
+    virtual void readFromJson(const json11::Json & json) = 0;
 
 protected:
     virtual void doWriteToJson(json11::Json::object & json) const = 0;
@@ -30,6 +39,7 @@ public:
     double generateTime() override {return Time;}
 
     std::string getTypeName() const override {return "ConstantTime";}
+    void readFromJson(const json11::Json & json) override;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -47,6 +57,7 @@ public:
     double generateTime() override;
 
     std::string getTypeName() const override {return "UniformTime";}
+    void readFromJson(const json11::Json & json) override;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -65,6 +76,7 @@ public:
 
     double generateTime() override;
     std::string getTypeName() const override {return "ExponentialTime";}
+    void readFromJson(const json11::Json & json) override;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

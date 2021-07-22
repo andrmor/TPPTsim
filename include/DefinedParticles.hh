@@ -8,6 +8,13 @@
 #include "G4SystemOfUnits.hh"
 
 class G4ParticleDefinition;
+class ParticleBase;
+
+class ParticleFactory
+{
+public:
+    static ParticleBase * makeParticleInstance(const json11::Json & json);
+};
 
 class ParticleBase
 {
@@ -22,9 +29,13 @@ public:
     virtual G4ParticleDefinition * getParticleDefinition() const = 0;
 
     void writeToJson(json11::Json::object & json) const;
+    void readFromJson(const json11::Json & json);
+
     virtual std::string getTypeName() const = 0;
+
 protected:
-    virtual void doWriteToJson(json11::Json::object & json) const = 0;
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {};
+    virtual void doReadFromJson(const json11::Json & /*json*/) {};
 };
 
 // ---
@@ -36,8 +47,6 @@ public:
     G4ParticleDefinition * getParticleDefinition() const override;
 
     std::string getTypeName() const override {return "Geantino";}
-protected:
-    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 class Gamma : public ParticleBase
@@ -47,8 +56,6 @@ public:
     G4ParticleDefinition * getParticleDefinition() const override;
 
     std::string getTypeName() const override {return "Gamma";}
-protected:
-    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 class GammaPair : public ParticleBase
@@ -58,8 +65,6 @@ public:
     G4ParticleDefinition * getParticleDefinition() const override;
 
     std::string getTypeName() const override {return "GammaPair";}
-protected:
-    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 // ---
@@ -75,6 +80,7 @@ public:
     std::string getTypeName() const override {return "Isotope";}
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json) override;
 
     int Z, A;
     double ExcitationEnergy = 0;
@@ -127,8 +133,6 @@ public:
     G4ParticleDefinition * getParticleDefinition() const override;
 
     std::string getTypeName() const override {return "Proton";}
-protected:
-    void doWriteToJson(json11::Json::object &) const override {}
 };
 
 #endif // definedparticles_h

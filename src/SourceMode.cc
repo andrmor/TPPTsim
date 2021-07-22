@@ -111,16 +111,14 @@ void SourceModeBase::readFromJson(const json11::Json & json)
     {
         json11::Json::object js;
         jstools::readObject(json, "Particle", js);
-
-        //Particle = nullptr;
+        Particle = ParticleFactory::makeParticleInstance(js);
     }
 
     if (jstools::contains(json, "TimeGenerator"))
     {
         json11::Json::object js;
         jstools::readObject(json, "TimeGenerator", js);
-
-        //TimeGenerator = nullptr;
+        TimeGenerator = TimeGeneratorFactory::makeTimeGeneratorInstance(js);
     }
 
     //do not call particular loader, using this function in the constructor!
