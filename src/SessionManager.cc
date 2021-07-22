@@ -47,7 +47,7 @@ SessionManager::SessionManager()
 
 void SessionManager::startSession()
 {
-    if (!isDirExists(WorkingDirectory))
+    if (!isDirExist(WorkingDirectory))
     {
         out("Provided working directory does not exist:\n", WorkingDirectory);
         exit(1);
@@ -96,7 +96,6 @@ void SessionManager::startSession()
     configureVerbosity();
 
     saveConfig(WorkingDirectory + "/SimConfig.json");
-    loadConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
@@ -291,13 +290,19 @@ void SessionManager::endSession()
 
 #include <sys/types.h>
 #include <sys/stat.h>
-int SessionManager::isDirExists(const std::string & dirName)
+int SessionManager::isDirExist(const std::string & dirName)
 {
     struct stat info;
 
     if (stat(dirName.data(), &info) != 0) return false;
     else if (info.st_mode & S_IFDIR)      return true;
     else                                  return false;
+}
+
+int SessionManager::isFileExist(const std::string & fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
 }
 
 #include "json11.hh"
@@ -365,6 +370,12 @@ void SessionManager::saveConfig(const std::string & fileName) const
 
 void SessionManager::loadConfig(const std::string & fileName)
 {
+    if (!isFileExist(fileName))
+    {
+        out("File", fileName, "does not exist or cannot be open!");
+        exit(1);
+    }
+
     out("\nReading config file:", fileName);
     std::ifstream in(fileName);
     std::stringstream sstr;
@@ -397,7 +408,7 @@ void SessionManager::loadConfig(const std::string & fileName)
     }
 
     jstools::readString(json, "WorkingDirectory", WorkingDirectory);
-    if (!isDirExists(WorkingDirectory))
+    if (!isDirExist(WorkingDirectory))
     {
         out("Directory does not exist:", WorkingDirectory);
         exit(3);

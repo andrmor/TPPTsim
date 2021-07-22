@@ -59,7 +59,8 @@ class SessionManager
         int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
         bool detectorContains(const std::string & component);
         void saveScintillatorTable(const std::string & fileName);
-        int  isDirExists(const std::string & dirName);
+        int  isDirExist(const std::string & dirName);
+        int  isFileExist(const std::string & fileName);
         void saveConfig(const std::string & fileName) const;
         void loadConfig(const std::string & fileName);
 
