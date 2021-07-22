@@ -6,7 +6,7 @@ void jstools::assertKey(const json11::Json & json, const std::string & key)
     if (json.object_items().count(key) == 0)
     {
         out("Config json does not contain required key:", key);
-        exit(1);
+        exit(101);
     }
 }
 
@@ -22,7 +22,7 @@ void jstools::readInt(const json11::Json & json, const std::string & key, int & 
     if (!json[key].is_number())
     {
         out(key, "is not a number");
-        exit(2);
+        exit(102);
     }
     var = json[key].int_value();
     out(key, var);
@@ -34,7 +34,7 @@ void jstools::readDouble(const json11::Json & json, const std::string & key, dou
     if (!json[key].is_number())
     {
         out(key, "is not a number");
-        exit(2);
+        exit(102);
     }
     var = json[key].number_value();
     out(key, var);
@@ -46,7 +46,7 @@ void jstools::readBool(const json11::Json & json, const std::string & key, bool 
     if (!json[key].is_bool())
     {
         out(key, "is not a bool");
-        exit(2);
+        exit(102);
     }
     var = json[key].bool_value();
     out(key, (var ? "true" : "false"));
@@ -58,7 +58,7 @@ void jstools::readArray(const json11::Json &json, const std::string &key, json11
     if (!json[key].is_array())
     {
         out(key, "is not an array");
-        exit(2);
+        exit(102);
     }
     var = json[key].array_items();
 }
@@ -69,7 +69,7 @@ void jstools::readString(const json11::Json &json, const std::string &key, std::
     if (!json[key].is_string())
     {
         out(key, "is not a string");
-        exit(2);
+        exit(102);
     }
     var = json[key].string_value();
     out(key, var);
@@ -81,7 +81,7 @@ void jstools::readObject(const json11::Json &json, const std::string &key, json1
     if (!json[key].is_object())
     {
         out(key, "is not an object");
-        exit(2);
+        exit(102);
     }
     var = json[key].object_items();
 }

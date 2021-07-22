@@ -28,7 +28,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     if      (Type == "PhantomNone")     ph = new PhantomNone();
     else if (Type == "PhantomPMMA")     ph = new PhantomPMMA();
     else if (Type == "PhantomTinyCube") ph = new PhantomTinyCube();
-    else if (Type == "PhantomDerenzo")  ph = new PhantomDerenzo();
+    else if (Type == "PhantomDerenzo")  ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")    ph = new PhantomParam();
     else
     {
@@ -119,7 +119,7 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
     for (int iSec = 0; iSec < numSectors; iSec++)
     {
         const double holeDiameter = HoleDiameters[iSec];
-        double a = deltaAngle * iSec + DPhi * M_PI / numSectors;
+        double a = deltaAngle * iSec + DPhi * M_PI / 180.0;
 
         //x and y are in not rotated coordinates, sector is upward: centered at x=0, y+)
         double y = RadialOffset;
@@ -152,13 +152,16 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
 
 void PhantomDerenzo::doWriteToJson(json11::Json::object &json) const
 {
-    json["Diameter"] = Diameter;
-    json["Height"] = Height;
-    json11::Json::array ar; for (double d : HoleDiameters) ar.push_back(d);
+    json["Diameter"]      = Diameter;
+    json["Height"]        = Height;
+
+    json11::Json::array ar;
+    for (const double d : HoleDiameters) ar.push_back(d);
     json["HoleDiameters"] = ar;
-    json["RadialOffset"] = RadialOffset;
-    json["Margin"] = Margin;
-    json["DPhi"] = DPhi;
+
+    json["RadialOffset"]  = RadialOffset;
+    json["Margin"]        = Margin;
+    json["DPhi"]          = DPhi;
 }
 
 void PhantomDerenzo::readFromJson(const json11::Json & json)
@@ -173,7 +176,7 @@ void PhantomDerenzo::readFromJson(const json11::Json & json)
     for (size_t i = 0; i < ar.size(); i++)
     {
         if (i != 0) str += ", ";
-        double dia = ar[i].number_value();
+        const double dia = ar[i].number_value();
         HoleDiameters.push_back(dia);
         str += std::to_string(dia);
     }

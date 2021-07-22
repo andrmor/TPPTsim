@@ -24,10 +24,10 @@ public:
     virtual G4LogicalVolume * definePhantom(G4LogicalVolume * /*logicWorld*/) = 0; //returns the phantom's logical volume
 
     void writeToJson(json11::Json::object & json) const;
-    virtual void readFromJson(const json11::Json & json) = 0;
+    virtual void readFromJson(const json11::Json & /*json*/) {}
 
 protected:
-    virtual void doWriteToJson(json11::Json::object & json) const = 0;
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {}
 };
 
 // ---
@@ -36,11 +36,6 @@ class PhantomNone : public PhantomModeBase
 {
     std::string getTypeName() const override {return "PhantomNone";}
     G4LogicalVolume * definePhantom(G4LogicalVolume *) override {return nullptr;}
-
-    void readFromJson(const json11::Json &) override {};
-
-protected:
-    void doWriteToJson(json11::Json::object &) const override {};
 };
 
 // ---
@@ -50,11 +45,6 @@ class PhantomPMMA : public PhantomModeBase
 public:
     std::string getTypeName() const override {return "PhantomPMMA";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
-
-    void readFromJson(const json11::Json &) override {};
-
-protected:
-    void doWriteToJson(json11::Json::object &) const override {};
 };
 
 // ---
@@ -64,11 +54,6 @@ class PhantomTinyCube : public PhantomModeBase
 public:
     std::string getTypeName() const override {return "PhantomTinyCube";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
-
-    void readFromJson(const json11::Json &) override {};
-
-protected:
-    void doWriteToJson(json11::Json::object &) const override {};
 };
 
 // ---
@@ -78,7 +63,6 @@ class PhantomDerenzo : public PhantomModeBase
 public:
     PhantomDerenzo(double diameter, double height, const std::vector<double> & holeDiameters, double radialOffset, double margin, double dPhi) :
         Diameter(diameter), Height(height), HoleDiameters(holeDiameters), RadialOffset(radialOffset), Margin(margin), DPhi(dPhi) {}
-    PhantomDerenzo(){}
 
     std::string getTypeName() const override {return "PhantomDerenzo";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
@@ -91,7 +75,7 @@ protected:
     std::vector<double> HoleDiameters;
     double RadialOffset = 50.0;
     double Margin       = 50.0;
-    double DPhi         = 0;
+    double DPhi         = 0;     // rotation angle around vertical axis
 
     void doWriteToJson(json11::Json::object & json) const override;
 };

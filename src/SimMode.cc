@@ -280,7 +280,7 @@ void SimModeMultipleEvents::readFromJson(const json11::Json &json)
 
     jstools::readBool  (json, "bDoCluster",  bDoCluster);
     jstools::readDouble(json, "MaxTimeDif",  MaxTimeDif);
-    int iMaxCapacity = 1000;
+    int iMaxCapacity = 10000;
     jstools::readInt   (json, "MaxCapacity", iMaxCapacity);
     MaxCapacity = iMaxCapacity;
 }
@@ -651,5 +651,5 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
 
     json["NumEvents"] = NumEvents;
     json["FileName"]  = SM.FileName;
-    json["bBinary"]  = SM.bBinOutput;
+    json["bBinary"]   = SM.bBinOutput;
 }

@@ -267,7 +267,7 @@ void FromFileSource::doWriteToJson(json11::Json::object & json) const
 void FromFileSource::doReadFromJson(const json11::Json & json)
 {
     jstools::readString(json, "FileName", FileName);
-    jstools::readBool(json, "bBinary", bBinary);
+    jstools::readBool  (json, "bBinary",  bBinary);
 }
 
 G4ParticleDefinition * FromFileSource::makeGeant4Particle(const std::string & particleName)

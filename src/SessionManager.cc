@@ -329,10 +329,10 @@ void SessionManager::saveConfig(const std::string & fileName) const
     json["Verbose"] = Verbose;
     json["Debug"]   = Debug;
 
-    json["ShowEventNumber"] = ShowEventNumber;
+    json["ShowEventNumber"]  = ShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
 
-    //Phantom mode
+    // Phantom
     {
         json11::Json::object js;
         PhantomMode->writeToJson(js);
@@ -388,15 +388,15 @@ void SessionManager::loadConfig(const std::string & fileName)
     if (!err.empty())
     {
         out(err);
-        exit(1);
+        exit(2);
     }
 
-    jstools::readInt(json, "Seed", Seed);
+    jstools::readInt(json,  "Seed",             Seed);
     jstools::readBool(json, "SimAcollinearity", SimAcollinearity);
-    jstools::readBool(json, "KillNeutrinos", KillNeutrinos);
+    jstools::readBool(json, "KillNeutrinos",    KillNeutrinos);
 
-    jstools::assertKey(json, "Cuts");
-    json11::Json::object jsCuts = json["Cuts"].object_items();
+    json11::Json::object jsCuts;
+    jstools::readObject(json, "Cuts", jsCuts);
     {
         jstools::readDouble(jsCuts, "CutPhantomGamma",    CutPhantomGamma);
         jstools::readDouble(jsCuts, "CutPhantomElectron", CutPhantomElectron);
@@ -420,10 +420,10 @@ void SessionManager::loadConfig(const std::string & fileName)
     jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
     jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
 
-    //Phantom mode
+    // Phantom
     {
-        jstools::assertKey(json, "PhantomMode");
-        json11::Json::object js = json["PhantomMode"].object_items();
+        json11::Json::object js;
+        jstools::readObject(json, "PhantomMode", js);
         PhantomMode = PhantomModeFactory::makePhantomModeInstance(js);
     }
 
@@ -436,15 +436,15 @@ void SessionManager::loadConfig(const std::string & fileName)
 
     // Source
     {
-        jstools::assertKey(json, "SourceMode");
-        json11::Json::object js = json["SourceMode"].object_items();
+        json11::Json::object js;
+        jstools::readObject(json, "SourceMode", js);
         SourceMode = SourceModeFactory::makeSourceModeInstance(js);
     }
 
     // Simulation mode
     {
-        jstools::assertKey(json, "SimMode");
-        json11::Json::object js = json["SimMode"].object_items();
+        json11::Json::object js;
+        jstools::readObject(json, "SimMode", js);
         SimMode = SimModeFactory::makeSimModeInstance(js);
     }
 

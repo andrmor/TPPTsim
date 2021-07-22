@@ -37,7 +37,7 @@ void DetComp::readFromJsonAr(const json11::Json::array & ar)
     for (size_t i = 0; i < ar.size(); i++)
     {
         const json11::Json & arEl = ar[i];
-        std::string ci = arEl.string_value();
+        const std::string ci = arEl.string_value();
         out("->", ci);
         if (!DetComp::isValid(ci))
         {

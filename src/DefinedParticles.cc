@@ -92,8 +92,8 @@ void Isotope::doWriteToJson(json11::Json::object & json) const
 
 void Isotope::doReadFromJson(const json11::Json & json)
 {
-    jstools::readInt(json, "Z", Z);
-    jstools::readInt(json, "A", A);
+    jstools::readInt   (json, "Z", Z);
+    jstools::readInt   (json, "A", A);
     jstools::readDouble(json, "ExcitationEnergy", ExcitationEnergy);
 }
 

@@ -94,7 +94,7 @@ void ExponentialTime::readFromJson(const json11::Json & json)
     jstools::readDouble(json, "HalfLife", HalfLife);
 }
 
-void ExponentialTime::doWriteToJson(json11::Json::object &json) const
+void ExponentialTime::doWriteToJson(json11::Json::object & json) const
 {
     json["TimeFrom"] = TimeFrom;
     json["HalfLife"] = HalfLife;

@@ -156,10 +156,10 @@ G4ThreeVector SourceModeBase::generateDirectionIsotropic()
 PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin) :
     SourceModeBase(particle, timeGenerator), Origin(origin)
 {
-    ParticleGun->SetParticlePosition(origin);
+    ParticleGun->SetParticlePosition(Origin);
 }
 
-PointSource::PointSource(const json11::Json &json) :
+PointSource::PointSource(const json11::Json & json) :
     SourceModeBase(nullptr, nullptr)
 {
     doReadFromJson(json);
@@ -168,7 +168,7 @@ PointSource::PointSource(const json11::Json &json) :
     ParticleGun->SetParticlePosition(Origin);
 }
 
-void PointSource::doWriteToJson(json11::Json::object &json) const
+void PointSource::doWriteToJson(json11::Json::object & json) const
 {
     json["OriginX"] = Origin.x();
     json["OriginY"] = Origin.y();
@@ -519,7 +519,7 @@ LineSource::LineSource(const json11::Json & json) :
     readFromJson(json);
 }
 
-void LineSource::GeneratePrimaries(G4Event *anEvent)
+void LineSource::GeneratePrimaries(G4Event * anEvent)
 {
     double rand = G4UniformRand();
     G4ThreeVector pos;
