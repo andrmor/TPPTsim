@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     // warning: automatically saves config in working directory as SimConfig.json
     // beware of possible overright!
     //here you can directly provide the config file name
-    filename = "/home/andr/WORK/TPPT/SimConfig1.json";
+    //filename = "/home/andr/WORK/TPPT/SimConfig1.json";
 
     if (!filename.empty())
     {
