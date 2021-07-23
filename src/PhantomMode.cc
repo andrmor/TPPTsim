@@ -33,7 +33,7 @@ G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
     G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
     G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
-    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
+    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
 
     return logicPmma;
 }

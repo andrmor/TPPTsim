@@ -112,7 +112,7 @@ void DetectorConstruction::addScintillators()
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
-    logicScint->SetVisAttributes(G4VisAttributes({1, 0, 0}));
+    logicScint->SetVisAttributes(G4VisAttributes({0, 0, 1}));
 
     SM.createScintillatorRegion(logicScint);
 
@@ -163,7 +163,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
     SessionManager & SM = SessionManager::getInstance();
 
     G4LogicalVolume * logicEncaps = new G4LogicalVolume(solidEncaps, EncapsMat, "Encaps");
-    logicEncaps->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+    logicEncaps->SetVisAttributes(G4VisAttributes({0, 1, 1}));
 
     for (int ix = 0; ix < SM.NumScintX; ix++)
         for (int iy = 0; iy < SM.NumScintY; iy++)
@@ -201,11 +201,18 @@ void DetectorConstruction::addBase()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Material Aluminum
-    G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
+    //Material: ABS, (C8H8·C4H6·C3H3N)n
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(15);
+    elements.push_back("H"); natoms.push_back(17);
+    elements.push_back("N"); natoms.push_back(1);
+    G4Material * matABS = man->ConstructNewMaterial("ABS", elements, natoms, 1.07*g/cm3);
 
-    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, SM.Angle0 - 9.0 * deg, 120.0 * deg);
-    G4LogicalVolume * logicBase   = new G4LogicalVolume(solidBase, matAluminum, "Base");
+    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, SM.Angle0 - 10.5 * deg, 120.0 * deg);
+    G4LogicalVolume * logicBase   = new G4LogicalVolume(solidBase, matABS, "Base");
+    G4Colour grey(0.5, 0.5, 0.5);
+    logicBase ->SetVisAttributes(new G4VisAttributes(grey));
 
     G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg, 0, 0);
     G4RotationMatrix * rot1 = new CLHEP::HepRotation(-90.0*deg, 0, 0);
@@ -221,20 +228,24 @@ void DetectorConstruction::addSIPM()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Material Silicon
+    //Material: Epoxy
     std::vector<G4int> natoms;
     std::vector<G4String> elements;
-    elements.push_back("Si"); natoms.push_back(1);
-    elements.push_back("O") ; natoms.push_back(2);
-    G4Material * matSilicon = man->ConstructNewMaterial("Silicon", elements, natoms, 2.329*g/cm3);
 
-    G4Box * solidSIPM   = new G4Box("SIPM", 0.5 * 25.8*mm, 0.5 * 25.8*mm, 1*mm);
-    G4LogicalVolume * logicSIPM   = new G4LogicalVolume(solidSIPM, matSilicon, "SIPM");
-    logicSIPM ->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+    elements.push_back("C"); natoms.push_back(21);
+    elements.push_back("H") ; natoms.push_back(25);
+    elements.push_back("Cl") ; natoms.push_back(1);
+    elements.push_back("O") ; natoms.push_back(5);
+    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.4*g/cm3);
+
+    G4Box * solidSIPM   = new G4Box("SIPM", 0.5 * 25.8*mm, 0.5 * 25.8*mm, 0.5 * 1.35*mm);
+    G4LogicalVolume * logicSIPM   = new G4LogicalVolume(solidSIPM, matEpoxy, "SIPM");
+    G4Colour grey(0.5, 0.5, 0.5);
+    logicSIPM ->SetVisAttributes(new G4VisAttributes(grey));
 
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 1*mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 1.35*mm);
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X = Radius * sin(Angle);
         double Y = Radius * cos(Angle);
@@ -257,9 +268,10 @@ void DetectorConstruction::addPCB()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Material PBC (Epoxy + Fiber Glass)
-    /*std::vector<G4int> natoms;
+    //Material: PBC (FR4 -> Epoxy + Fiber Glass), https://agenda.infn.it/event/14179/contributions/23405/attachments/16712/18966/Geant_FR4_Raffaella_v1.pdf
+    std::vector<G4int> natoms;
     std::vector<G4String> elements;
+    int ncomponents;
 
     elements.push_back("C"); natoms.push_back(21);
     elements.push_back("H") ; natoms.push_back(25);
@@ -271,28 +283,29 @@ void DetectorConstruction::addPCB()
     elements.clear();
     elements.push_back("Si"); natoms.push_back(1);
     elements.push_back("O") ; natoms.push_back(2);
-    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.329*g/cm3);*/
+    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.329*g/cm3);
 
-    //Aluminum will be replaced by PCB
-    G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
+    G4Material * matFR4 = new G4Material("FR4", 1.86*g/cm3, ncomponents = 2);
+    matFR4 -> AddMaterial(matEpoxy, 0.472);
+    matFR4 -> AddMaterial(matFiberGlass, 0.528);
 
     G4Box * solidPCB1   = new G4Box("PCB1", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 3.175*mm);
-    G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matAluminum, "PCB1");
-    logicPCB1 ->SetVisAttributes(G4VisAttributes({1, 0, 0}));
+    G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matFR4, "PCB1");
+    logicPCB1 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
     G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 2*mm, 0.5 * 45*mm);
-    G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matAluminum, "PCB2");
+    G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matFR4, "PCB2");
     logicPCB2 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
-    G4Box * solidPCB3   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 2*mm);
-    G4LogicalVolume * logicPCB3   = new G4LogicalVolume(solidPCB3, matAluminum, "PCB3");
+    G4Box * solidPCB3   = new G4Box("PCB3", 0.5 * 28.9*mm, 0.5 * 52.2*mm, 0.5 * 2*mm);
+    G4LogicalVolume * logicPCB3   = new G4LogicalVolume(solidPCB3, matFR4, "PCB3");
     logicPCB3 ->SetVisAttributes(G4VisAttributes({0, 0, 1}));
 
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius1 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 3.175); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
-        double Radius2 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 5*cm);
-        double Radius3 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm + 2*mm);
+        double Radius1 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 3.175); //1.35 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Radius2 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 5*cm);
+        double Radius3 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm + 2*mm);
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X1 = Radius1 * sin(Angle);
         double Y1 = Radius1 * cos(Angle);
@@ -331,12 +344,14 @@ void DetectorConstruction::addCopperStructure()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Copper
+    //Material: Copper
     G4Material * matCopper = man->FindOrBuildMaterial("G4_Cu");
 
+    //Columns between scintillators:
     G4Trd * solidCopper   = new G4Trd("Copper", 0.5 * 3.10 * mm, 0.5 * 2.40 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 1.01 * mm);
     G4LogicalVolume * logicCopper   = new G4LogicalVolume(solidCopper, matCopper, "Copper");
-    logicCopper ->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+    G4Colour brown(0.45,0.25,0.0);
+    logicCopper ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
@@ -357,9 +372,9 @@ void DetectorConstruction::addCopperStructure()
         }
     }
 
-    G4Trd * solidCopper2   = new G4Trd("Copper2", 0.5 * 0.7 * mm, 0.5 * 0.9 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 3.175 * mm);
+    G4Trd * solidCopper2   = new G4Trd("Copper2", 0.5 * 0.9 * mm, 0.5 * 0.7 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 3.175 * mm);
     G4LogicalVolume * logicCopper2   = new G4LogicalVolume(solidCopper2, matCopper, "Copper");
-    logicCopper2 ->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+    logicCopper2 ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
@@ -377,6 +392,55 @@ void DetectorConstruction::addCopperStructure()
 
             new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicCopper2, "Copper2", logicWorld, false, 0);
             new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicCopper2, "Copper2", logicWorld, false, 0);
+        }
+    }
+
+    //External columns:
+    G4Box * solidCopper3   = new G4Box("Copper3", 0.5 * 3.0*mm, 0.5 * 3.0*mm, 0.5 * 105.0*mm);
+    G4LogicalVolume * logicCopper3   = new G4LogicalVolume(solidCopper3, matCopper, "Copper3");
+    logicCopper3 ->SetVisAttributes(new G4VisAttributes(brown));
+    //new G4PVPlacement(0, G4ThreeVector(0, 0, SM.GlobalZ0), logicCopper3, "Copper3", logicWorld, false, 0);
+
+    for (int iA = 0; iA < 13; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm + 3.0*mm);
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
+        double X1 = Radius * sin(Angle);
+        double Y1 = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 0*deg, 0);
+
+        for (int iZ = 0; iZ < 1; iZ++)
+        {
+            double RowPitch = 0.35 * mm + 28.9 * mm;
+            double Z = -0.5 * (1 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicCopper3, "Copper3", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicCopper3, "Copper3", logicWorld, false, 0);
+        }
+    }
+
+    //Holders:
+    G4Box * solidHolder   = new G4Box("Holder", 0.5 * 3.0*mm, 0.5 * 3.0*mm, 0.5 * 10.0*mm);
+    G4LogicalVolume * logicHolder   = new G4LogicalVolume(solidHolder, matCopper, "Holder");
+    logicHolder ->SetVisAttributes(new G4VisAttributes(brown));
+
+    for (int iA = 0; iA < 13; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm + 2 * 3.0*mm + 10.0*mm);
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
+        double X1 = Radius * sin(Angle);
+        double Y1 = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < 3; iZ++)
+        {
+            double RowPitch = 35*mm;
+            double Z = -0.5 * (3 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicHolder, "Holder", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicHolder, "Holder", logicWorld, false, 0);
         }
     }
 }
