@@ -22,6 +22,7 @@ private:
     void addBase();
     void addSIPM();
     void addPCB();
+    void addCopperStructure();
 
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;

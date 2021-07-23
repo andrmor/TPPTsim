@@ -120,10 +120,10 @@ class SessionManager
         double GlobalZ0    = 55.675 * mm; // (BaseHeight + SystHeight) / 2
 
      // Geometry - Base
-        double RMin        = 16.3 * cm;
-        double RMax        = 25.0 * cm;
+        double RMin        = 162.5 * mm;
+        double RMax        = 300.0   * mm;
         double SystHeight  = EncapsSizeX * 4 + RowGap * 3;
-        double BaseHeight  = 6.35 * mm;
+        double BaseHeight  = 6.35  * mm;
 
      // Internal resources
         std::ofstream       * outStream  = nullptr;

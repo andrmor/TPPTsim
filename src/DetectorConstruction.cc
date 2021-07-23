@@ -83,6 +83,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if (SM.detectorContains(DetComp::Base))              addBase();
     if (SM.detectorContains(DetComp::SIPM))              addSIPM();
     if (SM.detectorContains(DetComp::PCB))               addPCB();
+    if (SM.detectorContains(DetComp::CopperStructure))   addCopperStructure();
 
     return SM.physWorld;
 }
@@ -203,7 +204,7 @@ void DetectorConstruction::addBase()
     //Material Aluminum
     G4Material * matAluminum = man->FindOrBuildMaterial("G4_Al");
 
-    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, SM.Angle0 - 9.0 * deg, 117.0 * deg);
+    G4Tubs * solidBase   = new G4Tubs("Base", SM.RMin, SM.RMax, SM.BaseHeight * 0.5, SM.Angle0 - 9.0 * deg, 120.0 * deg);
     G4LogicalVolume * logicBase   = new G4LogicalVolume(solidBase, matAluminum, "Base");
 
     G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg, 0, 0);
@@ -279,7 +280,7 @@ void DetectorConstruction::addPCB()
     G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matAluminum, "PCB1");
     logicPCB1 ->SetVisAttributes(G4VisAttributes({1, 0, 0}));
 
-    G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 1*mm, 0.5 * 45*mm);
+    G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * 28.9*mm, 0.5 * 2*mm, 0.5 * 45*mm);
     G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matAluminum, "PCB2");
     logicPCB2 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
@@ -316,7 +317,7 @@ void DetectorConstruction::addPCB()
 
         for (int iZ = 0; iZ < SM.NumRows; iZ++)
         {
-            double RowPitch = 1*mm + 20.88 * mm; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
+            double RowPitch = 26.25 * mm; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
             double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
             new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, Z), logicPCB2, "PCB2", logicWorld, false, 0);
@@ -325,41 +326,57 @@ void DetectorConstruction::addPCB()
     }
 }
 
-   /* for (int iA = 0; iA < SM.NumSegments; iA++)
+void DetectorConstruction::addCopperStructure()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    //Copper
+    G4Material * matCopper = man->FindOrBuildMaterial("G4_Cu");
+
+    G4Trd * solidCopper   = new G4Trd("Copper", 0.5 * 3.10 * mm, 0.5 * 2.40 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 1.01 * mm);
+    G4LogicalVolume * logicCopper   = new G4LogicalVolume(solidCopper, matCopper, "Copper");
+    logicCopper ->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+
+    for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
-        double Angle  = SM.AngularStep * iA + SM.Angle0;
-        double X = Radius * sin(Angle);
-        double Y = Radius * cos(Angle);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 1*mm);
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5*deg;
+        double X1 = Radius * sin(Angle);
+        double Y1 = Radius * cos(Angle);
         G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
         G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
-        for (int iZ = 0; iZ < SM.NumRows / 2; iZ++)
+        for (int iZ = 0; iZ < 1; iZ++)
         {
-            double RowPitch = 52.2*mm + SM.RowGap; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
-            double Z = -0.5 * (SM.NumRows / 2 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+            double RowPitch = 28.9 * mm;
+            double Z = -0.5 * (1 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            new G4PVPlacement(rot, G4ThreeVector( X,  Y, Z), logicPCB2, "PCB2", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, Z), logicPCB2, "PCB2", logicWorld, false, 0);
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicCopper, "Copper", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicCopper, "Copper", logicWorld, false, 0);
         }
     }
 
-    for (int iA = 0; iA < SM.NumSegments; iA++)
+    G4Trd * solidCopper2   = new G4Trd("Copper2", 0.5 * 0.7 * mm, 0.5 * 0.9 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 3.175 * mm);
+    G4LogicalVolume * logicCopper2   = new G4LogicalVolume(solidCopper2, matCopper, "Copper");
+    logicCopper2 ->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+
+    for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 5*cm); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
-        double Angle  = SM.AngularStep * iA + SM.Angle0;
-        double X = Radius * sin(Angle);
-        double Y = Radius * cos(Angle);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 3.175); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
+        double X1 = Radius * sin(Angle);
+        double Y1 = Radius * cos(Angle);
         G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
         G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
-        for (int iZ = 0; iZ < SM.NumRows / 2; iZ++)
+        for (int iZ = 0; iZ < 1; iZ++)
         {
-            double RowPitch = 52.2*mm + SM.RowGap; //+ SM.RowGap; //SM.EncapsSizeY + SM.RowGap;
-            double Z = -0.5 * (SM.NumRows / 2 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+            double RowPitch = 0.35 * mm + 28.9 * mm;
+            double Z = -0.5 * (1 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            new G4PVPlacement(rot, G4ThreeVector( X,  Y, Z), logicPCB3, "PCB3", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, Z), logicPCB3, "PCB3", logicWorld, false, 0);
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicCopper2, "Copper2", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicCopper2, "Copper2", logicWorld, false, 0);
         }
     }
-}*/
+}
