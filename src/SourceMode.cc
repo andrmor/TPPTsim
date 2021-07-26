@@ -5,6 +5,8 @@
 #include "TimeGenerator.hh"
 #include "Hist1D.hh"
 #include "out.hh"
+#include "jstools.hh"
+#include "FromFileSource.hh"
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
@@ -13,23 +15,38 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+SourceModeBase * SourceModeFactory::makeSourceModeInstance(const json11::Json & json)
+{
+    out("Reading source json");
+    std::string Type;
+    jstools::readString(json, "Type", Type);
+
+    SourceModeBase * sc = nullptr;
+
+    if      (Type == "PointSource")           sc = new PointSource(json);
+    else if (Type == "LineSource")            sc = new LineSource(json);
+    else if (Type == "PencilBeam")            sc = new PencilBeam(json);
+    else if (Type == "MaterialLimitedSource") sc = new MaterialLimitedSource(json);
+    else if (Type == "NaturalLysoSource")     sc = new NaturalLysoSource(json);
+    else if (Type == "BlurredPointSource")    sc = new BlurredPointSource(json);
+    else if (Type == "FromFileSource")        sc = new FromFileSource(json);
+    else
+    {
+        out("Unknown source type!");
+        exit(10);
+    }
+
+    return sc;
+}
+
+// ---
+
 SourceModeBase::SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator) :
     Particle(particle), TimeGenerator(timeGenerator)
 {
     ParticleGun = new G4ParticleGun(1);
-
     //Warning: particle definition can be set only later when physics list is initialized. see initialize() method called by SessionManager
-
-    if (Particle)
-    {
-        bIsotropicDirection = !Particle->bSkipDirection; // can be overwriten by the concrete source type!
-
-        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
-        bGeneratePair = pair;
-        //if (pair) bAcollinearity = pair->bAcollineraity;
-
-        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
-    }
+    // the rest of initialization (constructor with json) can also be done there
 }
 
 SourceModeBase::~SourceModeBase()
@@ -41,7 +58,18 @@ SourceModeBase::~SourceModeBase()
 
 void SourceModeBase::initialize()
 {
-    if (Particle) ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+    if (Particle)
+    {
+        ParticleGun->SetParticleDefinition(Particle->getParticleDefinition());
+
+        GammaPair * pair = dynamic_cast<GammaPair*>(Particle);
+        bGeneratePair = (bool)pair;
+
+        Isotope * iso = dynamic_cast<Isotope*>(Particle);
+        if (iso) bIsotropicDirection = false; // save time by not generating direction
+
+        ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+    }
     customPostInit();
 }
 
@@ -57,20 +85,48 @@ void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
     if (bGeneratePair) generateSecondGamma(anEvent);
 }
 
+void SourceModeBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+
+    if (Particle)
+    {
+        json11::Json::object js;
+            Particle->writeToJson(js);
+        json["Particle"] = js;
+    }
+
+    if (TimeGenerator)
+    {
+        json11::Json::object js;
+            TimeGenerator->writeToJson(js);
+        json["TimeGenerator"] = js;
+    }
+
+    doWriteToJson(json);
+}
+
+void SourceModeBase::readFromJson(const json11::Json & json)
+{
+    if (jstools::contains(json, "Particle"))
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "Particle", js);
+        Particle = ParticleFactory::makeParticleInstance(js);
+    }
+
+    if (jstools::contains(json, "TimeGenerator"))
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "TimeGenerator", js);
+        TimeGenerator = TimeGeneratorFactory::makeTimeGeneratorInstance(js);
+    }
+
+    //do not call particular loader, using this function in the constructor!
+}
+
 void SourceModeBase::generateSecondGamma(G4Event * anEvent)
 {
-    /*
-    if (bAcollinearity)
-    {
-        G4ThreeVector v = -Direction;
-        constexpr double Sigma = 0.5*deg / 2.35482;
-        double angle = G4RandGauss::shoot(0, Sigma);
-        v.rotate(angle, v.orthogonal());
-        v.rotate(G4UniformRand()*2.0*M_PI, Direction);
-        ParticleGun->SetParticleMomentumDirection(v);
-    }
-    else
-    */
     ParticleGun->SetParticleMomentumDirection(-Direction);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
@@ -99,20 +155,77 @@ G4ThreeVector SourceModeBase::generateDirectionIsotropic()
 // ---
 
 PointSource::PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin) :
-    SourceModeBase(particle, timeGenerator)
+    SourceModeBase(particle, timeGenerator), Origin(origin)
 {
-    ParticleGun->SetParticlePosition(origin);
+    ParticleGun->SetParticlePosition(Origin);
+}
+
+PointSource::PointSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+
+    ParticleGun->SetParticlePosition(Origin);
+}
+
+void PointSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+}
+
+void PointSource::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "OriginX", Origin[0]);
+    jstools::readDouble(json, "OriginY", Origin[1]);
+    jstools::readDouble(json, "OriginZ", Origin[2]);
 }
 
 // ---
 
 PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
-    SourceModeBase(particle, timeGenerator)
+    SourceModeBase(particle, timeGenerator), Origin(origin)
 {
-    ParticleGun->SetParticlePosition(origin);
-
     Direction = direction;
+    init();
+}
+
+PencilBeam::PencilBeam(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+    init();
+}
+
+void PencilBeam::init()
+{
+    ParticleGun->SetParticlePosition(Origin);
     bIsotropicDirection = false;
+}
+
+void PencilBeam::doWriteToJson(json11::Json::object & json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+
+    json["DirectionX"] = Direction.x();
+    json["DirectionY"] = Direction.y();
+    json["DirectionZ"] = Direction.z();
+}
+
+void PencilBeam::doReadFromJson(const json11::Json &json)
+{
+    jstools::readDouble(json, "OriginX", Origin[0]);
+    jstools::readDouble(json, "OriginY", Origin[1]);
+    jstools::readDouble(json, "OriginZ", Origin[2]);
+
+    jstools::readDouble(json, "DirectionX", Direction[0]);
+    jstools::readDouble(json, "DirectionY", Direction[1]);
+    jstools::readDouble(json, "DirectionZ", Direction[2]);
 }
 
 // ---
@@ -127,6 +240,19 @@ MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
     Origin(origin), BoundingBox(boundingBoxFullSize),
     Material(material),
     FileName(fileName_EmissionPositions)
+{
+    init();
+}
+
+MaterialLimitedSource::MaterialLimitedSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+    init();
+}
+
+void MaterialLimitedSource::init()
 {
     if (!FileName.empty())
     {
@@ -187,8 +313,51 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
     SourceModeBase::GeneratePrimaries(anEvent);
 }
 
+void MaterialLimitedSource::doWriteToJson(json11::Json::object &json) const
+{
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+
+    json["BoundingBoxX"] = BoundingBox.x();
+    json["BoundingBoxY"] = BoundingBox.y();
+    json["BoundingBoxZ"] = BoundingBox.z();
+
+    json["Material"] = Material;
+    json["FileName"] = FileName;
+}
+
+void MaterialLimitedSource::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "OriginX", Origin[0]);
+    jstools::readDouble(json, "OriginY", Origin[1]);
+    jstools::readDouble(json, "OriginZ", Origin[2]);
+
+    jstools::readDouble(json, "BoundingBoxX", BoundingBox[0]);
+    jstools::readDouble(json, "BoundingBoxY", BoundingBox[1]);
+    jstools::readDouble(json, "BoundingBoxZ", BoundingBox[2]);
+
+    jstools::readString(json, "Material", Material);
+    jstools::readString(json, "FileName", FileName);
+}
+
+// ---
+
 NaturalLysoSource::NaturalLysoSource(double timeFrom, double timeTo) :
-    SourceModeBase(new Lu176, new UniformTime(timeFrom, timeTo))
+    SourceModeBase(new Hf176exc, new UniformTime(timeFrom, timeTo)), TimeFrom(timeFrom), TimeTo(timeTo)
+{
+    init();
+}
+
+NaturalLysoSource::NaturalLysoSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+    init();
+}
+
+void NaturalLysoSource::init()
 {
     bIsotropicDirection = false;
 
@@ -257,6 +426,18 @@ void NaturalLysoSource::GeneratePrimaries(G4Event *anEvent)
     ParticleGun->SetParticleDefinition(tmpPD);
 }
 
+void NaturalLysoSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["TimeFrom"] = TimeFrom;
+    json["TimeTo"]   = TimeTo;
+}
+
+void NaturalLysoSource::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "TimeFrom", TimeFrom);
+    jstools::readDouble(json, "TimeTo",   TimeTo);
+}
+
 void NaturalLysoSource::customPostInit()
 {
     Navigator = new G4Navigator();
@@ -265,10 +446,22 @@ void NaturalLysoSource::customPostInit()
 }
 
 BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &origin, G4String fileName) :
-    PointSource(particle, timeGenerator, origin)
+    PointSource(particle, timeGenerator, origin), FileName(fileName)
+{
+    init();
+}
+
+BlurredPointSource::BlurredPointSource(const json11::Json & json) :
+    PointSource(json)
+{
+    doReadFromJson(json);
+    init();
+}
+
+void BlurredPointSource::init()
 {
     Hist1D dist(21, -10, 10);
-    std::ifstream * inStream = new std::ifstream(fileName);
+    std::ifstream * inStream = new std::ifstream(FileName);
     std::vector<std::pair<double,double>> Input;
     std::string line;
 
@@ -285,7 +478,6 @@ BlurredPointSource::BlurredPointSource(ParticleBase *particle, TimeGeneratorBase
         dist.fill(pair.first+0.001, pair.second);
 
     Sampler = new Hist1DSampler(dist, 12345);
-    Origin = ParticleGun->GetParticlePosition();
 }
 
 BlurredPointSource::~BlurredPointSource()
@@ -300,8 +492,63 @@ void BlurredPointSource::GeneratePrimaries(G4Event *anEvent)
     {
         vec[i] = Sampler->getRandom() + Origin[i];
     }
-    out(vec);
+    //out(vec);
     ParticleGun->SetParticlePosition(vec);
     SourceModeBase::GeneratePrimaries(anEvent);
 }
 
+void BlurredPointSource::doWriteToJson(json11::Json::object &json) const
+{
+    PointSource::doWriteToJson(json);
+    json["FileName"] = FileName;
+}
+
+void BlurredPointSource::doReadFromJson(const json11::Json &json)
+{
+    jstools::readString(json, "FileName", FileName);
+}
+
+// ---
+
+LineSource::LineSource(ParticleBase *particle, TimeGeneratorBase *timeGenerator, const G4ThreeVector &startPoint, const G4ThreeVector &endPoint) :
+    SourceModeBase(particle, timeGenerator), StartPoint(startPoint), EndPoint(endPoint) {}
+
+LineSource::LineSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+}
+
+void LineSource::GeneratePrimaries(G4Event * anEvent)
+{
+    double rand = G4UniformRand();
+    G4ThreeVector pos;
+    for (int i=0; i<3; i++)
+        pos[i] = StartPoint[i] + (EndPoint[i] - StartPoint[i]) * rand;
+    //out(pos);
+    ParticleGun->SetParticlePosition(pos);
+    SourceModeBase::GeneratePrimaries(anEvent);
+}
+
+void LineSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["StartPointX"] = StartPoint.x();
+    json["StartPointY"] = StartPoint.y();
+    json["StartPointZ"] = StartPoint.z();
+
+    json["EndPointX"] = EndPoint.x();
+    json["EndPointY"] = EndPoint.y();
+    json["EndPointZ"] = EndPoint.z();
+}
+
+void LineSource::doReadFromJson(const json11::Json &json)
+{
+    jstools::readDouble(json, "StartPointX", StartPoint[0]);
+    jstools::readDouble(json, "StartPointY", StartPoint[1]);
+    jstools::readDouble(json, "StartPointZ", StartPoint[2]);
+
+    jstools::readDouble(json, "EndPointX", EndPoint[0]);
+    jstools::readDouble(json, "EndPointY", EndPoint[1]);
+    jstools::readDouble(json, "EndPointZ", EndPoint[2]);
+}

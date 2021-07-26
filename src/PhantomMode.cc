@@ -13,10 +13,42 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "out.hh"
+#include "jstools.hh"
 
-#include <vector>
-#include <string>
 #include <math.h>
+
+PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json & json)
+{
+    out("Reading phantom json");
+    std::string Type;
+    jstools::readString(json, "Type", Type);
+
+    PhantomModeBase * ph = nullptr;
+
+    if      (Type == "PhantomNone")     ph = new PhantomNone();
+    else if (Type == "PhantomPMMA")     ph = new PhantomPMMA();
+    else if (Type == "PhantomTinyCube") ph = new PhantomTinyCube();
+    else if (Type == "PhantomDerenzo")  ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
+    else if (Type == "PhantomParam")    ph = new PhantomParam();
+    else
+    {
+        out("Unknown phantom type!");
+        exit(10);
+    }
+
+    if (ph) ph->readFromJson(json);
+    return ph;
+}
+
+// ---
+
+void PhantomModeBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+    doWriteToJson(json);
+}
+
+// ---
 
 G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
 {
@@ -87,7 +119,7 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
     for (int iSec = 0; iSec < numSectors; iSec++)
     {
         const double holeDiameter = HoleDiameters[iSec];
-        double a = deltaAngle * iSec + DPhi * M_PI / numSectors;
+        double a = deltaAngle * iSec + DPhi * M_PI / 180.0;
 
         //x and y are in not rotated coordinates, sector is upward: centered at x=0, y+)
         double y = RadialOffset;
@@ -118,7 +150,45 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
     return logicPmma;
 }
 
+void PhantomDerenzo::doWriteToJson(json11::Json::object &json) const
+{
+    json["Diameter"]      = Diameter;
+    json["Height"]        = Height;
+
+    json11::Json::array ar;
+    for (const double d : HoleDiameters) ar.push_back(d);
+    json["HoleDiameters"] = ar;
+
+    json["RadialOffset"]  = RadialOffset;
+    json["Margin"]        = Margin;
+    json["DPhi"]          = DPhi;
+}
+
+void PhantomDerenzo::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "Diameter",     Diameter);
+    jstools::readDouble(json, "Height",       Height);
+
+    json11::Json::array ar;
+    jstools::readArray(json, "HoleDiameters", ar);
+    HoleDiameters.clear();
+    std::string str;
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        if (i != 0) str += ", ";
+        const double dia = ar[i].number_value();
+        HoleDiameters.push_back(dia);
+        str += std::to_string(dia);
+    }
+    out("HoleDiameters:", str);
+
+    jstools::readDouble(json, "RadialOffset", RadialOffset);
+    jstools::readDouble(json, "Margin",       Margin);
+    jstools::readDouble(json, "DPhi",         DPhi);
+}
+
 // ---
+
 #include "ParamTest.hh"
 #include "G4PVParameterised.hh"
 G4LogicalVolume * PhantomParam::definePhantom(G4LogicalVolume * logicWorld)

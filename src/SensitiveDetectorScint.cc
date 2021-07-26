@@ -59,7 +59,7 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     std::vector<DepositionNodeRecord> & Nodes = Mode->DepositionData[iScint];
     if (!Mode->bDoCluster || Nodes.empty() || !Nodes.back().isCluster(newNode, Mode->MaxTimeDif))
     {
-        if (Nodes.size() == Mode->InitialReserve) Mode->saveData();
+        if (Nodes.size() == Mode->MaxCapacity) Mode->saveData();
         Nodes.push_back(newNode);
     }
     else

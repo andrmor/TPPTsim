@@ -1,18 +1,32 @@
 #ifndef SimulationMode_h
 #define SimulationMode_h
 
+#include "json11.hh"
+
 #include <vector>
 
 #include "G4ThreeVector.hh"
+#include "G4SystemOfUnits.hh"
 
 class G4UserSteppingAction;
 class G4VSensitiveDetector;
 class Hist1D;
 
+class SimModeBase;
+
+class SimModeFactory
+{
+public:
+    static SimModeBase * makeSimModeInstance(const json11::Json & json);
+};
+
 class SimModeBase
 {
 public:
     virtual ~SimModeBase(){}
+
+    bool bNeedGui    = false;
+    bool bNeedOutput = false;
 
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
@@ -20,8 +34,12 @@ public:
 
     virtual void onEventStarted() {}
 
-    bool bNeedGui    = false;
-    bool bNeedOutput = false;
+    virtual std::string getTypeName() const = 0;
+    void writeToJson(json11::Json::object & json) const;
+    virtual void readFromJson(const json11::Json & /*json*/) {}
+
+protected:
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {};
 };
 
 // ---
@@ -32,6 +50,7 @@ public:
     SimModeGui();
 
     void run() override;
+    std::string getTypeName() const override {return "SimModeGui";}
 };
 
 // ---
@@ -42,6 +61,11 @@ public:
     SimModeShowEvent(int EventToShow);
 
     void run() override;
+    std::string getTypeName() const override {return "SimModeShowEvent";}
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
 
     int iEvent = 0;
 };
@@ -53,8 +77,8 @@ public:
     SimModeScintPosTest();
 
     void run() override;
-
     G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeScintPosTest";}
 
     double MaxDelta = 0;
     int    Hits     = 0;
@@ -66,12 +90,17 @@ public:
 class SimModeSingleEvents : public SimModeBase
 {
 public:
-    SimModeSingleEvents();
+    SimModeSingleEvents(int numEvents);
 
     void run() override;
-
     G4VSensitiveDetector * getScintDetector() override;
+    std::string getTypeName() const override {return "SimModeSingleEvents";}
+    void readFromJson(const json11::Json & json) override;
 
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+public:
     int NumEvents = 10000;
     std::vector<G4ThreeVector> ScintData;
 };
@@ -91,20 +120,26 @@ struct DepositionNodeRecord
 class SimModeMultipleEvents : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(int numEvents, const std::string & FileName, bool bBinary = false);
+    SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary,
+                          size_t maxCapacity = 10000, bool doCluster  = true, double maxTimeDif  = 0.1*ns);
 
     void run() override;
-
     G4VSensitiveDetector * getScintDetector() override;
+    void saveData(); // can be called multiple times!
+    std::string getTypeName() const override {return "SimModeMultipleEvents";}
+    void readFromJson(const json11::Json & json) override;
 
-    void saveData(); //might be called multiple times!
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
 
-    int    NumEvents      = 1;
-    bool   bDoCluster     = true; // only considers consequtive nodes!
-    double MaxTimeDif     = 0.2;
-    size_t InitialReserve = 1000; // trigger dump to file when a scintillator accumulated this number of nodes
+public:
+    //note that the constructor default-configures the folowing settings:
+    int         NumEvents;
+    size_t      MaxCapacity;  // trigger dump to file when a scintillator accumulated this number of nodes
+    bool        bDoCluster;   // only considers consequtive nodes!
+    double      MaxTimeDif;
 
-    std::vector< std::vector<DepositionNodeRecord> > DepositionData;
+    std::vector<std::vector<DepositionNodeRecord>> DepositionData;
 };
 
 // ---
@@ -115,8 +150,8 @@ public:
     SimModeTracing();
 
     void run() override;
-
     G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeTracing";}
 };
 
 // ---
@@ -132,17 +167,23 @@ class SimModeAcollinTest : public SimModeBase
 {
 public:
     SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName); //range: degrees from 180.0
-
-    void run() override;
-
-    G4UserSteppingAction * getSteppingAction() override;
+    ~SimModeAcollinTest();
 
     void addDirection(const G4ThreeVector & v, int parentID, double energy);
 
+    void run() override;
+    G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeAcollinTest";}
+    void readFromJson(const json11::Json & json) override;
+
 protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void init();
+
     int NumRuns = 1;
+    int From    = 0;
+    int NumBins = 100;
     std::string FileName  = "dummy.txt";
-    int From = 0;
 
     Hist1D * Hist = nullptr;
     std::vector<DirAndEnergy> Gammas;
@@ -159,17 +200,23 @@ public:
     SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName);
     ~SimModeAnnihilTest();
 
-    void run() override;
-
-    G4UserSteppingAction * getSteppingAction() override;
-
     void addPosition(double x);
 
-protected:
-    int         NumEvents = 1;
-    std::string FileName  = "dummy.txt";
+    void run() override;
+    G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeAnnihilTest";}
+    void readFromJson(const json11::Json & json) override;
 
-    Hist1D    * Hist      = nullptr;
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void init();
+
+    int           NumEvents = 1;
+    double        Range     = 4.0;
+    int           NumBins   = 100;
+    std::string   FileName  = "dummy.txt";
+
+    Hist1D      * Hist      = nullptr;
 };
 
 // ---
@@ -180,14 +227,19 @@ public:
     SimModeNatRadTest(int numEvents, int numBins, const std::string & fileName);
     ~SimModeNatRadTest();
 
-    void run() override;
-
-    G4UserSteppingAction * getSteppingAction() override;
-
     void addEnergy(int iScint, double energy);
 
+    void run() override;
+    G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeNatRadTest";}
+    void readFromJson(const json11::Json & json) override;
+
 protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void init();
+
     int         NumEvents = 1;
+    int         NumBins   = 100;
     std::string FileName  = "dummy.txt";
 
     Hist1D    * Hist      = nullptr;
@@ -201,16 +253,19 @@ class SimModeFirstStage : public SimModeBase
 public:
     SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary);
 
+    void saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time);
+
     void run() override;
-
-    void saveParticle(const G4String & particle, double energy_keV, double *PosDir, double time);
-
     void onEventStarted() override;
+    std::string getTypeName() const override {return "SimModeFirstStage";}
+    void readFromJson(const json11::Json & json) override;
 
 protected:
-    int NumEvents    = 1;
-    int CurrentEvent = 0;
-};
+    void doWriteToJson(json11::Json::object & json) const override;
 
+    int         NumEvents    = 1;
+    std::string FileName     = "dummy.txt";
+    int         CurrentEvent = 0;
+};
 
 #endif // SimulationMode_h

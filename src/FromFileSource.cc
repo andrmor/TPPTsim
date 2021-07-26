@@ -1,6 +1,7 @@
 #include "FromFileSource.hh"
 #include "SessionManager.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include "G4ParticleGun.hh"
 #include "G4ParticleDefinition.hh"
@@ -13,14 +14,28 @@
 #include <fstream>
 
 FromFileSource::FromFileSource(const std::string & fileName, bool bBinaryFile) :
-    SourceModeBase(nullptr, nullptr), bBinary(bBinaryFile)
+    SourceModeBase(nullptr, nullptr), FileName(fileName), bBinary(bBinaryFile)
 {
-    if (bBinary) inStream = new std::ifstream(fileName, std::ios::in | std::ios::binary);
-    else         inStream = new std::ifstream(fileName);
+    init();
+}
+
+FromFileSource::FromFileSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+
+    init();
+}
+
+void FromFileSource::init()
+{
+    if (bBinary) inStream = new std::ifstream(FileName, std::ios::in | std::ios::binary);
+    else         inStream = new std::ifstream(FileName);
 
     if (!inStream->is_open())
     {
-        out("Cannot open input file with particles:" + fileName);
+        out("Cannot open input file with particles:" + FileName);
         exit(1000);
         delete inStream; inStream = nullptr;
     }
@@ -241,6 +256,18 @@ int FromFileSource::CountEvents()
 
     out("Found events:", iCounter);
     return iCounter;
+}
+
+void FromFileSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["FileName"] = FileName;
+    json["bBinary"]  = bBinary;
+}
+
+void FromFileSource::doReadFromJson(const json11::Json & json)
+{
+    jstools::readString(json, "FileName", FileName);
+    jstools::readBool  (json, "bBinary",  bBinary);
 }
 
 G4ParticleDefinition * FromFileSource::makeGeant4Particle(const std::string & particleName)
