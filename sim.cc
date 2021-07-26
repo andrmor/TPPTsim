@@ -37,9 +37,9 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed              = 1000;
-        SM.SimAcollinearity = true;  // only for the phantom region!
-        SM.KillNeutrinos    = true;
+        SM.Seed               = 1000;
+        SM.SimAcollinearity   = true;  // only for the phantom region!
+        SM.KillNeutrinos      = true;
 
         SM.CutPhantomGamma    = 10.0*mm;
         SM.CutPhantomElectron = 10.0*mm;
@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
-        SM.PhantomMode      = new PhantomPMMA;
+        //SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomTinyCube;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
-        //SM.PhantomMode      = new PhantomModeDICOM(155., {0,0,50}, "Data.dat", true);
+        SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
         // Operation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeAnnihilTest(1e6, 10, 1000, "AnnihilTest.txt");
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
-        SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
+        //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
         //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);

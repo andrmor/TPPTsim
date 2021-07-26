@@ -52,6 +52,7 @@
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomHandler.hh"
 
+#include "jstools.hh"
 #include "out.hh"
 
 #include "G4VisAttributes.hh"
@@ -61,33 +62,45 @@
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
-G4LogicalVolume * PhantomModeDICOM::definePhantom(G4LogicalVolume* logicWorld)
-{
-    DicomHandler* dcmHandler = 0;
-    dcmHandler = DicomHandler::Instance();
-    SessionManager & SM = SessionManager::getInstance();
+PhantomModeDICOM::PhantomModeDICOM(G4double phantRadius, const std::vector<double> & posContainer, G4String dataFile, bool delFiles) :
+    PhantRadius(phantRadius), PosContainer(posContainer),
+    DicomPath(SessionManager::getInstance().WorkingDirectory),
+    DataFile(dataFile), DelFiles(delFiles) {}
 
-    // Look for .g4dcm files: if do not exist, create them
-    dcmHandler->CheckFileFormat();
+G4LogicalVolume * PhantomModeDICOM::definePhantom(G4LogicalVolume * logicWorld)
+{
+    DicomHandler * dcmHandler = DicomHandler::Instance();
+    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if do not exist, create them
 
     // Assumes that the "necessary" files are at "working directory".
-    DicomPath = SM.WorkingDirectory;
-    G4cout << DicomPath << G4endl;
+    //G4cout << DicomPath << G4endl;
 
     InitialisationOfMaterials();
     ReadPhantomData();
     ConstructPhantomContainer(logicWorld);
     ConstructPhantom();
 
-
     // To be "optimized": PET_PT directory should be considered automatically
-    if (DelFiles) {
-        G4String cmd = "rm -f "+DicomPath+"/PET_PT/*.g4dcm*";
+    if (DelFiles)
+    {
+        G4String cmd = "rm -f " + DicomPath + "/PET_PT/*.g4dcm*";
         system(cmd);
     }
-    return 0;
-  }
 
+    return fContainer_logic;
+}
+
+void PhantomModeDICOM::doWriteToJson(json11::Json::object & json) const
+{
+    json["PhantRadius"] = PhantRadius;
+    // TODO: Hugo!
+}
+
+void PhantomModeDICOM::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "PhantRadius", PhantRadius);
+    // TODO: Hugo!
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........
 void PhantomModeDICOM::InitialisationOfMaterials()

@@ -1,5 +1,9 @@
 #include "PhantomMode.hh"
 #include "SessionManager.hh"
+#include "DicomPhantom.hh"
+#include "out.hh"
+#include "jstools.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
@@ -12,8 +16,6 @@
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
-#include "out.hh"
-#include "jstools.hh"
 
 #include <math.h>
 
@@ -25,11 +27,12 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
 
     PhantomModeBase * ph = nullptr;
 
-    if      (Type == "PhantomNone")     ph = new PhantomNone();
-    else if (Type == "PhantomPMMA")     ph = new PhantomPMMA();
-    else if (Type == "PhantomTinyCube") ph = new PhantomTinyCube();
-    else if (Type == "PhantomDerenzo")  ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
-    else if (Type == "PhantomParam")    ph = new PhantomParam();
+    if      (Type == "PhantomNone")      ph = new PhantomNone();
+    else if (Type == "PhantomPMMA")      ph = new PhantomPMMA();
+    else if (Type == "PhantomTinyCube")  ph = new PhantomTinyCube();
+    else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
+    else if (Type == "PhantomParam")     ph = new PhantomParam();
+    else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
     else
     {
         out("Unknown phantom type!");
