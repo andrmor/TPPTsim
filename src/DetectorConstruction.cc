@@ -6,7 +6,6 @@
 #include "SimMode.hh"
 #include "PhantomMode.hh"
 #include "out.hh"
-
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"

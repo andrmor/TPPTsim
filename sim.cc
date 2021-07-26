@@ -1,10 +1,11 @@
-﻿#include "SessionManager.hh"
+#include "SessionManager.hh"
 #include "SourceMode.hh"
 #include "FromFileSource.hh"
 #include "TimeGenerator.hh"
 #include "DefinedParticles.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
+#include "DicomPhantom.hh"
 #include "DetComp.hh"
 #include "out.hh"
 
@@ -64,6 +65,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomTinyCube;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
+        //SM.PhantomMode      = new PhantomModeDICOM(155., {0,0,50}, "Data.dat", true);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -101,6 +103,7 @@ int main(int argc, char** argv)
     }
 
     SM.startSession();
+
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     SM.SimMode->run();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
