@@ -7,6 +7,8 @@
 #include "ScintRecord.hh"
 #include "out.hh"
 
+#include "DicomHandler.hh"
+
 #include "G4RunManager.hh"
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"

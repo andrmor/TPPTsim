@@ -5,6 +5,7 @@
 #include "SimMode.hh"
 #include "PhantomMode.hh"
 #include "out.hh"
+#include "DicomPhantom.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"

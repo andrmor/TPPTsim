@@ -7,6 +7,10 @@
 #include "PhantomMode.hh"
 #include "out.hh"
 
+//added HS, 2021/06/23
+#include "DicomPhantom.hh"
+
+
 #include <chrono>
 
 int main(int argc, char** argv)
@@ -20,8 +24,9 @@ int main(int argc, char** argv)
     SM.bSimAcollinearity = true;  // only for the phantom region!
     SM.bKillNeutrinos    = true;
 
-    double timeFrom = 0;
-    double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
+    // Commented since it is not being used by my tests: HS~
+    //double timeFrom = 0;
+    //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
     //SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
     //SM.WorkingDirectory = "/data/margarida/Data";
@@ -33,10 +38,15 @@ int main(int argc, char** argv)
 
   // Phantom
     //SM.PhantomMode      = new PhantomNone;
-    SM.PhantomMode      = new PhantomPMMA;
+    //SM.PhantomMode      = new PhantomPMMA;
     //SM.PhantomMode      = new PhantomTinyCube;
     //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
     //SM.PhantomMode      = new PhantomParam;
+
+    // PhantomModeDICOM added by HS
+    //SM.bCodeVerbose     = true;
+    SM.PhantomMode      = new PhantomModeDICOM(155., {0,0,50}, "Data.dat", true);
+
 
   // Detector
     //SM.DetectorComposition = {};
