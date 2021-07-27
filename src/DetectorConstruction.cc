@@ -395,6 +395,29 @@ void DetectorConstruction::addCopperStructure()
         }
     }
 
+    G4Trd * solidCopper4   = new G4Trd("Copper3", 0.5 * 0.9 * mm, 0.5 * 0.7 * mm, 0.5 * 105 * mm, 0.5 * 105 * mm, 0.5 * 5.0 * mm);
+    G4LogicalVolume * logicCopper4   = new G4LogicalVolume(solidCopper4, matCopper, "Copper");
+    logicCopper4 ->SetVisAttributes(new G4VisAttributes(brown));
+
+    for (int iA = 0; iA < 13; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1*mm + 2 * 0.010*mm + 2 * 3.175 + 9.0 * mm); //1 mm of SIPM + 0.010 mm between the SIPM and the PCB layers
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
+        double X1 = Radius * sin(Angle);
+        double Y1 = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        for (int iZ = 0; iZ < 1; iZ++)
+        {
+            double RowPitch = 0.35 * mm + 28.9 * mm;
+            double Z = -0.5 * (1 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicCopper4, "Copper4", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicCopper4, "Copper4", logicWorld, false, 0);
+        }
+    }
+
     //External columns:
     G4Box * solidCopper3   = new G4Box("Copper3", 0.5 * 3.0*mm, 0.5 * 3.0*mm, 0.5 * 105.0*mm);
     G4LogicalVolume * logicCopper3   = new G4LogicalVolume(solidCopper3, matCopper, "Copper3");
