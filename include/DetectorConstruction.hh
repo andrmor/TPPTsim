@@ -20,9 +20,11 @@ private:
     void addScintillators();
     void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
     void addBase();
+    void addClosedStructure();
     void addSIPM();
     void addPCB();
     void addCopperStructure();
+    void addCoolingAssemblies();
 
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;
