@@ -61,6 +61,7 @@ class SessionManager
         void saveScintillatorTable(const std::string & fileName);
         int  isDirExist(const std::string & dirName);
         int  isFileExist(const std::string & fileName);
+
         void saveConfig(const std::string & fileName) const;
         void loadConfig(const std::string & fileName);
 
@@ -73,6 +74,8 @@ class SessionManager
         bool KillNeutrinos    = false;
 
         DetComp DetectorComposition;
+
+        std::string GdmlFileName = "detector.gdml";
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName  = "TpptSim_DefaultSaveName.txt";

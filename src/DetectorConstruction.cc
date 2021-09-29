@@ -62,7 +62,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if ( SM.detectorContains(DetComp::GDML) )
     {
         G4GDMLParser parser;
-        parser.Read("mother.gdml", false);
+        parser.Read(SM.GdmlFileName, false);
         SM.physWorld  = parser.GetWorldVolume();
         logicWorld = SM.physWorld->GetLogicalVolume();
     }

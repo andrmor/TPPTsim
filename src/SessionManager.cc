@@ -344,6 +344,7 @@ void SessionManager::saveConfig(const std::string & fileName) const
         json11::Json::array ar;
         DetectorComposition.writeToJsonAr(ar);
         json["DetectorComposition"] = ar;
+        json["GdmlFileName"] = GdmlFileName;
     }
 
     // Source
@@ -432,6 +433,7 @@ void SessionManager::loadConfig(const std::string & fileName)
         json11::Json::array ar;
         jstools::readArray(json, "DetectorComposition", ar);
         DetectorComposition.readFromJsonAr(ar);
+        jstools::readString(json, "GdmlFileName", GdmlFileName);
     }
 
     // Source
