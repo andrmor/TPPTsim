@@ -1,4 +1,6 @@
 #include "SessionManager.hh"
+#include "DetComp.hh"
+#include "PhantomMode.hh"
 #include "SourceMode.hh"
 #include "SimMode.hh"
 #include "DetectorConstruction.hh"
@@ -6,6 +8,7 @@
 #include "EventAction.hh"
 #include "ScintRecord.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include "G4RunManager.hh"
 #include "G4UIExecutive.hh"
@@ -42,24 +45,27 @@ SessionManager::SessionManager()
     runManager = new G4RunManager;
 }
 
-void SessionManager::startSession(int argc, char ** argv)
+void SessionManager::startSession()
 {
-    out("\n\n---------");
-
+    if (!isDirExist(WorkingDirectory))
+    {
+        out("Provided working directory does not exist:\n", WorkingDirectory);
+        exit(1);
+    }
     if (!SourceMode)
     {
         out("Source mode not provided!");
-        exit(1);
+        exit(2);
     }
     if (!SimMode)
     {
         out("Simulation mode not provided!");
-        exit(2);
+        exit(3);
     }
     if (!PhantomMode)
     {
         out("Phantom mode not provided!");
-        exit(3);
+        exit(4);
     }
 
     DetectorConstruction * theDetector = new DetectorConstruction();
@@ -69,7 +75,7 @@ void SessionManager::startSession(int argc, char ** argv)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
-    if (bSimAcollinearity || bKillNeutrinos) createFastSimulationPhysics(physicsList);
+    if (SimAcollinearity || KillNeutrinos) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
@@ -85,16 +91,20 @@ void SessionManager::startSession(int argc, char ** argv)
     GammaPD = G4ParticleTable::GetParticleTable()->FindParticle("gamma");
     configureRandomGenerator();
     initializeSource();
-    if (SimMode->bNeedGui)    configureGUI(argc, argv);
+    if (SimMode->bNeedGui)    configureGUI();
     if (SimMode->bNeedOutput) configureOutput();
     configureVerbosity();
+
+    saveConfig(WorkingDirectory + "/SimConfig.json");
 }
 
 SessionManager::~SessionManager() {}
 
-void SessionManager::configureGUI(int argc, char ** argv)
+void SessionManager::configureGUI()
 {
-    ui         = new G4UIExecutive(argc, argv);
+    char ch = 's';
+    char * ad[] = {&ch};
+    ui         = new G4UIExecutive(1, ad);
     visManager = new G4VisExecutive("Quiet");
 
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
@@ -127,8 +137,8 @@ void SessionManager::createFastSimulationPhysics(G4VModularPhysicsList * physics
     //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
     // see registerAcollinearGammaModel() and registerParticleKillerModel()
 
-    if (bSimAcollinearity) fsm->ActivateFastSimulation("gamma");
-    if (bKillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
+    if (SimAcollinearity) fsm->ActivateFastSimulation("gamma");
+    if (KillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
     physicsList->RegisterPhysics(fsm);
 }
 
@@ -151,13 +161,13 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     regPhantom = new G4Region("Phantom");
     regPhantom->AddRootLogicalVolume(logVolPhantom);
 
-    if (bSimAcollinearity) registerAcollinearGammaModel(regPhantom);
-    if (bKillNeutrinos)    registerParticleKillerModel(regPhantom);
+    if (SimAcollinearity) registerAcollinearGammaModel(regPhantom);
+    if (KillNeutrinos)    registerParticleKillerModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
-    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("gamma"));
-    cuts->SetProductionCut(10.0*mm, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutPhantomGamma,    G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(CutPhantomElectron, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutPhantomPositron, G4ProductionCuts::GetIndex("e+"));
     regPhantom->SetProductionCuts(cuts);
 }
 
@@ -167,9 +177,9 @@ void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
     regScint->AddRootLogicalVolume(logVolScint);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("gamma"));
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e-"));
-    cuts->SetProductionCut(0.1*mm, G4ProductionCuts::GetIndex("e+"));
+    cuts->SetProductionCut(CutScintGamma,    G4ProductionCuts::GetIndex("gamma"));
+    cuts->SetProductionCut(CutScintElectron, G4ProductionCuts::GetIndex("e-"));
+    cuts->SetProductionCut(CutScintPositron, G4ProductionCuts::GetIndex("e+"));
     regScint->SetProductionCuts(cuts);
 }
 
@@ -192,9 +202,9 @@ int SessionManager::getNumberNatRadEvents(double timeFromInNs, double timeToInNs
     return numEvents;
 }
 
-bool SessionManager::detectorContains(DetComp component) const
+bool SessionManager::detectorContains(const std::string & component)
 {
-    return std::count(DetectorComposition.begin(), DetectorComposition.end(), component); // pre-c++20 ugly version of "contains"
+    return DetectorComposition.contains(component);
 }
 
 void SessionManager::saveScintillatorTable(const std::string & fileName)
@@ -253,7 +263,7 @@ void SessionManager::initializeSource()
 void SessionManager::configureVerbosity()
 {
     G4UImanager * UImanager = G4UImanager::GetUIpointer();
-    if (bG4Verbose)
+    if (Verbose)
     {
         UImanager->ApplyCommand("/hits/verbose 2");
         UImanager->ApplyCommand("/tracking/verbose 2");
@@ -266,7 +276,6 @@ void SessionManager::configureVerbosity()
         UImanager->ApplyCommand("/control/verbose 0");
         UImanager->ApplyCommand("/run/verbose 0");
     }
-    //UImanager->ApplyCommand("/run/initialize");
 }
 
 void SessionManager::endSession()
@@ -277,4 +286,169 @@ void SessionManager::endSession()
     delete visManager;
     delete runManager;
     delete ui;
+}
+
+#include <sys/types.h>
+#include <sys/stat.h>
+int SessionManager::isDirExist(const std::string & dirName)
+{
+    struct stat info;
+
+    if (stat(dirName.data(), &info) != 0) return false;
+    else if (info.st_mode & S_IFDIR)      return true;
+    else                                  return false;
+}
+
+int SessionManager::isFileExist(const std::string & fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
+#include "json11.hh"
+void SessionManager::saveConfig(const std::string & fileName) const
+{
+    json11::Json::object json;
+
+    json["Seed"] = Seed;
+
+    json["SimAcollinearity"] = SimAcollinearity;
+    json["KillNeutrinos"]    = KillNeutrinos;
+
+    json11::Json::object jsCuts;
+        jsCuts["CutPhantomGamma"]    = CutPhantomGamma;
+        jsCuts["CutPhantomElectron"] = CutPhantomElectron;
+        jsCuts["CutPhantomPositron"] = CutPhantomPositron;
+        jsCuts["CutScintGamma"]      = CutScintGamma;
+        jsCuts["CutScintElectron"]   = CutScintElectron;
+        jsCuts["CutScintPositron"]   = CutScintPositron;
+    json["Cuts"] = jsCuts;
+
+    json["WorkingDirectory"] = WorkingDirectory;
+
+    json["Verbose"] = Verbose;
+    json["Debug"]   = Debug;
+
+    json["ShowEventNumber"]  = ShowEventNumber;
+    json["EvNumberInterval"] = EvNumberInterval;
+
+    // Phantom
+    {
+        json11::Json::object js;
+        PhantomMode->writeToJson(js);
+        json["PhantomMode"] = js;
+    }
+
+    // Detector composition
+    {
+        json11::Json::array ar;
+        DetectorComposition.writeToJsonAr(ar);
+        json["DetectorComposition"] = ar;
+        json["GdmlFileName"] = GdmlFileName;
+    }
+
+    // Source
+    {
+        json11::Json::object js;
+        SourceMode->writeToJson(js);
+        json["SourceMode"] = js;
+    }
+
+    // Simulation mode
+    {
+        json11::Json::object js;
+        SimMode->writeToJson(js);
+        json["SimMode"] = js;
+    }
+
+    std::string json_str = json11::Json(json).dump();
+    std::ofstream confStream;
+    confStream.open(fileName);
+    if (confStream.is_open())
+        confStream << json_str << std::endl;
+    confStream.close();
+}
+
+void SessionManager::loadConfig(const std::string & fileName)
+{
+    if (!isFileExist(fileName))
+    {
+        out("File", fileName, "does not exist or cannot be open!");
+        exit(1);
+    }
+
+    out("\nReading config file:", fileName);
+    std::ifstream in(fileName);
+    std::stringstream sstr;
+    sstr << in.rdbuf();
+    in.close();
+    std::string cs = sstr.str();
+
+    std::string err;
+    json11::Json json = json11::Json::parse(cs, err);
+    if (!err.empty())
+    {
+        out(err);
+        exit(2);
+    }
+
+    jstools::readInt(json,  "Seed",             Seed);
+    jstools::readBool(json, "SimAcollinearity", SimAcollinearity);
+    jstools::readBool(json, "KillNeutrinos",    KillNeutrinos);
+
+    json11::Json::object jsCuts;
+    jstools::readObject(json, "Cuts", jsCuts);
+    {
+        jstools::readDouble(jsCuts, "CutPhantomGamma",    CutPhantomGamma);
+        jstools::readDouble(jsCuts, "CutPhantomElectron", CutPhantomElectron);
+        jstools::readDouble(jsCuts, "CutPhantomPositron", CutPhantomPositron);
+
+        jstools::readDouble(jsCuts, "CutScintGamma",      CutScintGamma);
+        jstools::readDouble(jsCuts, "CutScintElectron",   CutScintElectron);
+        jstools::readDouble(jsCuts, "CutScintPositron",   CutScintPositron);
+    }
+
+    jstools::readString(json, "WorkingDirectory", WorkingDirectory);
+    if (!isDirExist(WorkingDirectory))
+    {
+        out("Directory does not exist:", WorkingDirectory);
+        exit(3);
+    }
+
+    jstools::readBool(json, "Verbose", Verbose);
+    jstools::readBool(json, "Debug",   Debug);
+
+    jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
+    jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
+
+    // Phantom
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "PhantomMode", js);
+        PhantomMode = PhantomModeFactory::makePhantomModeInstance(js);
+    }
+
+    // Detector composition
+    {
+        json11::Json::array ar;
+        jstools::readArray(json, "DetectorComposition", ar);
+        DetectorComposition.readFromJsonAr(ar);
+        jstools::readString(json, "GdmlFileName", GdmlFileName);
+    }
+
+    // Source
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "SourceMode", js);
+        SourceMode = SourceModeFactory::makeSourceModeInstance(js);
+    }
+
+    // Simulation mode
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "SimMode", js);
+        SimMode = SimModeFactory::makeSimModeInstance(js);
+    }
+
+    out("Load success!", "\n^^^^^^^^^^^^^\n");
 }

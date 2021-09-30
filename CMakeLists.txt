@@ -37,7 +37,7 @@ add_executable(sim sim.cc ${sources} ${headers})
 target_link_libraries(sim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
-# Copy all scripts to the build directory
+# Copy run-time resources to the build directory
 #
 set(EXTRA_FILES
   vis.mac
@@ -50,6 +50,11 @@ foreach(_file ${EXTRA_FILES})
     COPYONLY
     )
 endforeach()
+
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/detector.gdml.tar.gz
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX

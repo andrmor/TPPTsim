@@ -1,11 +1,11 @@
 #include "DetectorConstruction.hh"
+#include "DetComp.hh"
 #include "SensitiveDetectorScint.hh"
 #include "SensitiveDetectorFSM.hh"
 #include "SessionManager.hh"
 #include "SimMode.hh"
 #include "PhantomMode.hh"
 #include "out.hh"
-
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
@@ -62,7 +62,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if ( SM.detectorContains(DetComp::GDML) )
     {
         G4GDMLParser parser;
-        parser.Read("mother.gdml", false);
+        parser.Read(SM.GdmlFileName, false);
         SM.physWorld  = parser.GetWorldVolume();
         logicWorld = SM.physWorld->GetLogicalVolume();
     }

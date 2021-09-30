@@ -7,7 +7,7 @@
 void EventAction::BeginOfEventAction(const G4Event * event)
 {
     SessionManager & SM = SessionManager::getInstance();
-    if (SM.bShowEventNumber)
+    if (SM.ShowEventNumber)
     {
         int id = event->GetEventID();
         if (id % SM.EvNumberInterval == 0) out("--- event #", id, "---");

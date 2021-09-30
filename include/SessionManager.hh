@@ -1,10 +1,11 @@
 #ifndef SESSIONMANAGER_H
 #define SESSIONMANAGER_H
 
+#include "DetComp.hh"
+
 #include <string>
 #include <vector>
 
-#include "Modes.hh"
 #include "ScintRecord.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
@@ -39,10 +40,10 @@ class SessionManager
         SessionManager(SessionManager const&) = delete;
         void operator=(SessionManager const&) = delete;
 
-        void startSession(int argc, char ** argv);
+        void startSession();
         void endSession();
 
-        void configureGUI(int argc, char ** argv);
+        void configureGUI();
         void startGUI();
         void configureOutput();
         void configureRandomGenerator();
@@ -54,39 +55,58 @@ class SessionManager
         void registerParticleKillerModel(G4Region * region);
         void createPhantomRegion(G4LogicalVolume * logVolPhantom);
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
-
         int  countScintillators() const;
-
         int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
-
-        bool detectorContains(DetComp component) const;
-
+        bool detectorContains(const std::string & component);
         void saveScintillatorTable(const std::string & fileName);
+        int  isDirExist(const std::string & dirName);
+        int  isFileExist(const std::string & fileName);
+
+        void saveConfig(const std::string & fileName) const;
+        void loadConfig(const std::string & fileName);
 
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
         PhantomModeBase  * PhantomMode   = nullptr;
 
-        bool bSimAcollinearity = false;
-        bool bKillNeutrinos    = false;
+        bool SimAcollinearity = false;
+        bool KillNeutrinos    = false;
 
-        std::vector<DetComp> DetectorComposition;
+        DetComp DetectorComposition;
+
+        std::string GdmlFileName = "detector.gdml";
 
         std::string WorkingDirectory = "Sure+Does+Not+Exist";
         std::string FileName   = "TpptSim_DefaultSaveName.txt";
 
         bool bBinOutput        = false;
 
+<<<<<<< HEAD
         long Seed              = 0;
         bool bG4Verbose        = false;
         bool bDebug            = false;
         bool bShowEventNumber  = false;
         int  EvNumberInterval  = 1000;
+=======
+        int  Seed             = 0;      // long->int because of json11
+        bool Verbose          = false;
+        bool Debug            = false;
+        bool ShowEventNumber  = false;
+        int  EvNumberInterval = 1000;
+>>>>>>> addGeoMerger
 
         std::vector<ScintRecord> ScintRecords;
 
         G4ParticleDefinition * GammaPD = nullptr;
+
+     // Cuts
+        double CutPhantomGamma    = 10.0*mm;
+        double CutPhantomElectron = 10.0*mm;
+        double CutPhantomPositron = 0.1 *mm;
+        double CutScintGamma      = 0.1 *mm;
+        double CutScintElectron   = 0.1 *mm;
+        double CutScintPositron   = 0.1 *mm;
 
      // Misc
         double activityLYSO    = 281.0; // decays per second per cm3
@@ -252,13 +272,12 @@ class SessionManager
 
      // Internal resources
         std::ofstream       * outStream  = nullptr;
+        G4Region            * regPhantom  = nullptr;
+        G4Region            * regScint    = nullptr;
 
      // External resources
         G4Material          * ScintMat    = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
-
-        G4Region            * regPhantom  = nullptr;
-        G4Region            * regScint    = nullptr;
 
         G4ParticleGun       * ParticleGun = nullptr;
 
