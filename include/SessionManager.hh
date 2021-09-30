@@ -82,19 +82,11 @@ class SessionManager
 
         bool bBinOutput        = false;
 
-<<<<<<< HEAD
-        long Seed              = 0;
-        bool bG4Verbose        = false;
-        bool bDebug            = false;
-        bool bShowEventNumber  = false;
-        int  EvNumberInterval  = 1000;
-=======
         int  Seed             = 0;      // long->int because of json11
         bool Verbose          = false;
         bool Debug            = false;
         bool ShowEventNumber  = false;
         int  EvNumberInterval = 1000;
->>>>>>> addGeoMerger
 
         std::vector<ScintRecord> ScintRecords;
 
