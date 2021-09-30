@@ -390,14 +390,14 @@ void DetectorConstruction::addCopperStructure()
     G4Material * matCopper = man->FindOrBuildMaterial("G4_Cu");
 
     //Columns in between the scintillators and PCBs (until the copper horizontal "connectors"):
-    G4Trd * solidCopperColumn1   = new G4Trd("CopperColumn1", 0.5 * SM.Column1SixeX1, 0.5 * SM.Column1SizeX2, 0.5 * SM.ColumnSizeY, 0.5 * SM.ColumnSizeY, 0.5 * SM.Column1SizeZ);
+    G4Trd * solidCopperColumn1   = new G4Trd("CopperColumn1", 0.5 * SM.Column1SixeX1, 0.5 * SM.Column1SizeX2, 0.5 * SM.Column1SizeY, 0.5 * SM.Column1SizeY, 0.5 * SM.Column1SizeZ);
     G4LogicalVolume * logicCopperColumn1   = new G4LogicalVolume(solidCopperColumn1, matCopper, "CopperColumn1");
     G4Colour brown(0.45,0.25,0.0);
     logicCopperColumn1 ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * 10.8 * mm + 6.0 * mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + SM.Column1SizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5*deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -408,13 +408,13 @@ void DetectorConstruction::addCopperStructure()
         new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.GlobalZ0), logicCopperColumn1, "CopperColumn1_PV", logicWorld, false, 0);
     }
 
-    G4Trd * solidCopperColumn2   = new G4Trd("CopperColumn2", 0.5 * SM.Column2SixeX1, 0.5 * SM.Column2SizeX2, 0.5 * SM.ColumnSizeY, 0.5 * SM.ColumnSizeY, 0.5 * SM.Column2SizeZ);
+    G4Trd * solidCopperColumn2   = new G4Trd("CopperColumn2", 0.5 * SM.Column2SixeX1, 0.5 * SM.Column2SizeX2, 0.5 * SM.Column2SizeY, 0.5 * SM.Column2SizeY, 0.5 * SM.Column2SizeZ);
     G4LogicalVolume * logicCopperColumn2   = new G4LogicalVolume(solidCopperColumn2, matCopper, "CopperColumn2");
     logicCopperColumn2 ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 2.15*mm - 0.15*mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + SM.Column2SizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -425,13 +425,13 @@ void DetectorConstruction::addCopperStructure()
         new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.GlobalZ0), logicCopperColumn2, "CopperColumn2_PV", logicWorld, false, 0);
     }
 
-    G4Trd * solidCopperColumn3   = new G4Trd("CopperColumn3", 0.5 * SM.Column3SixeX1, 0.5 * SM.Column3SizeX2, 0.5 * SM.ColumnSizeY, 0.5 * SM.ColumnSizeY, 0.5 * SM.Column3SizeZ);
+    G4Trd * solidCopperColumn3   = new G4Trd("CopperColumn3", 0.5 * SM.Column3SixeX1, 0.5 * SM.Column3SizeX2, 0.5 * SM.Column3SizeY, 0.5 * SM.Column3SizeY, 0.5 * SM.Column3SizeZ);
     G4LogicalVolume * logicCopperColumn3   = new G4LogicalVolume(solidCopperColumn3, matCopper, "CopperColumn3");
     logicCopperColumn3 ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 2.15*mm + 2*3.27 *mm + 3.82*mm - 4.96 * mm + 1.54 * mm);//0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 2 * 2.0*mm + 7.1*mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + SM.Column3SizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -452,7 +452,7 @@ void DetectorConstruction::addCopperStructure()
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 2.15*mm + 2*3.27 *mm + 3.82*mm - 4.96 * mm + 1.55 * mm + 2* 3.82*mm + 5.17*mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + 2 * SM.Column3SizeZ + SM.Piece1SizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -470,37 +470,59 @@ void DetectorConstruction::addCopperStructure()
         new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.Piece2Z2), logicCopperPiece2, "CopperPiece2_PV", logicWorld, false, 0);
     }
 
-    G4Trd * solidCopperPiece3   = new G4Trd("CopperPiece3", 0.5 * 6.4 * mm, 0.5 * 6.29 * mm, 0.5 * 6.6 * mm, 0.5 * 6.6 * mm, 0.5 * 1.0 * mm);
-    G4Trd * solidCoppertrye2   = new G4Trd("Copper3", 0.5 * 6.4 * mm, 0.5 * 6.29 * mm, 0.5 * 5.9 * mm, 0.5 * 5.9 * mm, 0.5 * 1.0 * mm);
+    G4Trd * solidCopperPiece3   = new G4Trd("CopperPiece3", 0.5 * SM.Piece3SizeX1, 0.5 * SM.Piece3SizeX2, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece3SizeZ);
+    G4Trd * solidCopperPiece4   = new G4Trd("CopperPiece4", 0.5 * SM.Piece4SizeX1, 0.5 * SM.Piece4SizeX2, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece4SizeY, 0.5 * SM.Piece4SizeZ);
     G4LogicalVolume * logicCopperPiece3   = new G4LogicalVolume(solidCopperPiece3, matCopper, "CopperPiece3");
     logicCopperPiece3 ->SetVisAttributes(new G4VisAttributes(brown));
-    G4LogicalVolume * logicCoppertrye2   = new G4LogicalVolume(solidCoppertrye2, matCopper, "Coppertry");
-    logicCoppertrye2 ->SetVisAttributes(new G4VisAttributes(brown));
+    G4LogicalVolume * logicCopperPiece4   = new G4LogicalVolume(solidCopperPiece4, matCopper, "CopperPiece4");
+    logicCopperPiece4 ->SetVisAttributes(new G4VisAttributes(brown));
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 2.15*mm + 2*3.27 *mm + 3.82*mm - 4.96 * mm + 1.55 * mm + 2* 3.82*mm + 1.0*mm + 14.17*mm );
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + 2 * SM.Column3SizeZ + 2 * SM.Piece1SizeZ + SM.Piece3SizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
         G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
         G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
-        double Z1 = SM.GlobalZ0 + 37.4 * mm;
-        double Z2 = SM.GlobalZ0 - 37.4 * mm;
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.Piece3Z1), logicCopperPiece3, "CopperPiece3_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.Piece3Z1), logicCopperPiece3, "CopperPiece3_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.Piece3Z2), logicCopperPiece3, "CopperPiece3_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.Piece3Z2), logicCopperPiece3, "CopperPiece3_PV", logicWorld, false, 0);
 
-        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z1), logicCopperPiece3, "solidCoppertry2", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z1), logicCopperPiece3, "solidCoppertry2", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z2), logicCopperPiece3, "solidCoppertry2", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z2), logicCopperPiece3, "solidCoppertry2", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.Piece4Z1), logicCopperPiece4, "CopperPiece4_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.Piece4Z1), logicCopperPiece4, "CopperPiece4_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.Piece4Z2), logicCopperPiece4, "CopperPiece4_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.Piece4Z2), logicCopperPiece4, "CopperPiece4_PV", logicWorld, false, 0);
+    }
 
-        double Z3 = SM.GlobalZ0 + 14.15 * mm;
-        double Z4 = SM.GlobalZ0 - 14.15 * mm;
+    //Connectors:
+    G4Box * solidOuterConnector   = new G4Box("OuterConnector", 0.5 * SM.ConnectorSizeX, 0.5 * SM.OutConnectSizeY, 0.5 * SM.ConnectorSizeZ);
+    G4LogicalVolume * logicOuterConnector   = new G4LogicalVolume(solidOuterConnector, matCopper, "OuterConnector");
+    logicOuterConnector ->SetVisAttributes(new G4VisAttributes(brown));
 
-        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z3), logicCoppertrye2, "solidCoppertrye2", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z3), logicCoppertrye2, "solidCoppertrye2", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z4), logicCoppertrye2, "solidCoppertrye2", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z4), logicCoppertrye2, "solidCoppertrye2", logicWorld, false, 0);
+    G4Box * solidInnerConnector   = new G4Box("InnerConnector", 0.5 * SM.ConnectorSizeX, 0.5 * SM.InConnectSizeY, 0.5 * SM.ConnectorSizeZ);
+    G4LogicalVolume * logicInnerConnector   = new G4LogicalVolume(solidInnerConnector, matCopper, "InnerConnector");
+    logicInnerConnector ->SetVisAttributes(new G4VisAttributes(brown));
+
+    for (int iA = 0; iA < 13; iA++)
+    {
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + 2 * SM.Column3SizeZ + 2 * SM.Piece1SizeZ + 2 * SM.Piece3SizeZ + SM.ConnectorSizeZ);
+        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ1), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ1), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ2), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ2), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ3), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ3), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ4), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ4), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
     }
 
     //External columns:
@@ -510,7 +532,7 @@ void DetectorConstruction::addCopperStructure()
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + 2 * SM.PCB2SizeZ + SM.MiddlePCBGap + 2.421*mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + 2 * SM.Column3SizeZ + 2 * SM.Piece1SizeZ + 2 * SM.Piece3SizeZ + 2 * SM.ConnectorSizeZ + SM.ExtColumnSizeY);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -529,7 +551,7 @@ void DetectorConstruction::addCopperStructure()
 
     for (int iA = 0; iA < 13; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + 2 * SM.PCB2SizeZ + SM.MiddlePCBGap + 2.421*mm + 16.7*mm + 5.0*mm); //0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + 2 * SM.PCB2SizeZ + SM.MiddlePCBGap + 16.7 *mm);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.Column1RSurf + 2 * SM.Column1SizeZ + 2 * SM.Column2SizeZ + 2 * SM.Column3SizeZ + 2 * SM.Piece1SizeZ + 2 * SM.Piece3SizeZ + 2 * SM.ConnectorSizeZ + 2 * SM.ExtColumnSizeY + SM.HolderSizeZ);
         double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
         double X1 = Radius * sin(Angle);
         double Y1 = Radius * cos(Angle);
@@ -544,34 +566,6 @@ void DetectorConstruction::addCopperStructure()
             new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicHolder, "Holder_PV", logicWorld, false, 0);
             new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicHolder, "Holder_PV", logicWorld, false, 0);
         }
-    }
-
-    //Connectors:
-    G4Box * solidOuterConnector   = new G4Box("OuterConnector", 0.5 * SM.ConnectorSizeX, 0.5 * SM.OutConnectSizeY, 0.5 * SM.ConnectorSizeZ);
-    G4LogicalVolume * logicOuterConnector   = new G4LogicalVolume(solidOuterConnector, matCopper, "OuterConnector");
-    logicOuterConnector ->SetVisAttributes(new G4VisAttributes(brown));
-
-    G4Box * solidInnerConnector   = new G4Box("InnerConnector", 0.5 * SM.ConnectorSizeX, 0.5 * SM.InConnectSizeY, 0.5 * SM.ConnectorSizeZ);
-    G4LogicalVolume * logicInnerConnector   = new G4LogicalVolume(solidInnerConnector, matCopper, "InnerConnector");
-    logicInnerConnector ->SetVisAttributes(new G4VisAttributes(brown));
-
-    for (int iA = 0; iA < 13; iA++)
-    {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * 1.35*mm + 2 * 0.010*mm + 2 * 3.175 + 5*cm + 0.311*mm);
-        double Angle  = SM.AngularStep * iA + SM.Angle0 - 4.5 * deg;
-        double X = Radius * sin(Angle);
-        double Y = Radius * cos(Angle);
-        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
-        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
-
-        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ1), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ1), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ2), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ2), logicOuterConnector, "OuterConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ3), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ3), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X,  Y, SM.ConnectorZ4), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X, -Y, SM.ConnectorZ4), logicInnerConnector, "InnerConnector_PV", logicWorld, false, 0);
     }
 }
 
@@ -609,7 +603,7 @@ void DetectorConstruction::addCoolingAssemblies()
     new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ4}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
 
     //Water that crosses the copper holder:
-    G4Torus * solidWaterPipe   = new G4Torus("WaterPipe", SM.WaterRmin, SM.WaterRmax, SM.WaterRTorus, SM.Angle0 - 9.5 * deg, SM.CoolingSegment);
+    G4Tubs * solidWaterPipe   = new G4Tubs("WaterPipe", SM.WaterRmin, SM.WaterRmax, 0.5 * SM.WaterHeight, SM.Angle0 - 9.5 * deg, SM.CoolingSegment);
     G4LogicalVolume * logicWaterPipe   = new G4LogicalVolume(solidWaterPipe, matWater, "WaterPipe");
     logicWaterPipe->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 

@@ -166,19 +166,21 @@ class SessionManager
 
      // Geometry - Copper Structure
      // Copper columns - from between the scintillators (Column1) to the copper connectors (Column3)
-        double Column1SixeX1   = 3.15  * mm;
-        double Column1SizeX2   = 2.2   * mm;
+        double Column1SixeX1   = 3.16  * mm;
+        double Column1SizeX2   = 2.21  * mm;
         double Column1SizeZ    = 6.0   * mm;
+        double Column1SizeY    = SystHeight;
+        double Column1RSurf    = 10.8  * mm; //approximate value. Can't be calculated
 
         double Column2SixeX1   = 1.25  * mm;
         double Column2SizeX2   = 0.75  * mm;
+        double Column2SizeY    = SystHeight;
         double Column2SizeZ    = 3.27  * mm;
 
         double Column3SixeX1   = 4.85  * mm;
         double Column3SizeX2   = 4.25  * mm;
+        double Column3SizeY    = SystHeight;
         double Column3SizeZ    = 3.82  * mm;
-
-        double ColumnSizeY     = SystHeight;
 
      // Copper pieces that connect Column3 to the horizontal copper connectors
         double Piece1SizeX1    = 6.29 * mm;
@@ -195,6 +197,31 @@ class SessionManager
         double Piece2Z1        = GlobalZ0 + 14.15 * mm;
         double Piece2Z2        = GlobalZ0 - 14.15 * mm;
 
+        double Piece3SizeX1    = 6.4  * mm;
+        double Piece3SizeX2    = 6.29 * mm;
+        double Piece3SizeY     = Piece1SizeY;
+        double Piece3SizeZ     = 1.0  * mm;
+        double Piece3Z1        = Piece1Z1;
+        double Piece3Z2        = Piece1Z2;
+
+        double Piece4SizeX1    = Piece3SizeX1;
+        double Piece4SizeX2    = Piece3SizeX2;
+        double Piece4SizeY     = Piece2SizeY;
+        double Piece4SizeZ     = Piece3SizeZ;
+        double Piece4Z1        = Piece2Z1;
+        double Piece4Z2        = Piece2Z2;
+
+    // Connectors - horizontal boxes that conect the external columns to the rest of the copper structure and "hide" the PCB2
+        double ConnectorSizeX  = 6.4  * mm;
+        double OutConnectSizeY = 6.6  * mm;
+        double InConnectSizeY  = 5.9  * mm;
+        double ConnectorSizeZ  = 21.6 * mm;
+
+        double ConnectorZ1     = GlobalZ0 + 37.4 * mm;
+        double ConnectorZ2     = GlobalZ0 - 37.4 * mm;
+        double ConnectorZ3     = GlobalZ0 + 14.15 * mm;
+        double ConnectorZ4     = GlobalZ0 - 14.15 * mm;
+
      // External columns (Column4)
         double ExtColumnSizeX  = 6.4 * mm;
         double ExtColumnSizeY  = 5.0 * mm;
@@ -205,17 +232,6 @@ class SessionManager
         double HolderSizeY     = HolderSizeX;
         double HolderSizeZ     = 16.7 * mm;
         double HolderPitch     = 49.3 * mm;
-
-     // Connectors - horizontal boxes that conect the external columns to the rest of the copper structure and "hide" the PCB2
-        double ConnectorSizeX  = 6.4  * mm;
-        double OutConnectSizeY = 6.6  * mm;
-        double InConnectSizeY  = 5.9  * mm;
-        double ConnectorSizeZ  = 21.6 * mm;
-
-        double ConnectorZ1     = GlobalZ0 + 37.4 * mm;
-        double ConnectorZ2     = GlobalZ0 - 37.4 * mm;
-        double ConnectorZ3     = GlobalZ0 + 14.15 * mm;
-        double ConnectorZ4     = GlobalZ0 - 14.15 * mm;
 
      // Geometry - Cooling Assemblies
      // Copper pipe holder (copper box)
@@ -228,9 +244,9 @@ class SessionManager
         double CopperBoxZ4     = ConnectorZ4 - 0.5 * (InConnectSizeY  + CopperBoxHeight) * mm;
 
      // Water
-        double WaterRmin       = 0.0 * mm;
-        double WaterRmax       = 3.0 * mm;
-        double WaterRTorus     = 201.5 + 0.5 * (211.6 - 201.5) * mm;
+        double WaterRmin       = 201.5 * mm;
+        double WaterRmax       = 211.6 * mm;
+        double WaterHeight     = 4.71  * mm;
 
         double CoolingSegment  = 120.0 * deg - 2.0 * SideWallSegment;
 

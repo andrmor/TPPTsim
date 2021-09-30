@@ -42,20 +42,19 @@ int main(int argc, char** argv)
     //SM.DetectorComposition = {DetComp::Scintillators};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::FirstStageMonitor};
     //SM.DetectorComposition = {DetComp::Scintillators, DetComp::GDML};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base, DetComp::ClosedStructure};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::Base, DetComp::CopperStructure, DetComp::CoolingAssemblies};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::PCB};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::PCB, DetComp::CopperStructure};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base, DetComp::ClosedStructure};
-    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::Base};
-    SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies, DetComp::Base};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB};
+    SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies, DetComp::Base};
+    //SM.DetectorComposition = {DetComp::Scintillators, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies, DetComp::Base, DetComp::ClosedStructure};
 
   // Source
-    SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
+    //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
     //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, "/data/margarida/Data/AnnihilTest.txt");
     //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
     //SM.SourceMode       = new PencilBeam(new GammaPair(511.0*keV, true), new ConstantTime(0), {0, 0, SM.GlobalZ0}, {1.0,0,0});
-    //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
+    SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
     //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
     //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
