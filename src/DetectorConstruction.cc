@@ -471,7 +471,7 @@ void DetectorConstruction::addCopperStructure()
     }
 
     G4Trd * solidCopperPiece3   = new G4Trd("CopperPiece3", 0.5 * SM.Piece3SizeX1, 0.5 * SM.Piece3SizeX2, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece3SizeZ);
-    G4Trd * solidCopperPiece4   = new G4Trd("CopperPiece4", 0.5 * SM.Piece4SizeX1, 0.5 * SM.Piece4SizeX2, 0.5 * SM.Piece3SizeY, 0.5 * SM.Piece4SizeY, 0.5 * SM.Piece4SizeZ);
+    G4Trd * solidCopperPiece4   = new G4Trd("CopperPiece4", 0.5 * SM.Piece4SizeX1, 0.5 * SM.Piece4SizeX2, 0.5 * SM.Piece4SizeY, 0.5 * SM.Piece4SizeY, 0.5 * SM.Piece4SizeZ);
     G4LogicalVolume * logicCopperPiece3   = new G4LogicalVolume(solidCopperPiece3, matCopper, "CopperPiece3");
     logicCopperPiece3 ->SetVisAttributes(new G4VisAttributes(brown));
     G4LogicalVolume * logicCopperPiece4   = new G4LogicalVolume(solidCopperPiece4, matCopper, "CopperPiece4");
