@@ -70,8 +70,15 @@ int main(int argc, char** argv)
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Base);
+        SM.DetectorComposition.add(DetComp::ClosedStructure);
+        SM.DetectorComposition.add(DetComp::SIPM);
+        SM.DetectorComposition.add(DetComp::PCB);
+        SM.DetectorComposition.add(DetComp::CopperStructure);
+        SM.DetectorComposition.add(DetComp::CoolingAssemblies);
+            // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
-        SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
+        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
 
         // Source
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
