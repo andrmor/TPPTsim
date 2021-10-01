@@ -14,10 +14,17 @@ public:
     static constexpr auto Scintillators     = "Scintillators";
     static constexpr auto GDML              = "GDML";
     static constexpr auto FirstStageMonitor = "FirstStageMonitor";
+    static constexpr auto Base              = "Base";
+    static constexpr auto ClosedStructure   = "ClosedStructure";
+    static constexpr auto SIPM              = "SIPM";
+    static constexpr auto PCB               = "PCB";
+    static constexpr auto CopperStructure   = "CopperStructure";
+    static constexpr auto CoolingAssemblies = "CoolingAssemblies";
     // Do not forget to add new types to the ValidComponents list below!!!
 
 private:
-    const std::vector<std::string> ValidComponents = {Scintillators, GDML, FirstStageMonitor};
+    const std::vector<std::string> ValidComponents = {Scintillators, GDML, FirstStageMonitor,
+                                                     Base, ClosedStructure, SIPM, PCB, CopperStructure, CoolingAssemblies};
 
 public:
     void set(const std::vector<std::string> & components);
