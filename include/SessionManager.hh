@@ -53,6 +53,7 @@ class SessionManager
         void createFastSimulationPhysics(G4VModularPhysicsList * physicsList);
         void registerAcollinearGammaModel(G4Region * region);
         void registerParticleKillerModel(G4Region * region);
+        void registerFastPESModel(G4Region * region);
         void createPhantomRegion(G4LogicalVolume * logVolPhantom);
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
         int  countScintillators() const;
@@ -72,6 +73,9 @@ class SessionManager
 
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;
+
+        bool FastPESGeneration = false;
+        std::string PesGenerationFile = "";
 
         DetComp DetectorComposition;
 

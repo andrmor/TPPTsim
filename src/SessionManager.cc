@@ -75,7 +75,7 @@ void SessionManager::startSession()
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
-    if (SimAcollinearity || KillNeutrinos) createFastSimulationPhysics(physicsList);
+    if (SimAcollinearity || KillNeutrinos || FastPESGeneration) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
@@ -135,10 +135,11 @@ void SessionManager::createFastSimulationPhysics(G4VModularPhysicsList * physics
 {
     G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
     //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
-    // see registerAcollinearGammaModel() and registerParticleKillerModel()
 
-    if (SimAcollinearity) fsm->ActivateFastSimulation("gamma");
-    if (KillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
+    // see createPhantomRegion() for registration of the models
+    if (SimAcollinearity)  fsm->ActivateFastSimulation("gamma");  // see registerAcollinearGammaModel()
+    if (KillNeutrinos)     fsm->ActivateFastSimulation("nu_e");   // see registerParticleKillerModel()
+    if (FastPESGeneration) fsm->ActivateFastSimulation("proton"); // see registerFastPESModel()
     physicsList->RegisterPhysics(fsm);
 }
 
@@ -156,13 +157,21 @@ void SessionManager::registerParticleKillerModel(G4Region *region)
     G4AutoDelete::Register(mod);
 }
 
+#include "FastPesGenerator.hh"
+void SessionManager::registerFastPESModel(G4Region *region)
+{
+    FastPesGeneratorModel * mod = new FastPesGeneratorModel("PesGenerator", region);
+    G4AutoDelete::Register(mod);
+}
+
 void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
 {
     regPhantom = new G4Region("Phantom");
     regPhantom->AddRootLogicalVolume(logVolPhantom);
 
-    if (SimAcollinearity) registerAcollinearGammaModel(regPhantom);
-    if (KillNeutrinos)    registerParticleKillerModel(regPhantom);
+    if (SimAcollinearity)  registerAcollinearGammaModel(regPhantom);
+    if (KillNeutrinos)     registerParticleKillerModel(regPhantom);
+    if (FastPESGeneration) registerFastPESModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(CutPhantomGamma,    G4ProductionCuts::GetIndex("gamma"));
