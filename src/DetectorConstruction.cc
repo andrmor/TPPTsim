@@ -27,7 +27,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+#include <QDebug>
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     G4NistManager * man = G4NistManager::Instance();
@@ -59,21 +59,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     EncapsMat = matPMMA;
 
     // Geometry
+    G4Box * solidWorld   = new G4Box("World", 750.0*mm, 750.0*mm, 750.0*mm);
+    logicWorld   = new G4LogicalVolume(solidWorld, matVacuum, "World_LV");
+    SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
+    logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
+
     if ( SM.detectorContains(DetComp::GDML) )
     {
         G4GDMLParser parser;
         parser.Read(SM.GdmlFileName, false);
-        SM.physWorld  = parser.GetWorldVolume();
-        logicWorld = SM.physWorld->GetLogicalVolume();
+        G4VPhysicalVolume * tmp = parser.GetWorldVolume(); tmp->SetName("DummyWorld");
+        G4LogicalVolume * logicGDML = tmp->GetLogicalVolume(); logicGDML->SetName("GDML_LV");
+        new G4PVPlacement(nullptr, {0, 0, -SM.IsoCenterGDML}, logicGDML, "GDML_PV", logicWorld, false, 0);
+        logicGDML->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+        logicGDML->SetVisAttributes(G4VisAttributes::Invisible);
     }
-    else
-    {
-        G4Box * solidWorld   = new G4Box("World", 500.0*mm, 500.0*mm, 500.0*mm);
-                logicWorld   = new G4LogicalVolume(solidWorld, matVacuum, "World");
-                SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World", nullptr, false, 0);
-    }
-    //logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
-    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
     G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
     if (phantom) SM.createPhantomRegion(phantom);

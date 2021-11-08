@@ -136,7 +136,8 @@ class SessionManager
         double BaseHeight      = 6.35  * mm;
         double BaseSegment     = 120.0 * deg;
 
-        double GlobalZ0        = 0.5 * (BaseHeight + SystHeight); //55.675 mm
+        double GlobalZ0        = 0;
+        double IsoCenterGDML   = 0.5 * (BaseHeight + SystHeight); //55.675 mm
 
      // Geometry - Closed Structure
         double InnerWallThick  = 1.0 * mm;

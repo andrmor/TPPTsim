@@ -81,14 +81,14 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
 
         // Source
-        //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, SM.GlobalZ0+2});
-        //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0}, "/data/margarida/Data/AnnihilTest.txt");
-        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
-        //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, SM.GlobalZ0-20.0}, {20.0, 20.0, SM.GlobalZ0+20.0});
-        SM.SourceMode       = new PencilBeam(new Gamma(511.0*keV), new ConstantTime(0), {100.0, 160.0, 50.0+SM.GlobalZ0}, {0,0,-1.0});
-        //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
-        //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
-        //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
+        //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
+        //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
+        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, 0});
+        //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
+        SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 0}, {1.0,0,0});
+        //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 12.3*mm}, {1.0,0,0});
+        //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
+        //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
 
