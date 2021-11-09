@@ -19,7 +19,8 @@ public:
     std::vector<std::pair<double,double>> CrossSection; // [MeV] [millibarn]
 
     //runtime
-    std::vector<std::pair<double,double>> MFP; // [MeV] [mm]
+    double NumberDensity;
+    double getCrossSection(double energy) const;
 };
 
 // ---

@@ -23,6 +23,17 @@ PesGenerationMode::PesGenerationMode() :
 void PesGenerationMode::preInit()
 {
     SessionManager::getInstance().FastPESGeneration = true;
+
+    /*
+    //interpolation test
+    PesGenRecord r(1,1,"");
+    r.MFP = { {0, 1},{1, 2},{2, 3},{3, 4},{5, 5},{10, 6} };
+    out(r.getMFP(0));
+    out(r.getMFP(100));
+    out(r.getMFP(0.5));
+    out(r.getMFP(6));
+    exit(0);
+    */
 }
 
 void PesGenerationMode::run()
@@ -78,10 +89,25 @@ void PesGenerationMode::updateMatRecords(int iMat, int Z, int A, double IsotopeN
 
         out("    ==> Adding PES generation record!");
         PesGenRecord thisRec = rec;
-
-        thisRec.MFP = thisRec.CrossSection;
-        for (auto & pair : thisRec.MFP) pair.second = 1e25 / pair.second / IsotopeNumberDensity; // millibarh = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
-
+        thisRec.NumberDensity = IsotopeNumberDensity;
         MaterialRecords[iMat].push_back(thisRec);
     }
+}
+
+#include <algorithm>
+double PesGenRecord::getCrossSection(double energy) const
+{
+    //Returns an iterator pointing to the first element in the range [first, last) that is greater than value, or last if no such element is found.
+    auto it = std::upper_bound(CrossSection.begin(), CrossSection.end(), energy,
+                               [](double one, const std::pair<double,double> & two)
+                                 {return one < two.first;}
+                              );
+
+    if (it == CrossSection.begin()) return CrossSection.front().second;  // first: energy, second: CS
+    if (it == CrossSection.end())   return CrossSection.back(). second;
+
+    // interpolation
+    // (e1, A) -> (energy, ?) -> (e2, B)  ==>  ? = A + (B-A)*(energy-e1)/(e2-e1)
+    const auto lowIt = it - 1;
+    return lowIt->second + (it->second - lowIt->second)*(energy - lowIt->first)/(it->first - lowIt->first);
 }

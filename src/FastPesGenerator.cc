@@ -5,11 +5,13 @@
 #include "G4RandomTools.hh"
 #include "out.hh"
 #include "Randomize.hh"
+#include "PesGenerationMode.hh"
+#include "SessionManager.hh"
 
 G4bool FastPesGeneratorModel::IsApplicable(const G4ParticleDefinition & particle)
 {
     const bool applicable = (&particle == G4Proton::ProtonDefinition());
-    out("PES isApplicable called", particle.GetParticleName(), applicable);
+    //out("PES isApplicable called", particle.GetParticleName(), applicable);
     return applicable;
 }
 
@@ -25,6 +27,7 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
         LastEnergy      = track->GetKineticEnergy();
         LastTrackLength = track->GetTrackLength();
         LastPosition    = track->GetPosition();
+        LastMaterial    = track->GetMaterial()->GetIndex();
         return false;
     }
 
@@ -36,9 +39,35 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
     {
         double stepLength = Length - LastTrackLength;
         double meanEnergy = 0.5 * (Energy + LastEnergy);
-        out("Step", stepLength, "meanE", meanEnergy);
+        out("Step", stepLength, "MeanEenergy", meanEnergy, " Material index", LastMaterial);
 
-        double trigStep = -Lambda * log(G4UniformRand());
+        SessionManager & SM = SessionManager::getInstance();
+        const PesGenerationMode * PGM = static_cast<PesGenerationMode*>(SM.SimMode);
+
+        const std::vector<PesGenRecord> & Records = PGM->MaterialRecords[LastMaterial];
+        if (Records.empty()) return false;
+
+        CSvec.clear(); CSvec.reserve(Records.size());
+        double sumCS = 0;
+        for (const PesGenRecord & r : Records)
+        {
+            const double cs = r.getCrossSection(meanEnergy);
+            sumCS += cs;
+            CSvec.push_back(cs);
+        }
+
+        // selecting the reaction
+        size_t index = 0;
+        double val = sumCS * G4UniformRand();
+        for (; index+1 < CSvec.size(); index++)
+        {
+            if (val < CSvec[index]) break;
+            val -= CSvec[index];
+        }
+
+        const double mfp = 1e25 / CSvec[index] / Records[index].NumberDensity; // millibarh = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+
+        double trigStep = -mfp * log(G4UniformRand());
         if (trigStep < stepLength)
         {
             G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
@@ -57,6 +86,7 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
     LastEnergy      = Energy;
     LastTrackLength = Length;
     LastPosition    = Position;
+    LastMaterial    = track->GetMaterial()->GetIndex();
     return false;
 }
 

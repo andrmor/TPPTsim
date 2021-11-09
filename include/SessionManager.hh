@@ -74,7 +74,7 @@ class SessionManager
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;
 
-        bool FastPESGeneration = false;
+        bool FastPESGeneration = false; // do not set it by hand! Automaticaly set if PesGenerationMode is selected
         std::string PesGenerationFile = "";
 
         DetComp DetectorComposition;

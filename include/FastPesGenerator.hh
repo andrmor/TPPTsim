@@ -3,6 +3,8 @@
 
 #include "G4VFastSimulationModel.hh"
 
+#include <vector>
+
 class FastPesGeneratorModel : public G4VFastSimulationModel
 {
 public:
@@ -19,12 +21,15 @@ private:
     double LastEnergy;
     double LastTrackLength;
     G4ThreeVector LastPosition;
+    int    LastMaterial;
 
-    double Lambda = 20.0;
+    std::vector<double> CSvec;
 
     // tmp
     double sumLength = 0;
     int    num = 0;
+
+
 
 };
 
