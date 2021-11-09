@@ -68,6 +68,8 @@ void SessionManager::startSession()
         exit(4);
     }
 
+    SimMode->preInit();
+
     DetectorConstruction * theDetector = new DetectorConstruction();
     runManager->SetUserInitialization(theDetector);
 

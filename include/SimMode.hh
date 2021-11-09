@@ -28,6 +28,8 @@ public:
     bool bNeedGui    = false;
     bool bNeedOutput = false;
 
+    virtual void preInit() {}  // triggered before Geant4 configuration process!
+
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
