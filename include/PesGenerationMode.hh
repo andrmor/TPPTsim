@@ -32,6 +32,8 @@ public:
 
     std::string getTypeName() const override {return "PesGenerationMode";}
 
+    G4UserStackingAction * getStackingAction() override;
+
     void preInit() override;
 
     void run() override;

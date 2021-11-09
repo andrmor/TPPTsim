@@ -81,8 +81,11 @@ void SessionManager::startSession()
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
-    G4UserSteppingAction * StAct = SimMode->getSteppingAction();
-    if (StAct) runManager->SetUserAction(StAct);
+    G4UserSteppingAction * StepAct = SimMode->getSteppingAction();
+    if (StepAct) runManager->SetUserAction(StepAct);
+
+    G4UserStackingAction * StackAct = SimMode->getStackingAction();
+    if (StackAct) runManager->SetUserAction(StackAct);
 
     runManager->SetUserAction(new EventAction);
 

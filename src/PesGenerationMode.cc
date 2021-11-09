@@ -1,5 +1,6 @@
 #include "PesGenerationMode.hh"
 #include "SessionManager.hh"
+#include "StackingAction.hh"
 #include "out.hh"
 
 #include "G4Material.hh"
@@ -18,6 +19,11 @@ PesGenerationMode::PesGenerationMode() :
     BaseRecords.push_back(O16C11);
 
     bNeedGui = true; // temporary! !!!***
+}
+
+G4UserStackingAction * PesGenerationMode::getStackingAction()
+{
+    return new PesGeneratorStackingAction();
 }
 
 void PesGenerationMode::preInit()
