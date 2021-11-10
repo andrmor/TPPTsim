@@ -87,6 +87,6 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
 
 void FastPesGeneratorModel::DoIt(const G4FastTrack &, G4FastStep & step)
 {
-    out("PES doit");
+    //out("PES doit");
     step.KillPrimaryTrack();
 }
