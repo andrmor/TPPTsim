@@ -8,22 +8,85 @@
 PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
     SimModeBase(), NumEvents(numEvents)
 {
-    PesGenRecord C12C11(6, 12, "C11");
-        C12C11.CrossSection.push_back({0,     100.0}); // !!!*** todo loader
-        C12C11.CrossSection.push_back({500.0, 100.0}); // !!!*** todo loader
-    BaseRecords.push_back(C12C11);
+    SessionManager & SM = SessionManager::getInstance();
 
-    PesGenRecord O16C11(8, 16, "C11");
-        O16C11.CrossSection.push_back({0,     100.0}); // !!!*** todo loader
-        O16C11.CrossSection.push_back({500.0, 100.0}); // !!!*** todo loader
-    BaseRecords.push_back(O16C11);
+    //loadCrossSections("ProductionCrossSections.txt");
+    loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
 
     //bNeedGui    = true; // temporary! !!!***
     bNeedOutput = true;
-    SessionManager & SM = SessionManager::getInstance();
     SM.FileName   = outputFileName;
     SM.bBinOutput = binaryOutput;
     SaveDir[0] = 0; SaveDir[1] = 0; SaveDir[2] = 1.0;
+}
+
+void PesGenerationMode::loadCrossSections(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with PES generation cross-sections:\n", fileName);
+        exit(1);
+    }
+
+    bool fillingRecord = false;
+    PesGenRecord currentRecord;
+    for (std::string line; std::getline(inStream, line); )
+    {
+        //out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+
+        if (line[0] == '#')
+        {
+            //new reaction
+            if (fillingRecord) BaseRecords.push_back(currentRecord);
+
+            line.erase(0, 1);
+            std::stringstream ss(line);
+            ss >> currentRecord.TargetZ
+               >> currentRecord.TargetA
+               >> currentRecord.PES;
+            if (ss.fail())
+            {
+                out("Unexpected format of a reaction line in the file with the PES cross-sections");
+                exit(2);
+            }
+            currentRecord.CrossSection.clear();
+            fillingRecord = true;
+            //out("-->Processing reaction:",currentRecord.TargetZ, currentRecord.TargetA, currentRecord.PES);
+        }
+        else
+        {
+            std::stringstream ss(line);  // units in the file are MeV and mbarns
+            double E, CS;
+            ss >> E >> CS;
+            if (ss.fail())
+            {
+                out("Unexpected format of a data line in the file with the PES cross-sections");
+                exit(3);
+            }
+            //out(E, CS);
+            currentRecord.CrossSection.push_back({E*MeV, CS});
+        }
+    }
+    if (!currentRecord.CrossSection.empty()) BaseRecords.push_back(currentRecord);
+
+    out("===== PES production cross-section summary:");
+    out("Number of reactions:", BaseRecords.size());
+    for (const auto & r : BaseRecords)
+    {
+        out(">", r.TargetZ, r.TargetA, r.PES, "  CS range from:", r.CrossSection.front().first, "to", r.CrossSection.back().first, "MeV");
+    }
+    out("\n");
+
+/*
+    PesGenRecord C12C11(6, 12, "C11");
+        C12C11.CrossSection.push_back({0,     20000.0}); // !!!*** todo loader
+        C12C11.CrossSection.push_back({500.0, 20000.0}); // !!!*** todo loader
+        // this cross-section for PMMA should result in:
+        // mfp = 1/(sigma * numDens) = 1/(20000 [mbarns] * 1e-3 * 1e-28 [m2] * 1e6    *     0.9893 * 3.549e19[at/mm3]) -> 14 mm
+    BaseRecords.push_back(C12C11);
+*/
 }
 
 G4UserStackingAction * PesGenerationMode::getStackingAction()
@@ -123,8 +186,9 @@ double PesGenRecord::getCrossSection(double energy) const
                                  {return one < two.first;}
                               );
 
-    if (it == CrossSection.begin()) return CrossSection.front().second;  // first: energy, second: CS
-    if (it == CrossSection.end())   return CrossSection.back(). second;
+    //if (it == CrossSection.begin()) return CrossSection.front().second;
+    if (it == CrossSection.begin()) return 0; // assuming the first data point is the threshold
+    if (it == CrossSection.end())   return CrossSection.back(). second;  // first: energy, second: CS
 
     // interpolation
     // (e1, A) -> (energy, ?) -> (e2, B)  ==>  ? = A + (B-A)*(energy-e1)/(e2-e1)
@@ -159,7 +223,7 @@ void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, 
         *SM.outStream << ss.rdbuf() << '\n';
     }
 
-    out("->",Pes, "(",X,Y,Z,")", Time);
+    //out("->",Pes, "(",X,Y,Z,")", Time);
 }
 
 void PesGenerationMode::onEventStarted()

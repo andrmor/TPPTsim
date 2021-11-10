@@ -41,6 +41,7 @@ target_link_libraries(sim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #
 set(EXTRA_FILES
   vis.mac
+  ProductionCrossSections.txt
   )
 
 foreach(_file ${EXTRA_FILES})

@@ -10,6 +10,7 @@ class PesGenRecord
 {
 public:
     PesGenRecord(int targetZ, int targetA, std::string pes) : TargetZ(targetZ), TargetA(targetA), PES(pes) {}
+    PesGenRecord(){}
 
     int         TargetZ; // 6;
     int         TargetA; // 12;
@@ -44,6 +45,7 @@ public:
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
 
 protected:
+    void loadCrossSections(const std::string & fileName);
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
 
