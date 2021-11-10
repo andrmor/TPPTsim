@@ -70,8 +70,37 @@ G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
 
-
     return logicPmma;
+}
+
+// ---
+
+G4LogicalVolume *PhantomBox::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+    G4Material * mat = man->FindOrBuildMaterial(Material);
+    if (!mat)
+    {
+        out("Material", Material, "is not found in Geant4 library");
+        exit(10);
+    }
+
+    G4VSolid          * solid = new G4Box("Phantom_Box", 50.0*mm, 100.0*mm, 50.0*mm);
+    G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
+    new G4PVPlacement(nullptr, {0, 0, 0}, logic, "Phantom_PV", logicWorld, false, 0);
+    logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    return logic;
+}
+
+void PhantomBox::readFromJson(const json11::Json &json)
+{
+    jstools::readString(json, "Material", Material);
+}
+
+void PhantomBox::doWriteToJson(json11::Json::object &json) const
+{
+    json["Material"] = Material;
 }
 
 // ---

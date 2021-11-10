@@ -47,6 +47,23 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
+class PhantomBox : public PhantomModeBase
+{
+public:
+    PhantomBox(const std::string & MaterialNist) : Material(MaterialNist) {}
+
+    std::string getTypeName() const override {return "PhantomBox";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+private:
+    std::string Material;
+};
+
 // ---
 
 class PhantomTinyCube : public PhantomModeBase
