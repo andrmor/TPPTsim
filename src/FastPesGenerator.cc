@@ -20,7 +20,7 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
     const G4Track * track = fastTrack.GetPrimaryTrack();
     if (track->GetParentID() != 0) return false;
     const int StepNumber = track->GetCurrentStepNumber();
-    out("PES call", StepNumber);
+    //out("PES call", StepNumber);
 
     if (StepNumber == 1)
     {
@@ -39,7 +39,7 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
     {
         double stepLength = Length - LastTrackLength;
         double meanEnergy = 0.5 * (Energy + LastEnergy);
-        out("Step", stepLength, "MeanEenergy", meanEnergy, " Material index", LastMaterial);
+        //out("Step", stepLength, "MeanEenergy", meanEnergy, " Material index", LastMaterial);
 
         SessionManager & SM = SessionManager::getInstance();
         const PesGenerationMode * PGM = static_cast<PesGenerationMode*>(SM.SimMode);
@@ -71,19 +71,12 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
         if (trigStep < stepLength)
         {
             G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
-            out("Triggered! Position:", TriggerPosition);
-
+            //out("Triggered! Position:", TriggerPosition);
             PGM->saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
-
-            // tmp
-            sumLength += LastTrackLength + trigStep/stepLength*(Length - LastTrackLength);
-            num++;
-            out("Estimated MFP (need good statistics):", sumLength/num);
-
             return true;
         }
     }
-    else out("Zero dEnergy");
+    //else out("Zero dEnergy");
 
     LastEnergy      = Energy;
     LastTrackLength = Length;

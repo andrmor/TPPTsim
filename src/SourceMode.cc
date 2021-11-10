@@ -185,8 +185,8 @@ void PointSource::doReadFromJson(const json11::Json & json)
 
 // ---
 
-PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
-    SourceModeBase(particle, timeGenerator), Origin(origin)
+PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction, int numParticles) :
+    SourceModeBase(particle, timeGenerator), NumParticles(numParticles), Origin(origin)
 {
     Direction = direction;
     init();
@@ -202,6 +202,7 @@ PencilBeam::PencilBeam(const json11::Json & json) :
 
 void PencilBeam::init()
 {
+    ParticleGun->SetNumberOfParticles(NumParticles);
     ParticleGun->SetParticlePosition(Origin);
     bIsotropicDirection = false;
 }
@@ -215,6 +216,8 @@ void PencilBeam::doWriteToJson(json11::Json::object & json) const
     json["DirectionX"] = Direction.x();
     json["DirectionY"] = Direction.y();
     json["DirectionZ"] = Direction.z();
+
+    json["NumParticles"] = NumParticles;
 }
 
 void PencilBeam::doReadFromJson(const json11::Json &json)
@@ -226,6 +229,9 @@ void PencilBeam::doReadFromJson(const json11::Json &json)
     jstools::readDouble(json, "DirectionX", Direction[0]);
     jstools::readDouble(json, "DirectionY", Direction[1]);
     jstools::readDouble(json, "DirectionZ", Direction[2]);
+
+    NumParticles = 1;
+    jstools::readInt(json, "NumParticles", NumParticles);
 }
 
 // ---

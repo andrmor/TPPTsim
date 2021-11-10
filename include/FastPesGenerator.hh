@@ -24,13 +24,6 @@ private:
     int    LastMaterial;
 
     std::vector<double> CSvec;
-
-    // tmp
-    double sumLength = 0;
-    int    num = 0;
-
-
-
 };
 
 #endif // fastpesgeneratormodel_h

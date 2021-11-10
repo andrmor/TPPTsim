@@ -153,7 +153,7 @@ void FromFileSource::GeneratePrimaries(G4Event * anEvent)
     {
         for (std::string line; std::getline(*inStream, line); )
         {
-            std::cout << "line=>" << line << "<=" << std::endl;
+            //std::cout << "line=>" << line << "<=" << std::endl;
             if (line.size() < 1) continue; //allow empty lines
 
             if (line[0] == '#') break; //event finished

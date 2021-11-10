@@ -99,7 +99,7 @@ protected:
 class PencilBeam : public SourceModeBase
 {
 public:
-    PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction);
+    PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction, int numParticles = 1);
     PencilBeam(const json11::Json & json);
 
     std::string getTypeName() const override {return "PencilBeam";}
@@ -110,7 +110,8 @@ protected:
 
     void init();
 
-    G4ThreeVector Origin = {0,0,0};
+    int           NumParticles = 1;
+    G4ThreeVector Origin       = {0,0,0};
 };
 
 // ---
