@@ -73,6 +73,8 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
             G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
             out("Triggered! Position:", TriggerPosition);
 
+            PGM->saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
+
             // tmp
             sumLength += LastTrackLength + trigStep/stepLength*(Length - LastTrackLength);
             num++;

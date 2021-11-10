@@ -616,7 +616,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy_ke
         ss << PosDir[3] << ' ' << PosDir[4] << ' ' << PosDir[5] << ' ';     //direction
         ss << time;
 
-        *SM.outStream << ss.rdbuf() << std::endl;
+        *SM.outStream << ss.rdbuf() << '\n';
     }
 
     //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
@@ -631,7 +631,7 @@ void SimModeFirstStage::onEventStarted()
         SM.outStream->write((char*)&CurrentEvent, sizeof(int));
     }
     else
-        *SM.outStream << '#' << CurrentEvent << std::endl;
+        *SM.outStream << '#' << CurrentEvent << '\n';
 
     CurrentEvent++;
 }

@@ -5,8 +5,8 @@
 
 #include "G4Material.hh"
 
-PesGenerationMode::PesGenerationMode() :
-    SimModeBase()
+PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
+    SimModeBase(), NumEvents(numEvents)
 {
     PesGenRecord C12C11(6, 12, "C11");
         C12C11.CrossSection.push_back({0,     100.0}); // !!!*** todo loader
@@ -18,7 +18,12 @@ PesGenerationMode::PesGenerationMode() :
         O16C11.CrossSection.push_back({500.0, 100.0}); // !!!*** todo loader
     BaseRecords.push_back(O16C11);
 
-    bNeedGui = true; // temporary! !!!***
+    //bNeedGui    = true; // temporary! !!!***
+    bNeedOutput = true;
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName   = outputFileName;
+    SM.bBinOutput = binaryOutput;
+    SaveDir[0] = 0; SaveDir[1] = 0; SaveDir[2] = 1.0;
 }
 
 G4UserStackingAction * PesGenerationMode::getStackingAction()
@@ -42,12 +47,21 @@ void PesGenerationMode::preInit()
     */
 }
 
+#include "G4MTRunManager.hh"
 void PesGenerationMode::run()
 {
+    SessionManager& SM = SessionManager::getInstance();
+
     exploreMaterials();
 
-    SessionManager& SM = SessionManager::getInstance();
-    SM.startGUI();
+    // this sub-mode is just to debug!
+    if (bNeedGui)
+    {
+        SM.startGUI();
+        return;
+    }
+
+    SM.runManager->BeamOn(NumEvents);
 }
 
 void PesGenerationMode::exploreMaterials()
@@ -116,4 +130,48 @@ double PesGenRecord::getCrossSection(double energy) const
     // (e1, A) -> (energy, ?) -> (e2, B)  ==>  ? = A + (B-A)*(energy-e1)/(e2-e1)
     const auto lowIt = it - 1;
     return lowIt->second + (it->second - lowIt->second)*(energy - lowIt->first)/(it->first - lowIt->first);
+}
+
+void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    if (SM.bBinOutput)
+    {
+        *SM.outStream << (char)0xFF;
+        *SM.outStream << Pes << (char)0x00;
+        SM.outStream->write((char*)&SaveEnergy,   sizeof(double));
+        SM.outStream->write((char*)&X,            sizeof(double));
+        SM.outStream->write((char*)&Y,            sizeof(double));
+        SM.outStream->write((char*)&Z,            sizeof(double));
+        SM.outStream->write((char*)SaveDir,     3*sizeof(double));
+        SM.outStream->write((char*)&Time,         sizeof(double));
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << Pes << ' ';
+        ss << SaveEnergy << ' ';
+        ss << X          << ' ' << Y          << ' ' << Z          << ' ';
+        ss << SaveDir[0] << ' ' << SaveDir[1] << ' ' << SaveDir[2] << ' ';
+        ss << Time;
+
+        *SM.outStream << ss.rdbuf() << '\n';
+    }
+
+    out("->",Pes, "(",X,Y,Z,")", Time);
+}
+
+void PesGenerationMode::onEventStarted()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    if (SM.bBinOutput)
+    {
+        *SM.outStream << char(0xEE);
+        SM.outStream->write((char*)&CurrentEvent, sizeof(int));
+    }
+    else
+        *SM.outStream << '#' << CurrentEvent << '\n';
+
+    CurrentEvent++;
 }

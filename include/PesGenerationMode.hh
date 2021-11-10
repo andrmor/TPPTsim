@@ -28,15 +28,16 @@ public:
 class PesGenerationMode : public SimModeBase
 {
 public:
-    PesGenerationMode();
+    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput);
 
     std::string getTypeName() const override {return "PesGenerationMode";}
-
     G4UserStackingAction * getStackingAction() override;
 
     void preInit() override;
-
     void run() override;
+    void onEventStarted() override;
+
+    void saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const;
 
     std::vector<PesGenRecord> BaseRecords;
 
@@ -45,6 +46,12 @@ public:
 protected:
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
+
+private:
+    int    NumEvents;
+    int    CurrentEvent = 0;
+    double SaveDir[3];
+    double SaveEnergy = 0;
 };
 
 #endif // pesgenerationmode_h
