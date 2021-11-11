@@ -653,3 +653,60 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
     json["FileName"]  = SM.FileName;
     json["bBinary"]   = SM.bBinOutput;
 }
+
+// ---
+
+SimModeDoseExtractor::SimModeDoseExtractor(int numEvents, double range, int numBins, const std::string & fileName) :
+    NumEvents(numEvents), Range(range), NumBins(numBins), FileName(fileName)
+{
+    init();
+}
+
+void SimModeDoseExtractor::init()
+{
+    delete Hist; Hist = new Hist1D(NumBins, -Range, Range);
+}
+
+SimModeDoseExtractor::~SimModeDoseExtractor()
+{
+    delete Hist;
+}
+
+G4UserSteppingAction * SimModeDoseExtractor::getSteppingAction()
+{
+    return new SteppingAction_DoseExtractor;
+}
+
+void SimModeDoseExtractor::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+
+    outFlush();
+    out("\nDose distribution:");
+    Hist->report();
+    Hist->save(SM.WorkingDirectory + '/' + FileName);
+}
+
+void SimModeDoseExtractor::addEnergyDepth(double x, double y)
+{
+    Hist->fill(x,y);
+}
+
+void SimModeDoseExtractor::readFromJson(const json11::Json &json)
+{
+    jstools::readInt   (json, "NumEvents", NumEvents);
+    jstools::readDouble(json, "Range",     Range);
+    jstools::readInt   (json, "NumBins",   NumBins);
+    jstools::readString(json, "FileName",  FileName);
+
+    init();
+}
+
+void SimModeDoseExtractor::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumEvents"] = NumEvents;
+    json["Range"]     = Range;
+    json["NumBins"]   = NumBins;
+    json["FileName"]  = FileName;
+}

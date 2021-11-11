@@ -174,3 +174,17 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
     SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
     Mode->addEnergy(iScint, depo);
 }
+
+// ---
+
+void SteppingAction_DoseExtractor::UserSteppingAction(const G4Step * step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+
+    if (postP->GetPhysicalVolume()->GetName()=="Phantom")
+    {
+        SimModeDoseExtractor * Mode = static_cast<SimModeDoseExtractor*>(SM.SimMode);
+        Mode->addEnergyDepth(step->GetTotalEnergyDeposit(), postP->GetPosition()[0]);
+    }
+}

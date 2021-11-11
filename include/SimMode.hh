@@ -268,4 +268,31 @@ protected:
     int         CurrentEvent = 0;
 };
 
+// ---
+
+class SimModeDoseExtractor : public SimModeBase
+{
+public:
+    SimModeDoseExtractor(int numEvents, double range, int numBins, const std::string & fileName);
+    ~SimModeDoseExtractor();
+
+    void addEnergyDepth(double x, double y);
+
+    void run() override;
+    G4UserSteppingAction * getSteppingAction() override;
+    std::string getTypeName() const override {return "SimModeDoseExtractor";}
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void init();
+
+    int           NumEvents = 1;
+    double        Range     = 4.0;
+    int           NumBins   = 100;
+    std::string   FileName  = "dummy.txt";
+
+    Hist1D      * Hist      = nullptr;
+};
+
 #endif // SimulationMode_h

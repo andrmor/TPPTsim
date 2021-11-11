@@ -270,18 +270,44 @@ void DetectorConstruction::addSIPM()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Material: Epoxy
+    //Material: PBC
     std::vector<G4int> natoms;
     std::vector<G4String> elements;
+    int ncomponents;
 
     elements.push_back("C"); natoms.push_back(21);
     elements.push_back("H") ; natoms.push_back(25);
     elements.push_back("Cl") ; natoms.push_back(1);
     elements.push_back("O") ; natoms.push_back(5);
-    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.4*g/cm3);
+    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.1*g/cm3);
+
+    natoms.clear();
+    elements.clear();
+    elements.push_back("Si"); natoms.push_back(1);
+    elements.push_back("O") ; natoms.push_back(2);
+    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.65*g/cm3);
+
+    G4Material * matCopper = man->FindOrBuildMaterial("G4_Cu");
+    G4Material * matIron = man->FindOrBuildMaterial("G4_Fe");
+    G4Material * matTin = man->FindOrBuildMaterial("G4_Sn");
+
+    G4Material * matPCB = new G4Material("PCB", 4.49*g/cm3, ncomponents = 5);
+    matPCB -> AddMaterial(matEpoxy, 30.0*perCent);
+    matPCB -> AddMaterial(matFiberGlass, 30.0*perCent);
+    matPCB -> AddMaterial(matCopper, 30.0*perCent);
+    matPCB -> AddMaterial(matIron, 5.0*perCent);
+    matPCB -> AddMaterial(matTin, 5.0*perCent);
+
+    //Material: Si
+    G4Material * matSilicon = man->FindOrBuildMaterial("G4_Si");
+
+    //Material: SiPM
+    G4Material * matSIPM = new G4Material("SIPM", 4.13*g/cm3, ncomponents = 2);
+    matSIPM -> AddMaterial(matPCB, 90.93*perCent);
+    matSIPM -> AddMaterial(matSilicon, 9.07*perCent);
 
     G4Box * solidSIPM   = new G4Box("SIPM", 0.5 * SM.SIPMSizeX, 0.5 * SM.SIPMSizeY, 0.5 * SM.SIPMSizeZ);
-    G4LogicalVolume * logicSIPM   = new G4LogicalVolume(solidSIPM, matEpoxy, "SIPM");
+    G4LogicalVolume * logicSIPM   = new G4LogicalVolume(solidSIPM, matSIPM, "SIPM");
     G4Colour grey(0.5, 0.5, 0.5);
     logicSIPM ->SetVisAttributes(new G4VisAttributes(grey));
 
@@ -310,7 +336,7 @@ void DetectorConstruction::addPCB()
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
 
-    //Material: PBC (FR4 -> Epoxy + Fiber Glass), https://agenda.infn.it/event/14179/contributions/23405/attachments/16712/18966/Geant_FR4_Raffaella_v1.pdf
+    //Material: PBC
     std::vector<G4int> natoms;
     std::vector<G4String> elements;
     int ncomponents;
@@ -319,28 +345,35 @@ void DetectorConstruction::addPCB()
     elements.push_back("H") ; natoms.push_back(25);
     elements.push_back("Cl") ; natoms.push_back(1);
     elements.push_back("O") ; natoms.push_back(5);
-    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.4*g/cm3);
+    G4Material * matEpoxy = man->ConstructNewMaterial("Epoxy", elements, natoms, 1.1*g/cm3);
 
     natoms.clear();
     elements.clear();
     elements.push_back("Si"); natoms.push_back(1);
     elements.push_back("O") ; natoms.push_back(2);
-    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.329*g/cm3);
+    G4Material * matFiberGlass = man->ConstructNewMaterial("FiberGlass", elements, natoms, 2.65*g/cm3);
 
-    G4Material * matFR4 = new G4Material("FR4", 1.86*g/cm3, ncomponents = 2);
-    matFR4 -> AddMaterial(matEpoxy, 0.472);
-    matFR4 -> AddMaterial(matFiberGlass, 0.528);
+    G4Material * matCopper = man->FindOrBuildMaterial("G4_Cu");
+    G4Material * matIron = man->FindOrBuildMaterial("G4_Fe");
+    G4Material * matTin = man->FindOrBuildMaterial("G4_Sn");
+
+    G4Material * matPCB = new G4Material("PCB", 4.49*g/cm3, ncomponents = 5);
+    matPCB -> AddMaterial(matEpoxy, 30.0*perCent);
+    matPCB -> AddMaterial(matFiberGlass, 30.0*perCent);
+    matPCB -> AddMaterial(matCopper, 30.0*perCent);
+    matPCB -> AddMaterial(matIron, 5.0*perCent);
+    matPCB -> AddMaterial(matTin, 5.0*perCent);
 
     G4Box * solidPCB1   = new G4Box("PCB1", 0.5 * SM.PCB1SizeX, 0.5 * SM.PCB1SizeY, 0.5 * SM.PCB1SizeZ);
-    G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matFR4, "PCB1");
+    G4LogicalVolume * logicPCB1   = new G4LogicalVolume(solidPCB1, matPCB, "PCB1");
     logicPCB1 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
     G4Box * solidPCB2   = new G4Box("PCB2", 0.5 * SM.PCB2SizeX, 0.5 * SM.PCB2SizeY, 0.5 * SM.PCB2SizeZ);
-    G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matFR4, "PCB2");
+    G4LogicalVolume * logicPCB2   = new G4LogicalVolume(solidPCB2, matPCB, "PCB2");
     logicPCB2 ->SetVisAttributes(G4VisAttributes({0, 1, 0}));
 
     G4Box * solidPCB3   = new G4Box("PCB3", 0.5 * SM.PCB3SizeX, 0.5 * SM.PCB3SizeY, 0.5 * SM.PCB3SizeZ);
-    G4LogicalVolume * logicPCB3   = new G4LogicalVolume(solidPCB3, matFR4, "PCB3");
+    G4LogicalVolume * logicPCB3   = new G4LogicalVolume(solidPCB3, matPCB, "PCB3");
     logicPCB3 ->SetVisAttributes(G4VisAttributes({0, 0, 1}));
 
     for (int iA = 0; iA < SM.NumSegments; iA++)
