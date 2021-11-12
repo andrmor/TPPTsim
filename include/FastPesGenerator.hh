@@ -23,7 +23,7 @@ private:
     G4ThreeVector LastPosition;
     int    LastMaterial;
 
-    std::vector<double> CSvec;
+    std::vector<double> ProbVec;
 };
 
 #endif // fastpesgeneratormodel_h

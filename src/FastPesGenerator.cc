@@ -47,25 +47,27 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
         const std::vector<PesGenRecord> & Records = PGM->MaterialRecords[LastMaterial];
         if (Records.empty()) return false;
 
-        CSvec.clear(); CSvec.reserve(Records.size());
-        double sumCS = 0;
+        //probability is proportional to CS * NumberDensity
+        ProbVec.clear(); ProbVec.reserve(Records.size());
+        double sumProb = 0;
         for (const PesGenRecord & r : Records)
         {
             const double cs = r.getCrossSection(meanEnergy);
-            sumCS += cs;
-            CSvec.push_back(cs);
+            const double relProb = cs * r.NumberDensity;
+            sumProb += relProb;
+            ProbVec.push_back(relProb);
         }
 
         // selecting the reaction
         size_t index = 0;
-        double val = sumCS * G4UniformRand();
-        for (; index+1 < CSvec.size(); index++)
+        double val = sumProb * G4UniformRand();
+        for (; index+1 < ProbVec.size(); index++)
         {
-            if (val < CSvec[index]) break;
-            val -= CSvec[index];
+            if (val < ProbVec[index]) break;
+            val -= ProbVec[index];
         }
 
-        const double mfp = 1e25 / CSvec[index] / Records[index].NumberDensity; // millibarh = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+        const double mfp = 1e25 / ProbVec[index]; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
 
         double trigStep = -mfp * log(G4UniformRand());
         if (trigStep < stepLength)
