@@ -112,4 +112,13 @@ protected:
     void doWriteToJson(json11::Json::object &) const override {};
 };
 
+// ---
+
+class PhantomEspana : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomEspana";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
 #endif // PhantomMode_h

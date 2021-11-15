@@ -64,11 +64,12 @@ int main(int argc, char** argv)
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
 //        SM.PhantomMode      = new PhantomPMMA;
-        SM.PhantomMode      = new PhantomCustomMat(PhantomCustomMat::GelWater);
         //SM.PhantomMode      = new PhantomTinyCube;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
         //SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
+        //SM.PhantomMode      = new PhantomCustomMat(PhantomCustomMat::GelWater);
+        SM.PhantomMode      = new PhantomEspana();
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         //SM.DetectorComposition.add(DetComp::Scintillators);
