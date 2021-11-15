@@ -13,7 +13,7 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     //loadCrossSections("ProductionCrossSections.txt");
     loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
 
-    //bNeedGui    = true; // temporary! !!!***
+    //bNeedGui    = true; // used only for tests!
     bNeedOutput = true;
     SM.FileName   = outputFileName;
     SM.bBinOutput = binaryOutput;

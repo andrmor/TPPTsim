@@ -71,7 +71,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
-        SM.DetectorComposition.add(DetComp::Scintillators);
+        //SM.DetectorComposition.add(DetComp::Scintillators);
         /*
         SM.DetectorComposition.add(DetComp::Base);
         SM.DetectorComposition.add(DetComp::ClosedStructure);
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
 //        SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new ConstantTime(0), {0, -150.0, 0}, {0,1.0,0}, 1000);
-        SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 100);
+        SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 100, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 12.3*mm}, {1.0,0,0});
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 //        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes.dat", false);
 
         // Simulation mode
-//        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
