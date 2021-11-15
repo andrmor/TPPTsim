@@ -347,7 +347,7 @@ G4LogicalVolume *PhantomEspana::definePhantom(G4LogicalVolume * logicWorld)
     new G4PVPlacement(nullptr, {0, 0, 0}, logicCont, "Phantom_PV", logicWorld, false, 0);
     new G4PVPlacement(nullptr, {30.0, 0, 0}, logicHDPE, "HDPE_PV", logicCont, false, 0);
     new G4PVPlacement(nullptr, {-30.0, 0, -30.0}, logicTis, "TisG_PV", logicCont, false, 0);
-        new G4PVPlacement(nullptr, {-30.0, 0, 30.0}, logicWat, "Wat_PV", logicCont, false, 0);
+    new G4PVPlacement(nullptr, {-30.0, 0, 30.0}, logicWat, "Wat_PV", logicCont, false, 0);
 
     return logicCont;
 }
