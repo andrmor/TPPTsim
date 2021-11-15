@@ -30,6 +30,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     if      (Type == "PhantomNone")      ph = new PhantomNone();
     else if (Type == "PhantomPMMA")      ph = new PhantomPMMA();
     else if (Type == "PhantomTinyCube")  ph = new PhantomTinyCube();
+    else if (Type == "PhantomCustomMat") ph = new PhantomCustomMat();
     else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")     ph = new PhantomParam();
     else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
@@ -75,17 +76,53 @@ G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
 
 // ---
 
-G4LogicalVolume *PhantomBox::definePhantom(G4LogicalVolume * logicWorld)
+G4LogicalVolume * PhantomCustomMat::definePhantom(G4LogicalVolume * logicWorld)
 {
     G4NistManager * man = G4NistManager::Instance();
-    G4Material * mat = man->FindOrBuildMaterial(Material);
+    G4Material * mat = nullptr;
+
+    switch (Material)
+    {
+    case HDPE :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(14.3);
+            elements.push_back("C"); weightFrac.push_back(85.7);
+            mat = man->ConstructNewMaterial("HDPE", elements, weightFrac, 0.95*g/cm3);
+        }
+        break;
+    case GelTissue :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(9.6);
+            elements.push_back("C"); weightFrac.push_back(14.9);
+            elements.push_back("N"); weightFrac.push_back(1.46);
+            elements.push_back("O"); weightFrac.push_back(73.8);
+            mat = man->ConstructNewMaterial("GelTissue", elements, weightFrac, 1.13*g/cm3);
+        }
+        break;
+    case GelWater :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(11.03);
+            elements.push_back("C"); weightFrac.push_back(1.04);
+            elements.push_back("N"); weightFrac.push_back(0.32);
+            elements.push_back("O"); weightFrac.push_back(87.6);
+            mat = man->ConstructNewMaterial("HDPE", elements, weightFrac, 1.01*g/cm3);
+        }
+        break;
+    default:;
+    }
     if (!mat)
     {
-        out("Material", Material, "is not found in Geant4 library");
+        out("Error in material selection of PhantomCustomMatBox");
         exit(10);
     }
 
-    G4VSolid          * solid = new G4Box("Phantom_Box", 50.0*mm, 100.0*mm, 50.0*mm);
+    G4VSolid          * solid = new G4Box("Phantom_Box", 75.0*mm, 100.0*mm, 75.0*mm);
     G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
     new G4PVPlacement(nullptr, {0, 0, 0}, logic, "Phantom_PV", logicWorld, false, 0);
     logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
@@ -93,14 +130,33 @@ G4LogicalVolume *PhantomBox::definePhantom(G4LogicalVolume * logicWorld)
     return logic;
 }
 
-void PhantomBox::readFromJson(const json11::Json &json)
+void PhantomCustomMat::readFromJson(const json11::Json &json)
 {
-    jstools::readString(json, "Material", Material);
+    std::string MatStr;
+    jstools::readString(json, "Material", MatStr);
+
+    if      (MatStr == "HDPE")      Material = HDPE;
+    else if (MatStr == "GelTissue") Material = GelTissue;
+    else if (MatStr == "GelWater")  Material = GelWater;
+    else
+    {
+        out("Unknown material for phantom PhantomCustomMat");
+        exit(1);
+    }
 }
 
-void PhantomBox::doWriteToJson(json11::Json::object &json) const
+void PhantomCustomMat::doWriteToJson(json11::Json::object &json) const
 {
-    json["Material"] = Material;
+    std::string MatStr;
+    switch (Material)
+    {
+    case HDPE      : MatStr = "HDPE";      break;
+    case GelTissue : MatStr = "GelTissue"; break;
+    case GelWater  : MatStr = "GelWater";  break;
+    default:;
+    }
+
+    json["Material"] = MatStr;
 }
 
 // ---

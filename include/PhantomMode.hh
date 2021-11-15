@@ -47,12 +47,14 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
-class PhantomBox : public PhantomModeBase
+class PhantomCustomMat : public PhantomModeBase
 {
 public:
-    PhantomBox(const std::string & MaterialNist) : Material(MaterialNist) {}
+    enum EMaterial {HDPE, GelTissue, GelWater};
 
-    std::string getTypeName() const override {return "PhantomBox";}
+    PhantomCustomMat(EMaterial material = HDPE) : Material(material) {}
+
+    std::string getTypeName() const override {return "PhantomCustomMat";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
     void readFromJson(const json11::Json & json) override;
@@ -60,8 +62,7 @@ public:
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
-private:
-    std::string Material;
+    EMaterial Material;
 };
 
 // ---

@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
 //        SM.PhantomMode      = new PhantomPMMA;
-        SM.PhantomMode      = new PhantomBox("G4_POLYETHYLENE");
+        SM.PhantomMode      = new PhantomCustomMat(PhantomCustomMat::GelWater);
         //SM.PhantomMode      = new PhantomTinyCube;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
-        SM.SimMode          = new PesGenerationMode(10000, "Pes.dat", false);
+        SM.SimMode          = new PesGenerationMode(100000, "Pes.dat", false);
 
     // --- END of user init ---
     }
