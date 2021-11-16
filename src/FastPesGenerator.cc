@@ -75,15 +75,16 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
                     //out("-->Selected:",index);
                 }
 
+                if (ProbVec[index] == 0) out("ERROR! probability iz zero!");
                 const double mfp = 1e25 / ProbVec[index]; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
 
                 const double trigStep = -mfp * log(G4UniformRand());
                 if (trigStep < stepLength)
                 {
                     G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
-                    //out("Triggered! Position:", TriggerPosition);
+                    //out("Triggered! Position:", TriggerPosition, "  Last/FullStep positions:", LastPosition, Position);
                     PGM->saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
-                    return true;
+                    return true; // safe to return, this proton will be killed
                 }
             }
         }

@@ -11,8 +11,8 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     SessionManager & SM = SessionManager::getInstance();
 
     //loadCrossSections("ProductionCrossSections.txt");
-    //loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
-    loadCrossSections(SM.WorkingDirectory + "/C12-11-exfor1.dat");
+    loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
+    //loadCrossSections(SM.WorkingDirectory + "/C12-11-exfor1.dat");
 
     //bNeedGui    = true; // used only for tests!
     bNeedOutput = true;
