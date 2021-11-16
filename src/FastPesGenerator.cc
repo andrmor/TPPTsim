@@ -45,37 +45,47 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
         const PesGenerationMode * PGM = static_cast<PesGenerationMode*>(SM.SimMode);
 
         const std::vector<PesGenRecord> & Records = PGM->MaterialRecords[LastMaterial];
-        if (Records.empty()) return false;
-
-        //probability is proportional to CS * NumberDensity
-        ProbVec.clear(); ProbVec.reserve(Records.size());
-        double sumProb = 0;
-        for (const PesGenRecord & r : Records)
+        if (!Records.empty())
         {
-            const double cs = r.getCrossSection(meanEnergy);
-            const double relProb = cs * r.NumberDensity;
-            sumProb += relProb;
-            ProbVec.push_back(relProb);
-        }
+            //probability is proportional to CS * NumberDensity
+            ProbVec.clear(); ProbVec.reserve(Records.size());
+            double sumProb = 0;
+            for (const PesGenRecord & r : Records)
+            {
+                const double cs = r.getCrossSection(meanEnergy);
+                const double relProb = cs * r.NumberDensity;
+                sumProb += relProb;
+                ProbVec.push_back(relProb);
+            }
 
-        // selecting the reaction
-        size_t index = 0;
-        double val = sumProb * G4UniformRand();
-        for (; index+1 < ProbVec.size(); index++)
-        {
-            if (val < ProbVec[index]) break;
-            val -= ProbVec[index];
-        }
+            if (sumProb > 0)
+            {
+                size_t index = 0;
 
-        const double mfp = 1e25 / ProbVec[index]; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+                if (ProbVec.size() > 1)
+                {
+                    // selecting the reaction
+                    double val = sumProb * G4UniformRand();
+                    //out("Probs:",ProbVec.size(),"Sum:",sumProb,"Random:",val);
+                    for (; index+1 < ProbVec.size(); index++)
+                    {
+                        if (val < ProbVec[index]) break;
+                        val -= ProbVec[index];
+                    }
+                    //out("-->Selected:",index);
+                }
 
-        double trigStep = -mfp * log(G4UniformRand());
-        if (trigStep < stepLength)
-        {
-            G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
-            //out("Triggered! Position:", TriggerPosition);
-            PGM->saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
-            return true;
+                const double mfp = 1e25 / ProbVec[index]; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+
+                const double trigStep = -mfp * log(G4UniformRand());
+                if (trigStep < stepLength)
+                {
+                    G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(Position - LastPosition);
+                    //out("Triggered! Position:", TriggerPosition);
+                    PGM->saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
+                    return true;
+                }
+            }
         }
     }
     //else out("Zero dEnergy");
