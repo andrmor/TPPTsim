@@ -11,7 +11,8 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     SessionManager & SM = SessionManager::getInstance();
 
     //loadCrossSections("ProductionCrossSections.txt");
-    loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
+    //loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
+    loadCrossSections(SM.WorkingDirectory + "/C12-11-exfor1.dat");
 
     //bNeedGui    = true; // used only for tests!
     bNeedOutput = true;
@@ -188,12 +189,14 @@ double PesGenRecord::getCrossSection(double energy) const
 
     //if (it == CrossSection.begin()) return CrossSection.front().second;
     if (it == CrossSection.begin()) return 0; // assuming the first data point is the threshold
-    if (it == CrossSection.end())   return CrossSection.back(). second;  // first: energy, second: CS
+    if (it == CrossSection.end())   return CrossSection.back().second;  // first: energy, second: CS
 
     // interpolation
     // (e1, A) -> (energy, ?) -> (e2, B)  ==>  ? = A + (B-A)*(energy-e1)/(e2-e1)
     const auto lowIt = it - 1;
-    return lowIt->second + (it->second - lowIt->second)*(energy - lowIt->first)/(it->first - lowIt->first);
+    const double val = lowIt->second + (it->second - lowIt->second)*(energy - lowIt->first)/(it->first - lowIt->first);
+    //out("Energy:", energy, "XS:", val); exit(111);
+    return val;
 }
 
 void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const

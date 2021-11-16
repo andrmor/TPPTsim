@@ -104,6 +104,10 @@ class SessionManager
         double CutScintElectron   = 0.1 *mm;
         double CutScintPositron   = 0.1 *mm;
 
+     // Step limiter
+        bool   UseStepLimiter     = false;
+        double PhantomStepLimt    = 10000.0*mm;
+
      // Misc
         double activityLYSO    = 281.0; // decays per second per cm3
 

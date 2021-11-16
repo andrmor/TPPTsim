@@ -169,6 +169,7 @@ void SessionManager::registerFastPESModel(G4Region *region)
     G4AutoDelete::Register(mod);
 }
 
+#include "G4UserLimits.hh"
 void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
 {
     regPhantom = new G4Region("Phantom");
@@ -183,6 +184,12 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
     cuts->SetProductionCut(CutPhantomElectron, G4ProductionCuts::GetIndex("e-"));
     cuts->SetProductionCut(CutPhantomPositron, G4ProductionCuts::GetIndex("e+"));
     regPhantom->SetProductionCuts(cuts);
+
+    if (UseStepLimiter)
+    {
+        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimt);
+        regPhantom->SetUserLimits(stepLimit);
+    }
 }
 
 void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
