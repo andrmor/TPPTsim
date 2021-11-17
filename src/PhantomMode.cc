@@ -35,6 +35,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     else if (Type == "PhantomParam")     ph = new PhantomParam();
     else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
     else if (Type == "PhantomEspana")    ph = new PhantomEspana();
+    else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
     else
     {
         out("Unknown phantom type!");
@@ -152,7 +153,7 @@ G4LogicalVolume * PhantomCustomBox::definePhantom(G4LogicalVolume * logicWorld)
         out("Error in material selection of PhantomCustomMatBox");
         exit(10);
     }
-    out("Ionization potential for the phantom material:", mat->GetIonisation()->GetMeanExcitationEnergy()/eV, "eV");
+    out("-->Ionization potential for the phantom material:", mat->GetIonisation()->GetMeanExcitationEnergy()/eV, "eV");
 
     G4VSolid          * solid = new G4Box("Phantom_Box", 0.5 * SizeX * mm, 0.5 * SizeY * mm, 0.5 * SizeZ * mm);
     G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
@@ -395,4 +396,37 @@ G4LogicalVolume *PhantomEspana::definePhantom(G4LogicalVolume * logicWorld)
     new G4PVPlacement(nullptr, {-30.0, 0, 30.0}, logicWat, "Wat_PV", logicCont, false, 0);
 
     return logicCont;
+}
+
+G4LogicalVolume * PhantomBauerGel::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(5);
+    elements.push_back("H"); natoms.push_back(8);
+    elements.push_back("O"); natoms.push_back(2);
+    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+
+    std::vector<double> weightFrac;
+    elements.clear();
+    elements.push_back("H"); weightFrac.push_back(11.03);
+    elements.push_back("C"); weightFrac.push_back(1.04);
+    elements.push_back("N"); weightFrac.push_back(0.32);
+    elements.push_back("O"); weightFrac.push_back(87.6);
+    G4Material * matGel = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
+
+    G4VSolid          * solidPMMA = new G4Box("Phantom_Box", 0.5 * 110 * mm, 0.5 * 370 * mm, 0.5 * 110 * mm);
+    G4VSolid          * solidGel  = new G4Box("Phantom_Box", 0.5 * 100 * mm, 0.5 * 350 * mm, 0.5 * 100 * mm);
+
+    G4LogicalVolume   * logicPMMA = new G4LogicalVolume(solidPMMA, matPMMA, "PhantomBox");
+    logicPMMA->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    G4LogicalVolume   * logicGel  = new G4LogicalVolume(solidGel, matGel, "PhantomGel");
+    logicGel->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
+
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicPMMA, "PhantomBox_PV", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicGel, "PhantomGel_PV", logicPMMA, false, 0);
+
+    return logicPMMA;
 }
