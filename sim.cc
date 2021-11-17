@@ -39,7 +39,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 1000;
+        SM.Seed               = 10;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         //SM.UseStepLimiter     = true; SM.PhantomStepLimt = 3.0*mm;
@@ -69,8 +69,9 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
         //SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
-        SM.PhantomMode      = new PhantomCustomMat(PhantomCustomMat::HDPE);
-//        SM.PhantomMode      = new PhantomEspana();
+//        SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
+        //SM.PhantomMode      = new PhantomEspana();
+        SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         //SM.DetectorComposition.add(DetComp::Scintillators);
@@ -101,7 +102,7 @@ int main(int argc, char** argv)
 //        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes.dat", false);
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
@@ -114,7 +115,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
-        SM.SimMode          = new PesGenerationMode(10, "Pes.dat", false);
+//        SM.SimMode          = new PesGenerationMode(1000000, "Pes.dat", false);
 
     // --- END of user init ---
     }
