@@ -157,9 +157,10 @@ void PesGenerationMode::exploreMaterials()
                 int z = is->GetZ();
                 int a = is->GetN();
                 double frac = relAbVec[iIs];
-                out("  -> Z =", z, "A =", a, "Fraction =", frac);
+                double PartialNumDens = numberDensity * frac;
+                out("  -> Z =", z, "A =", a, "Fraction =", frac, "PartNumDens = ", PartialNumDens);
 
-                updateMatRecords(iMat, z, a, numberDensity * frac);
+                updateMatRecords(iMat, z, a, PartialNumDens);
             }
         }
     }
