@@ -28,7 +28,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "SimModeMultipleEvents") sm = new SimModeMultipleEvents(0, "dummy.txt", false);
     else if (Type == "SimModeTracing")        sm = new SimModeTracing();
     else if (Type == "SimModeAcollinTest")    sm = new SimModeAcollinTest(0, 0, 1, "dummy.txt");
-    else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, 1, "dummy.txt");
+    else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, "dummy.txt", false);
     else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
     else if (Type == "SimModeFirstStage")     sm = new SimModeFirstStage(0, "dummy.txt", false);
     else
@@ -438,20 +438,20 @@ void SimModeAcollinTest::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName) :
-    NumEvents(numEvents), Range(range), NumBins(numBins), FileName(fileName)
+SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double timeStart, const std::string & fileName, bool binary) :
+    NumEvents(numEvents), TimeStart(timeStart)
 {
-    init();
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName = fileName;
+    SM.bBinOutput = binary;
 }
 
-void SimModeAnnihilTest::init()
+void SimModeAnnihilTest::saveRecord(const G4ThreeVector & pos, double timeInSeconds)
 {
-    delete Hist; Hist = new Hist1D(NumBins, -Range, Range);
-}
-
-SimModeAnnihilTest::~SimModeAnnihilTest()
-{
-    delete Hist;
+    SessionManager & SM = SessionManager::getInstance();
+    *SM.outStream << pos[0] << ' ' << pos[1] << ' ' << pos[2] << ' ' << timeInSeconds << '\n';
 }
 
 G4UserSteppingAction * SimModeAnnihilTest::getSteppingAction()
@@ -463,34 +463,26 @@ void SimModeAnnihilTest::run()
 {
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
-
-    outFlush();
-    out("\nDistribution of annihilation positions:");
-    Hist->report();
-    Hist->save(SM.WorkingDirectory + '/' + FileName);
-}
-
-void SimModeAnnihilTest::addPosition(double x)
-{
-    Hist->fill(x);
 }
 
 void SimModeAnnihilTest::readFromJson(const json11::Json &json)
 {
-    jstools::readInt   (json, "NumEvents", NumEvents);
-    jstools::readDouble(json, "Range",     Range);
-    jstools::readInt   (json, "NumBins",   NumBins);
-    jstools::readString(json, "FileName",  FileName);
+    SessionManager & SM = SessionManager::getInstance();
 
-    init();
+    jstools::readInt   (json, "NumEvents", NumEvents);
+    jstools::readDouble(json, "TimeStart", TimeStart);
+    jstools::readString(json, "FileName",  SM.FileName);
+    jstools::readBool  (json, "Binary",    SM.bBinOutput);
 }
 
 void SimModeAnnihilTest::doWriteToJson(json11::Json::object &json) const
 {
+    SessionManager & SM = SessionManager::getInstance();
+
     json["NumEvents"] = NumEvents;
-    json["Range"]     = Range;
-    json["NumBins"]   = NumBins;
-    json["FileName"]  = FileName;
+    json["TimeStart"] = TimeStart;
+    json["FileName"]  = SM.FileName;
+    json["Binary"]    = SM.bBinOutput;
 }
 
 // ---
