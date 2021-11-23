@@ -87,8 +87,7 @@ int main(int argc, char** argv)
         */
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
-        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
-        SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/andr/WORK/TPPT/Marcia/GDML_version2/mother.gdml";
+        SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
 
         // Source
         SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
