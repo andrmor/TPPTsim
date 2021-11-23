@@ -47,6 +47,28 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
+class PhantomCustomBox : public PhantomModeBase
+{
+public:
+    enum EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater};
+
+    PhantomCustomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
+    PhantomCustomBox(){}
+
+    std::string getTypeName() const override {return "PhantomCustomBox";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    double SizeX = 100;
+    double SizeY = 100;
+    double SizeZ = 100;
+    EMaterial Material = HDPE;
+};
+
 // ---
 
 class PhantomTinyCube : public PhantomModeBase
@@ -92,6 +114,22 @@ public:
 
 protected:
     void doWriteToJson(json11::Json::object &) const override {};
+};
+
+// ---
+
+class PhantomEspana : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomEspana";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
+class PhantomBauerGel : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomBauerGel";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 #endif // PhantomMode_h

@@ -134,16 +134,30 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
 
 // ---
 
-void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step *step)
+#include "G4ProcessType.hh"
+void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
+
     const G4StepPoint * postP  = step->GetPostStepPoint();
     const G4VProcess  * proc = postP->GetProcessDefinedStep();
+
+    /*
     if (proc->GetProcessName() == "annihil")
     {
-        SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
-        Mode->addPosition(postP->GetPosition()[0]);
+        out(proc->GetProcessType(), proc->GetProcessTypeName(proc->GetProcessType()), proc->GetProcessSubType());
+        //--> 2 Electromagnetic 5
     }
+    */
+
+    if (proc->GetProcessType() != fElectromagnetic) return;
+    if (proc->GetProcessSubType() != 5) return;
+
+    SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
+    const double time = postP->GetGlobalTime()/s;
+    if (time < Mode->TimeStart) return;
+
+    Mode->saveRecord(postP->GetPosition(), time);
 }
 
 // ---

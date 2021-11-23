@@ -8,6 +8,7 @@
 #include "DicomPhantom.hh"
 #include "DetComp.hh"
 #include "out.hh"
+#include "PesGenerationMode.hh"
 
 #include <chrono>
 
@@ -38,9 +39,10 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 1000;
+        SM.Seed               = 10;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
+        //SM.UseStepLimiter     = true; SM.PhantomStepLimt = 3.0*mm;
 
         SM.CutPhantomGamma    = 10.0*mm;
         SM.CutPhantomElectron = 10.0*mm;
@@ -58,54 +60,71 @@ int main(int argc, char** argv)
         SM.Verbose          = false;
         SM.Debug            = false;
         SM.ShowEventNumber  = true;
-        SM.EvNumberInterval = 10000;
+        SM.EvNumberInterval = 100;
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
-        SM.PhantomMode      = new PhantomPMMA;
+//        SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomTinyCube;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam;
         //SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
+//        SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
+        //SM.PhantomMode      = new PhantomEspana();
+//        SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
+        SM.PhantomMode      = new PhantomBauerGel();
+//        SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PMMA);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
+        /*
         SM.DetectorComposition.add(DetComp::Base);
         SM.DetectorComposition.add(DetComp::ClosedStructure);
         SM.DetectorComposition.add(DetComp::SIPM);
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         SM.DetectorComposition.add(DetComp::CoolingAssemblies);
+        */
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
         //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
+        SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/andr/WORK/TPPT/Marcia/GDML_version2/mother.gdml";
 
         // Source
-        //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
+        SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
-        SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 0}, {1.0,0,0});
+//        SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new ConstantTime(0), {0, -150.0, 0}, {0,1.0,0}, 1000);
+//        SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 100, new UniformProfile(70.0*mm, 70.0*mm));
+//        SM.SourceMode       = new PencilBeam(new Proton(157.43*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 100); // PE-E3
+//        SM.SourceMode       = new PencilBeam(new Proton(106.82*MeV), new UniformTime(0, 254.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PE-E1
+//        SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
+//      SM.SourceMode       = new PencilBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
+//        SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 194.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PMMA-E2
         //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 12.3*mm}, {1.0,0,0});
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
+//        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
-        // Operation mode
-        SM.SimMode          = new SimModeGui();
+        // Simulation mode
+//        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
-        //SM.SimMode          = new SimModeAnnihilTest(1e6, 10, 1000, "AnnihilTest.txt");
+        //SM.SimMode          = new SimModeAnnihilTest(SM.SourceMode->CountEvents(), 0, "Annihil.txt", false);
+//        SM.SimMode          = new SimModeAnnihilTest(1000, 0, "Annihil.txt", false);
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
-        //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
+        SM.SimMode          = new SimModeMultipleEvents(100000, "SimOutput.txt", false);
         //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
+//        SM.SimMode          = new PesGenerationMode(1e5, "Pes.dat", false);
 
     // --- END of user init ---
     }

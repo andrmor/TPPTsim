@@ -68,6 +68,8 @@ void SessionManager::startSession()
         exit(4);
     }
 
+    SimMode->preInit();
+
     DetectorConstruction * theDetector = new DetectorConstruction();
     runManager->SetUserInitialization(theDetector);
 
@@ -75,12 +77,15 @@ void SessionManager::startSession()
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
-    if (SimAcollinearity || KillNeutrinos) createFastSimulationPhysics(physicsList);
+    if (SimAcollinearity || KillNeutrinos || FastPESGeneration) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
-    G4UserSteppingAction * StAct = SimMode->getSteppingAction();
-    if (StAct) runManager->SetUserAction(StAct);
+    G4UserSteppingAction * StepAct = SimMode->getSteppingAction();
+    if (StepAct) runManager->SetUserAction(StepAct);
+
+    G4UserStackingAction * StackAct = SimMode->getStackingAction();
+    if (StackAct) runManager->SetUserAction(StackAct);
 
     runManager->SetUserAction(new EventAction);
 
@@ -123,9 +128,14 @@ void SessionManager::scanMaterials()
     for (G4LogicalVolume * lv : *lvs)
     {
         G4Material * mat = lv->GetMaterial();
-        out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
+        //out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
 
-        if (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+        if      (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+        else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+        else if (mat->GetName() == "PMMA") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 1.0)));
+        else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+        else if (mat->GetName() == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
+        else if (mat->GetName() == "ABS") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
     }
 
     out("<--Material scan completed");
@@ -135,10 +145,11 @@ void SessionManager::createFastSimulationPhysics(G4VModularPhysicsList * physics
 {
     G4FastSimulationPhysics * fsm = new G4FastSimulationPhysics();
     //https://indico.cern.ch/event/789510/contributions/3297180/attachments/1817759/2973421/G4Tutorial_fastSim_vFin.pdf
-    // see registerAcollinearGammaModel() and registerParticleKillerModel()
 
-    if (SimAcollinearity) fsm->ActivateFastSimulation("gamma");
-    if (KillNeutrinos)    fsm->ActivateFastSimulation("nu_e");
+    // see createPhantomRegion() for registration of the models
+    if (SimAcollinearity)  fsm->ActivateFastSimulation("gamma");  // see registerAcollinearGammaModel()
+    if (KillNeutrinos)     fsm->ActivateFastSimulation("nu_e");   // see registerParticleKillerModel()
+    if (FastPESGeneration) fsm->ActivateFastSimulation("proton"); // see registerFastPESModel()
     physicsList->RegisterPhysics(fsm);
 }
 
@@ -156,19 +167,34 @@ void SessionManager::registerParticleKillerModel(G4Region *region)
     G4AutoDelete::Register(mod);
 }
 
+#include "FastPesGenerator.hh"
+void SessionManager::registerFastPESModel(G4Region *region)
+{
+    FastPesGeneratorModel * mod = new FastPesGeneratorModel("PesGenerator", region);
+    G4AutoDelete::Register(mod);
+}
+
+#include "G4UserLimits.hh"
 void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
 {
     regPhantom = new G4Region("Phantom");
     regPhantom->AddRootLogicalVolume(logVolPhantom);
 
-    if (SimAcollinearity) registerAcollinearGammaModel(regPhantom);
-    if (KillNeutrinos)    registerParticleKillerModel(regPhantom);
+    if (SimAcollinearity)  registerAcollinearGammaModel(regPhantom);
+    if (KillNeutrinos)     registerParticleKillerModel(regPhantom);
+    if (FastPESGeneration) registerFastPESModel(regPhantom);
 
     G4ProductionCuts * cuts = new G4ProductionCuts();
     cuts->SetProductionCut(CutPhantomGamma,    G4ProductionCuts::GetIndex("gamma"));
     cuts->SetProductionCut(CutPhantomElectron, G4ProductionCuts::GetIndex("e-"));
     cuts->SetProductionCut(CutPhantomPositron, G4ProductionCuts::GetIndex("e+"));
     regPhantom->SetProductionCuts(cuts);
+
+    if (UseStepLimiter)
+    {
+        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimt);
+        regPhantom->SetUserLimits(stepLimit);
+    }
 }
 
 void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)

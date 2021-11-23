@@ -30,9 +30,12 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     if      (Type == "PhantomNone")      ph = new PhantomNone();
     else if (Type == "PhantomPMMA")      ph = new PhantomPMMA();
     else if (Type == "PhantomTinyCube")  ph = new PhantomTinyCube();
+    else if (Type == "PhantomCustomBox") ph = new PhantomCustomBox();
     else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")     ph = new PhantomParam();
     else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
+    else if (Type == "PhantomEspana")    ph = new PhantomEspana();
+    else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
     else
     {
         out("Unknown phantom type!");
@@ -70,13 +73,142 @@ G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
 
-
     return logicPmma;
 }
 
 // ---
 
-G4LogicalVolume * PhantomTinyCube::definePhantom(G4LogicalVolume *logicWorld)
+PhantomCustomBox::PhantomCustomBox(double sizeX, double sizeY, double sizeZ, EMaterial material) :
+    SizeX(sizeX), SizeY(sizeY), SizeZ(sizeZ), Material(material) {}
+
+G4LogicalVolume * PhantomCustomBox::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+    G4Material * mat = nullptr;
+
+    switch (Material)
+    {
+    case PMMA :
+        {
+            std::vector<G4int> natoms;
+            std::vector<G4String> elements;
+            elements.push_back("C"); natoms.push_back(5);
+            elements.push_back("H"); natoms.push_back(8);
+            elements.push_back("O"); natoms.push_back(2);
+            mat = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+        }
+        break;
+    case HDPE :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(14.3);
+            elements.push_back("C"); weightFrac.push_back(85.7);
+            mat = man->ConstructNewMaterial("HDPE", elements, weightFrac, 0.95*g/cm3);
+        }
+        break;
+    case PE :
+        {
+            std::vector<G4int> natoms;
+            std::vector<G4String> elements;
+            elements.push_back("C"); natoms.push_back(2);
+            elements.push_back("H"); natoms.push_back(4);
+            mat = man->ConstructNewMaterial("PE", elements, natoms, 0.96*g/cm3);
+        }
+        break;
+    case Graphite :
+        {
+            std::vector<G4int> natoms;
+            std::vector<G4String> elements;
+            elements.push_back("C"); natoms.push_back(1);
+            mat = man->ConstructNewMaterial("Graphite", elements, natoms, 1.83*g/cm3);
+        }
+        break;
+    case GelTissue :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(9.6);
+            elements.push_back("C"); weightFrac.push_back(14.9);
+            elements.push_back("N"); weightFrac.push_back(1.46);
+            elements.push_back("O"); weightFrac.push_back(73.8);
+            mat = man->ConstructNewMaterial("GelTissue", elements, weightFrac, 1.13*g/cm3);
+        }
+        break;
+    case GelWater :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("H"); weightFrac.push_back(11.03);
+            elements.push_back("C"); weightFrac.push_back(1.04);
+            elements.push_back("N"); weightFrac.push_back(0.32);
+            elements.push_back("O"); weightFrac.push_back(87.6);
+            mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
+        }
+        break;
+    default:;
+    }
+    if (!mat)
+    {
+        out("Error in material selection of PhantomCustomMatBox");
+        exit(10);
+    }
+    out("-->Ionization potential for the phantom material:", mat->GetIonisation()->GetMeanExcitationEnergy()/eV, "eV");
+
+    G4VSolid          * solid = new G4Box("Phantom_Box", 0.5 * SizeX * mm, 0.5 * SizeY * mm, 0.5 * SizeZ * mm);
+    G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
+    new G4PVPlacement(nullptr, {0, 0, 0}, logic, "Phantom_PV", logicWorld, false, 0);
+    logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    return logic;
+}
+
+void PhantomCustomBox::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "SizeX", SizeX);
+    jstools::readDouble(json, "SizeY", SizeY);
+    jstools::readDouble(json, "SizeZ", SizeZ);
+
+    std::string MatStr;
+    jstools::readString(json, "Material", MatStr);
+
+    if      (MatStr == "PMMA")      Material = PMMA;
+    else if (MatStr == "HDPE")      Material = HDPE;
+    else if (MatStr == "PE")        Material = PE;
+    else if (MatStr == "Graphite")  Material = Graphite;
+    else if (MatStr == "GelTissue") Material = GelTissue;
+    else if (MatStr == "GelWater")  Material = GelWater;
+    else
+    {
+        out("Unknown material for phantom PhantomCustomMat");
+        exit(1);
+    }
+}
+
+void PhantomCustomBox::doWriteToJson(json11::Json::object & json) const
+{
+    json["SizeX"] = SizeX;
+    json["SizeY"] = SizeY;
+    json["SizeZ"] = SizeZ;
+
+    std::string MatStr;
+    switch (Material)
+    {
+    case PMMA      : MatStr = "PMMA";      break;
+    case HDPE      : MatStr = "HDPE";      break;
+    case PE        : MatStr = "PE";        break;
+    case Graphite  : MatStr = "Graphite";  break;
+    case GelTissue : MatStr = "GelTissue"; break;
+    case GelWater  : MatStr = "GelWater";  break;
+    default:;
+    }
+
+    json["Material"] = MatStr;
+}
+
+// ---
+
+G4LogicalVolume * PhantomTinyCube::definePhantom(G4LogicalVolume * logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
     G4NistManager * man = G4NistManager::Instance();
@@ -214,4 +346,87 @@ G4LogicalVolume * PhantomParam::definePhantom(G4LogicalVolume * logicWorld)
     new G4PVParameterised("DicomPhant", logicBox, logicCyl, kUndefined, 317*10, param);
 
     return logicCyl;
+}
+
+// ---
+
+G4LogicalVolume *PhantomEspana::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+    G4Material * matVacuum = man->FindOrBuildMaterial("G4_Galactic");
+
+    std::vector<double> weightFrac;
+    std::vector<G4String> elements;
+    elements.push_back("H"); weightFrac.push_back(14.3);
+    elements.push_back("C"); weightFrac.push_back(85.7);
+    G4Material * matHDPE = man->ConstructNewMaterial("HDPE", elements, weightFrac, 0.95*g/cm3);
+
+    weightFrac.clear();
+    elements.clear();
+    elements.push_back("H"); weightFrac.push_back(9.6);
+    elements.push_back("C"); weightFrac.push_back(14.9);
+    elements.push_back("N"); weightFrac.push_back(1.46);
+    elements.push_back("O"); weightFrac.push_back(73.8);
+    G4Material * matTissue = man->ConstructNewMaterial("GelTissue", elements, weightFrac, 1.13*g/cm3);
+
+    weightFrac.clear();
+    elements.clear();
+    elements.push_back("H"); weightFrac.push_back(11.03);
+    elements.push_back("C"); weightFrac.push_back(1.04);
+    elements.push_back("N"); weightFrac.push_back(0.32);
+    elements.push_back("O"); weightFrac.push_back(87.6);
+    G4Material * matWater = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
+
+    G4VSolid * solidCont = new G4Box("Phantom_Box",  60.0*mm, 60.0*mm, 60.0*mm);
+    G4VSolid * solidHDPE = new G4Box("Phantom_HDPE", 30.0*mm, 60.0*mm, 60.0*mm);
+    G4VSolid * solidTis  = new G4Box("Phantom_Tis",  30.0*mm, 60.0*mm, 30.0*mm);
+    G4VSolid * solidWat  = new G4Box("Phantom_Wat",  30.0*mm, 60.0*mm, 30.0*mm);
+
+    G4LogicalVolume * logicCont = new G4LogicalVolume(solidCont, matVacuum, "Phantom");
+    G4LogicalVolume * logicHDPE = new G4LogicalVolume(solidHDPE, matHDPE,   "HDPE_L");
+        logicHDPE->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+    G4LogicalVolume * logicTis  = new G4LogicalVolume(solidTis, matTissue,  "TisG_L");
+        logicTis->SetVisAttributes (G4VisAttributes(G4Colour(0, 1.0, 0)));
+    G4LogicalVolume * logicWat  = new G4LogicalVolume(solidWat, matWater,   "WatG_L");
+        logicWat->SetVisAttributes (G4VisAttributes(G4Colour(0, 0, 1.0)));
+
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicCont, "Phantom_PV", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {30.0, 0, 0}, logicHDPE, "HDPE_PV", logicCont, false, 0);
+    new G4PVPlacement(nullptr, {-30.0, 0, -30.0}, logicTis, "TisG_PV", logicCont, false, 0);
+    new G4PVPlacement(nullptr, {-30.0, 0, 30.0}, logicWat, "Wat_PV", logicCont, false, 0);
+
+    return logicCont;
+}
+
+G4LogicalVolume * PhantomBauerGel::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(5);
+    elements.push_back("H"); natoms.push_back(8);
+    elements.push_back("O"); natoms.push_back(2);
+    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+
+    std::vector<double> weightFrac;
+    elements.clear();
+    elements.push_back("H"); weightFrac.push_back(11.03);
+    elements.push_back("C"); weightFrac.push_back(1.04);
+    elements.push_back("N"); weightFrac.push_back(0.32);
+    elements.push_back("O"); weightFrac.push_back(87.6);
+    G4Material * matGel = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
+
+    G4VSolid          * solidPMMA = new G4Box("Phantom_Box", 0.5 * 110 * mm, 0.5 * 370 * mm, 0.5 * 110 * mm);
+    G4VSolid          * solidGel  = new G4Box("Phantom_Box", 0.5 * 100 * mm, 0.5 * 350 * mm, 0.5 * 100 * mm);
+
+    G4LogicalVolume   * logicPMMA = new G4LogicalVolume(solidPMMA, matPMMA, "PhantomBox");
+    logicPMMA->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    G4LogicalVolume   * logicGel  = new G4LogicalVolume(solidGel, matGel, "PhantomGel");
+    logicGel->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
+
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicPMMA, "PhantomBox_PV", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicGel, "PhantomGel_PV", logicPMMA, false, 0);
+
+    return logicPMMA;
 }

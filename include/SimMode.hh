@@ -9,6 +9,7 @@
 #include "G4SystemOfUnits.hh"
 
 class G4UserSteppingAction;
+class G4UserStackingAction;
 class G4VSensitiveDetector;
 class Hist1D;
 
@@ -28,8 +29,11 @@ public:
     bool bNeedGui    = false;
     bool bNeedOutput = false;
 
+    virtual void preInit() {}  // triggered before Geant4 configuration process!
+
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
+    virtual G4UserStackingAction * getStackingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
     virtual void onEventStarted() {}
@@ -197,26 +201,20 @@ protected:
 class SimModeAnnihilTest : public SimModeBase
 {
 public:
-    SimModeAnnihilTest(int numEvents, double range, int numBins, const std::string & fileName);
-    ~SimModeAnnihilTest();
+    SimModeAnnihilTest(int numEvents, double timeStart, const std::string & fileName, bool binary);
 
-    void addPosition(double x);
+    void saveRecord(const G4ThreeVector & pos, double timeInSeconds);
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
     std::string getTypeName() const override {return "SimModeAnnihilTest";}
     void readFromJson(const json11::Json & json) override;
 
+    int    NumEvents = 1;
+    double TimeStart = 0; // in seconds, ignore all annihilations before that time
+
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
-    void init();
-
-    int           NumEvents = 1;
-    double        Range     = 4.0;
-    int           NumBins   = 100;
-    std::string   FileName  = "dummy.txt";
-
-    Hist1D      * Hist      = nullptr;
 };
 
 // ---

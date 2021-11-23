@@ -185,11 +185,13 @@ void PointSource::doReadFromJson(const json11::Json & json)
 
 // ---
 
-PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction) :
-    SourceModeBase(particle, timeGenerator), Origin(origin)
+PencilBeam::PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
+                       const G4ThreeVector & origin, const G4ThreeVector & direction,
+                       int numParticles, ProfileBase * spread) :
+    SourceModeBase(particle, timeGenerator), Origin(origin), NumParticles(numParticles), Profile(spread)
 {
     Direction = direction;
-    init();
+    update();
 }
 
 PencilBeam::PencilBeam(const json11::Json & json) :
@@ -197,11 +199,32 @@ PencilBeam::PencilBeam(const json11::Json & json) :
 {
     doReadFromJson(json);
     readFromJson(json);
-    init();
+    update();
 }
 
-void PencilBeam::init()
+PencilBeam::~PencilBeam()
 {
+    delete Profile;
+}
+
+void PencilBeam::GeneratePrimaries(G4Event * anEvent)
+{
+    for (int iP = 0; iP < NumParticles; iP++)
+    {
+        if (Profile)
+        {
+            G4ThreeVector pos(Origin);
+            Profile->generateOffset(pos);
+            //out(pos);
+            ParticleGun->SetParticlePosition(pos);
+        }
+        SourceModeBase::GeneratePrimaries(anEvent);
+    }
+}
+
+void PencilBeam::update()
+{
+    if (Profile) Profile->setDirection(Direction);
     ParticleGun->SetParticlePosition(Origin);
     bIsotropicDirection = false;
 }
@@ -215,6 +238,12 @@ void PencilBeam::doWriteToJson(json11::Json::object & json) const
     json["DirectionX"] = Direction.x();
     json["DirectionY"] = Direction.y();
     json["DirectionZ"] = Direction.z();
+
+    json["NumParticles"] = NumParticles;
+
+    json11::Json::object js;
+    if (Profile) Profile->writeToJson(js);
+    json["Profile"] = js;
 }
 
 void PencilBeam::doReadFromJson(const json11::Json &json)
@@ -226,6 +255,27 @@ void PencilBeam::doReadFromJson(const json11::Json &json)
     jstools::readDouble(json, "DirectionX", Direction[0]);
     jstools::readDouble(json, "DirectionY", Direction[1]);
     jstools::readDouble(json, "DirectionZ", Direction[2]);
+
+    //NumParticles = 1;
+    jstools::readInt(json, "NumParticles", NumParticles);
+
+    // !!!*** needs refactoring!
+    delete Profile; Profile = nullptr;
+    json11::Json::object js;
+    jstools::readObject(json, "Profile", js);
+    if (!js.empty())
+    {
+        std::string Type;
+        jstools::readString(js, "Type", Type);
+
+        if      (Type == "Uniform") Profile = new UniformProfile(js);
+        else if (Type == "Gauss")   Profile = new GaussProfile(js);
+        else
+        {
+            out("Unknown profile type for the beam source!");
+            exit(1);
+        }
+    }
 }
 
 // ---
@@ -551,4 +601,80 @@ void LineSource::doReadFromJson(const json11::Json &json)
     jstools::readDouble(json, "EndPointX", EndPoint[0]);
     jstools::readDouble(json, "EndPointY", EndPoint[1]);
     jstools::readDouble(json, "EndPointZ", EndPoint[2]);
+}
+
+// ---
+
+void ProfileBase::setDirection(const G4ThreeVector & dir)
+{
+    Direction = dir.unit();
+}
+
+/*
+void ProfileBase::addRotation(double Degrees)
+{
+    Angle = Degrees * M_PI / 180.0;
+}
+*/
+
+void ProfileBase::writeToJson(json11::Json::object & json) const
+{
+    json["Type"] = getTypeName();
+    doWriteToJson(json);
+}
+
+UniformProfile::UniformProfile(const json11::Json & json) : ProfileBase()
+{
+    readFromJson(json);
+}
+
+void UniformProfile::generateOffset(G4ThreeVector & pos) const
+{
+    double offX = -0.5 * DX + DX * G4UniformRand();
+    double offY = -0.5 * DY + DY * G4UniformRand();
+
+    G4ThreeVector posLoc(offX, offY, 0);
+    posLoc.rotateUz(Direction);
+
+    pos += posLoc;
+}
+
+void UniformProfile::doWriteToJson(json11::Json::object &json) const
+{
+    json["DX"] = DX;
+    json["DY"] = DY;
+}
+
+void UniformProfile::readFromJson(const json11::Json &json)
+{
+    jstools::readDouble(json, "DX", DX);
+    jstools::readDouble(json, "DY", DY);
+}
+
+GaussProfile::GaussProfile(const json11::Json & json) : ProfileBase()
+{
+    readFromJson(json);
+}
+
+void GaussProfile::generateOffset(G4ThreeVector & pos) const
+{
+    double offX = G4RandGauss::shoot(0, SigmaX);
+    double offY = G4RandGauss::shoot(0, SigmaY);
+
+    G4ThreeVector posLoc(offX, offY, 0);
+    posLoc.rotateUz(Direction);
+
+    pos += posLoc;
+}
+
+void GaussProfile::doWriteToJson(json11::Json::object &json) const
+{
+    json["SigmaX"] = SigmaX;
+    json["SigmaY"] = SigmaY;
+}
+
+void GaussProfile::readFromJson(const json11::Json &json)
+{
+    jstools::readDouble(json, "SigmaX", SigmaX);
+    jstools::readDouble(json, "SigmaY", SigmaY);
 }

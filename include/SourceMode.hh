@@ -26,7 +26,7 @@ class SourceModeBase
 {
 public:
     SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator); // transfers ownership
-    ~SourceModeBase();
+    virtual ~SourceModeBase();
 
     void initialize();
 
@@ -96,21 +96,83 @@ protected:
 
 // ---
 
+class ProfileBase
+{
+public:
+    ProfileBase(){}
+    virtual ~ProfileBase(){}
+
+    //void addRotation(double Degrees);
+
+    void setDirection(const G4ThreeVector & dir);
+
+    virtual std::string getTypeName() const = 0;
+    virtual void generateOffset(G4ThreeVector & pos) const = 0;
+
+    void writeToJson(json11::Json::object & json) const;
+
+protected:
+    G4ThreeVector Direction;
+    G4ThreeVector UnitPerp;
+    double        Angle = 0;
+
+    virtual void doWriteToJson(json11::Json::object & json) const {}
+    //void readFromJson(const json11::Json & json);
+};
+class UniformProfile : public ProfileBase
+{
+public:
+    UniformProfile(double dx, double dy) : ProfileBase(), DX(dx), DY(dy) {}
+    UniformProfile(const json11::Json & json);
+
+    std::string getTypeName() const override {return "Uniform";}
+    void generateOffset(G4ThreeVector & pos) const override;
+
+protected:
+    double DX = 0;
+    double DY = 0;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+    void readFromJson(const json11::Json & json);
+};
+class GaussProfile : public ProfileBase
+{
+public:
+    GaussProfile(double sigmaX, double sigmaY) : ProfileBase(), SigmaX(sigmaX), SigmaY(sigmaY) {}
+    GaussProfile(const json11::Json & json);
+
+    std::string getTypeName() const override {return "Gauss";}
+    void generateOffset(G4ThreeVector & pos) const override;
+
+protected:
+    double SigmaX = 0;
+    double SigmaY = 0;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+    void readFromJson(const json11::Json & json);
+};
+
 class PencilBeam : public SourceModeBase
 {
 public:
-    PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, const G4ThreeVector & direction);
+    PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
+               const G4ThreeVector & origin, const G4ThreeVector & direction,
+               int numParticles = 1, ProfileBase * spread = nullptr);
     PencilBeam(const json11::Json & json);
+    ~PencilBeam();
 
     std::string getTypeName() const override {return "PencilBeam";}
+    void GeneratePrimaries(G4Event * anEvent) override;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void doReadFromJson(const json11::Json & json);
 
-    void init();
+    void update();
 
-    G4ThreeVector Origin = {0,0,0};
+    G4ThreeVector Origin       = {0,0,0};
+    int           NumParticles = 1;
+    ProfileBase * Profile      = nullptr;
 };
 
 // ---
