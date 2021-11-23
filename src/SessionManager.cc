@@ -128,9 +128,14 @@ void SessionManager::scanMaterials()
     for (G4LogicalVolume * lv : *lvs)
     {
         G4Material * mat = lv->GetMaterial();
-        out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
+        //out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
 
-        if (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+        if      (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+        else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+        else if (mat->GetName() == "PMMA") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 1.0)));
+        else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+        else if (mat->GetName() == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
+        else if (mat->GetName() == "ABS") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
     }
 
     out("<--Material scan completed");

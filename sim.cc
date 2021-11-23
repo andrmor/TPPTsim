@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 //        SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PMMA);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
-        //SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Scintillators);
         /*
         SM.DetectorComposition.add(DetComp::Base);
         SM.DetectorComposition.add(DetComp::ClosedStructure);
@@ -88,9 +88,10 @@ int main(int argc, char** argv)
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
         //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
+        SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/andr/WORK/TPPT/Marcia/GDML_version2/mother.gdml";
 
         // Source
-        //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
+        SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
-        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
+//        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
 //        SM.SimMode          = new SimModeGui();
@@ -115,10 +116,10 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
         //SM.SimMode          = new SimModeAnnihilTest(SM.SourceMode->CountEvents(), 0, "Annihil.txt", false);
-        SM.SimMode          = new SimModeAnnihilTest(1000, 0, "Annihil.txt", false);
+//        SM.SimMode          = new SimModeAnnihilTest(1000, 0, "Annihil.txt", false);
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
-        //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
+        SM.SimMode          = new SimModeMultipleEvents(100000, "SimOutput.txt", false);
         //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);

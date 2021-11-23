@@ -65,16 +65,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
     logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 
-    if ( SM.detectorContains(DetComp::GDML) )
-    {
-        G4GDMLParser parser;
-        parser.Read(SM.GdmlFileName, false);
-        G4VPhysicalVolume * tmp = parser.GetWorldVolume(); tmp->SetName("DummyWorld");
-        G4LogicalVolume * logicGDML = tmp->GetLogicalVolume(); logicGDML->SetName("GDML_LV");
-        new G4PVPlacement(nullptr, {0, 0, -SM.IsoCenterGDML}, logicGDML, "GDML_PV", logicWorld, false, 0);
-        logicGDML->SetVisAttributes(G4VisAttributes({1, 1, 1}));
-        logicGDML->SetVisAttributes(G4VisAttributes::Invisible);
-    }
+    if (SM.detectorContains(DetComp::GDML)) addGDML();
 
     G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
     if (phantom) SM.createPhantomRegion(phantom);
@@ -89,6 +80,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if (SM.detectorContains(DetComp::CoolingAssemblies)) addCoolingAssemblies();
 
     return SM.physWorld;
+}
+
+void DetectorConstruction::addGDML()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4GDMLParser parser;
+    parser.Read(SM.GdmlFileName, false);
+    G4VPhysicalVolume * gdmlWorldPV = parser.GetWorldVolume();
+
+    int numD = gdmlWorldPV->GetLogicalVolume()->GetNoDaughters();
+    out("Number of daughter volumes in the GDML world:", numD);
+    for (int iD = 0; iD < numD; iD++)
+    {
+        G4VPhysicalVolume * d = gdmlWorldPV->GetLogicalVolume()->GetDaughter(iD);
+        //out("->", d->GetName(), d->GetMultiplicity(),d->GetFrameTranslation(), d->GetTranslation());
+
+        G4LogicalVolume * logic = d->GetLogicalVolume();
+        new G4PVPlacement(nullptr, {0, 0, -SM.IsoCenterGDML}, logic, logic->GetName() + "_PV", logicWorld, false, 0);
+    }
 }
 
 void DetectorConstruction::addFSM(G4Material * material)
