@@ -36,6 +36,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
     else if (Type == "PhantomEspana")    ph = new PhantomEspana();
     else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
+    else if (Type == "PhantomBauerCa")   ph = new PhantomBauerCa();
     else
     {
         out("Unknown phantom type!");
@@ -426,7 +427,41 @@ G4LogicalVolume * PhantomBauerGel::definePhantom(G4LogicalVolume * logicWorld)
     logicGel->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
 
     new G4PVPlacement(nullptr, {0, 0, 0}, logicPMMA, "PhantomBox_PV", logicWorld, false, 0);
-    new G4PVPlacement(nullptr, {0, 0, 0}, logicGel, "PhantomGel_PV", logicPMMA, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicGel,  "PhantomGel_PV", logicPMMA,  false, 0);
+
+    return logicPMMA;
+}
+
+// ---
+
+G4LogicalVolume * PhantomBauerCa::definePhantom(G4LogicalVolume *logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(5);
+    elements.push_back("H"); natoms.push_back(8);
+    elements.push_back("O"); natoms.push_back(2);
+    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+
+    natoms.clear();
+    elements.clear();
+    elements.push_back("Ca"); natoms.push_back(1);
+    elements.push_back("C");  natoms.push_back(1);
+    elements.push_back("O");  natoms.push_back(3);
+    G4Material * matChalk = man->ConstructNewMaterial("GelWater", elements, natoms, 1.22*g/cm3);
+
+    G4VSolid          * solidPMMA  = new G4Box("Phantom_Box", 0.5 * 110 * mm, 0.5 * 370 * mm, 0.5 * 110 * mm);
+    G4VSolid          * solidChalk = new G4Box("Phantom_Box", 0.5 * 100 * mm, 0.5 * 350 * mm, 0.5 * 100 * mm);
+
+    G4LogicalVolume   * logicPMMA  = new G4LogicalVolume(solidPMMA, matPMMA, "PhantomBox");
+    logicPMMA->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    G4LogicalVolume   * logicChalk = new G4LogicalVolume(solidChalk, matChalk, "PhantomChalk");
+    logicChalk->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
+
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicPMMA, "PhantomBox_PV",    logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicChalk, "PhantomChalk_PV", logicPMMA,  false, 0);
 
     return logicPMMA;
 }
