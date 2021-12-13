@@ -656,7 +656,7 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeDoseExtractor::SimModeDoseExtractor(int numEvents, double range, int numBins, const std::string & fileName) :
+/*SimModeDoseExtractor::SimModeDoseExtractor(int numEvents, double range, int numBins, const std::string & fileName) :
     NumEvents(numEvents), Range(range), NumBins(numBins), FileName(fileName)
 {
     init();
@@ -709,4 +709,4 @@ void SimModeDoseExtractor::doWriteToJson(json11::Json::object &json) const
     json["Range"]     = Range;
     json["NumBins"]   = NumBins;
     json["FileName"]  = FileName;
-}
+}*/

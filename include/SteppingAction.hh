@@ -45,10 +45,10 @@ public:
 
 // ---
 
-class SteppingAction_DoseExtractor : public G4UserSteppingAction
+/*class SteppingAction_DoseExtractor : public G4UserSteppingAction
 {
 public:
     void UserSteppingAction(const G4Step * step) override;
-};
+};*/
 
 #endif // SteppingAction_h

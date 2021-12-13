@@ -270,7 +270,7 @@ protected:
 
 // ---
 
-class SimModeDoseExtractor : public SimModeBase
+/*class SimModeDoseExtractor : public SimModeBase
 {
 public:
     SimModeDoseExtractor(int numEvents, double range, int numBins, const std::string & fileName);
@@ -293,6 +293,6 @@ protected:
     std::string   FileName  = "dummy.txt";
 
     Hist1D      * Hist      = nullptr;
-};
+};*/
 
 #endif // SimulationMode_h

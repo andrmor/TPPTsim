@@ -255,8 +255,8 @@ void DetectorConstruction::addClosedStructure()
     G4RotationMatrix * rot2 = new CLHEP::HepRotation(180.0*deg, 0, 0);
     G4RotationMatrix * rot3 = new CLHEP::HepRotation(360.0*deg, 0, 0);
 
-    new G4PVPlacement(rot, {0, 0, SM.GlobalZ0}, logicInnerWall, "InnerWall_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, SM.GlobalZ0}, logicInnerWall, "InnerWall_PV", logicWorld, false, 0);
+    //new G4PVPlacement(rot, {0, 0, SM.GlobalZ0}, logicInnerWall, "InnerWall_PV", logicWorld, false, 0);
+    //new G4PVPlacement(rot1, {0, 0, SM.GlobalZ0}, logicInnerWall, "InnerWall_PV", logicWorld, false, 0);
     new G4PVPlacement(rot, {0, 0, SM.GlobalZ0}, logicOuterWall, "OuterWall_PV", logicWorld, false, 0);
     new G4PVPlacement(rot1, {0, 0, SM.GlobalZ0}, logicOuterWall, "OuterWall_PV", logicWorld, false, 0);
     new G4PVPlacement(rot, {0, 0, SM.GlobalZ0}, logicSideWall, "SideWall_PV", logicWorld, false, 0);

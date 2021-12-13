@@ -177,7 +177,7 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
 
 // ---
 
-void SteppingAction_DoseExtractor::UserSteppingAction(const G4Step * step)
+/*void SteppingAction_DoseExtractor::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
     const G4StepPoint * postP  = step->GetPostStepPoint();
@@ -187,4 +187,4 @@ void SteppingAction_DoseExtractor::UserSteppingAction(const G4Step * step)
         SimModeDoseExtractor * Mode = static_cast<SimModeDoseExtractor*>(SM.SimMode);
         Mode->addEnergyDepth(step->GetTotalEnergyDeposit(), postP->GetPosition()[0]);
     }
-}
+}*/

@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomModeDICOM(155.0, {0,0,50}, "Data.dat", true);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
-        SM.DetectorComposition.add(DetComp::Scintillators);
+        //SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add(DetComp::Base);
         //SM.DetectorComposition.add(DetComp::ClosedStructure);
         //SM.DetectorComposition.add(DetComp::SIPM);
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::CoolingAssemblies);
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
-        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
+        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/margarida/Downloads/GDML_version3/mother.gdml";
 
         // Source
         SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, SM.GlobalZ0});
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, SM.GlobalZ0-20.0}, {20.0, 20.0, SM.GlobalZ0+20.0});
         //SM.SourceMode       = new PencilBeam(new Gamma(511.0*keV), new ConstantTime(0), {100.0, 160.0, 50.0+SM.GlobalZ0}, {0,0,-1.0});
-        //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, SM.GlobalZ0+12.3*mm}, {1.0,0,0});
+        //SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0.0, 0.0, 0.0}, {0,0,1});
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, SM.GlobalZ0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
         //SM.SimMode          = new SimModeMultipleEvents(1000, "1.txt", false);
-        //SM.SimMode          = new SimModeMultipleEvents(10000000, "All10MSim.bin", true);
+        //SM.SimMode          = new SimModeMultipleEvents(10000000, "SimG4Window_1000.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
