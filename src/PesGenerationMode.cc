@@ -80,14 +80,6 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
     }
     out("\n");
 
-/*
-    PesGenRecord C12C11(6, 12, "C11");
-        C12C11.CrossSection.push_back({0,     20000.0}); // !!!*** todo loader
-        C12C11.CrossSection.push_back({500.0, 20000.0}); // !!!*** todo loader
-        // this cross-section for PMMA should result in:
-        // mfp = 1/(sigma * numDens) = 1/(20000 [mbarns] * 1e-3 * 1e-28 [m2] * 1e6    *     0.9893 * 3.549e19[at/mm3]) -> 14 mm
-    BaseRecords.push_back(C12C11);
-*/
 }
 
 G4UserStackingAction * PesGenerationMode::getStackingAction()
