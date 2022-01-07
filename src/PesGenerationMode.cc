@@ -31,10 +31,10 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     DZ = 1.0;
     Xfrom = -45;
     Xto   =  45;
-    Yfrom = -45;
-    Yto   =  45;
-    Zfrom = -150;
-    Zto   =  50;
+    Yfrom = -150;
+    Yto   =  50;
+    Zfrom = -45;
+    Zto   =  45;
 
     const int numX = Xto - Xfrom;
     const int numY = Yto - Yfrom;
