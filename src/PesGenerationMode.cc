@@ -371,6 +371,10 @@ bool PesGenerationMode::getVoxel(const G4ThreeVector & pos, int * index)
     index[1] = floor(pos[1] / DY); if (index[1] < Yfrom || index[1] >= Yto) return false;
     index[2] = floor(pos[2] / DZ); if (index[2] < Zfrom || index[2] >= Zto) return false;
 
+    index[0] -= Xfrom;
+    index[1] -= Yfrom;
+    index[2] -= Zfrom;
+
     return true;
 
     //G4ThreeVector v(0,2.6,-1.2);
@@ -378,7 +382,7 @@ bool PesGenerationMode::getVoxel(const G4ThreeVector & pos, int * index)
     //bool ok = getVoxel(v, index);
     //out(ok, index[0], index[1], index[2]);
     //exit(1);
-    // G4ThreeVector v(0, 2.6, -1.2) --> [0, 2, -2]
+    // G4ThreeVector v(0, 2.6, -1.2) --> [0, 2, -2] // if XYZfrom are zeros
 }
 
 void PesGenerationMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
@@ -411,28 +415,29 @@ void PesGenerationMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVect
 bool PesGenerationMode::triggerDirect(const G4Track * track)
 {
 #ifdef PES_DIRECT
-
+/*
     std::vector<std::tuple<int, int, int, double>> Path;
     //addPath({1,1.2,1}, {1.2,1,1}, Path);
     //addPath({1,1,1}, {2.2,1,1}, Path);
     addPath({1.5,1.8,1}, {-2.5,2.1,1}, Path);
     for (size_t i = 0; i < Path.size(); i++)
         out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
-
     exit(1);
-
+*/
 
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (Records.empty()) return false;
 
-
+    std::vector<std::tuple<int, int, int, double>> Path;
+    addPath(LastPosition, track->GetPosition(), Path);
 
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
     for (const PesGenRecord & r : Records)
     {
         const double cs = r.getCrossSection(meanEnergy);
-        const double relProb = cs * r.NumberDensity;
-
+        const double relProb = cs * r.NumberDensity; // !!!*** to find proper factor to convert to number per mm!
+        for (size_t i = 0; i < Path.size(); i++)
+            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * relProb;
     }
 #endif
     return false;
