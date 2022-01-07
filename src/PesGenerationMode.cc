@@ -5,6 +5,8 @@
 
 #include "G4Material.hh"
 
+#define PES_DIRECT
+
 PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
     SimModeBase(), NumEvents(numEvents)
 {
@@ -19,6 +21,40 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     SM.FileName   = outputFileName;
     SM.bBinOutput = binaryOutput;
     SaveDir[0] = 0; SaveDir[1] = 0; SaveDir[2] = 1.0;
+
+#ifdef PES_DIRECT
+    DX = 1.0;
+    DY = 1.0;
+    DZ = 1.0;
+    Xfrom = -45;
+    Xto   =  45;
+    Yfrom = -45;
+    Yto   =  45;
+    Zfrom = -150;
+    Zto   =  50;
+
+    const int numX = Xto - Xfrom;
+    const int numY = Yto - Yfrom;
+    const int numZ = Zto - Zfrom;
+
+    for (PesGenRecord & r : BaseRecords)
+    {
+        r.ProbArray = new std::vector<std::vector<std::vector<double>>>();
+        // X
+        r.ProbArray->resize(numX);
+        for (std::vector<std::vector<double>> & ary : *r.ProbArray)
+        {
+            // Y
+            ary.resize(numY);
+            for (std::vector<double> & arz : ary)
+            {
+                // Z
+                arz.resize(numZ);
+            }
+        }
+    }
+    saveArrays();
+#endif
 }
 
 void PesGenerationMode::loadCrossSections(const std::string & fileName)
@@ -234,4 +270,36 @@ void PesGenerationMode::onEventStarted()
         *SM.outStream << '#' << CurrentEvent << '\n';
 
     CurrentEvent++;
+}
+
+void PesGenerationMode::saveArrays()
+{
+#ifdef PES_DIRECT
+    SessionManager & SM = SessionManager::getInstance();
+    for (PesGenRecord & r : BaseRecords)
+    {
+        std::string fileName = std::to_string(r.TargetZ) + '_' + std::to_string(r.TargetA) + '_' + r.PES + ".txt";
+        std::string fullFileName = SM.WorkingDirectory + '/' + fileName;
+
+        std::ofstream stream;
+        stream.open(fullFileName);
+
+        if (!stream.is_open())
+        {
+            out("Cannot open file to store output data!");
+            outFlush();
+            exit(1);
+        }
+        else out("\nSaving array data to file", fullFileName);
+
+        for (const std::vector<std::vector<double>> & ary : *r.ProbArray)
+        {
+            for (const std::vector<double> & arz : ary)
+            {
+                for (const double & val : arz) stream << val << ' ';
+                stream << '\n';
+            }
+        }
+    }
+#endif
 }

@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/TMP";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
-        SM.SimMode          = new PesGenerationMode(1e3, "Pes.dat", false);
+        SM.SimMode          = new PesGenerationMode(1e2, "Pes.dat", false);
 
     // --- END of user init ---
     }

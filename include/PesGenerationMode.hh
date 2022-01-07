@@ -22,6 +22,9 @@ public:
     //runtime
     double NumberDensity;
     double getCrossSection(double energy) const;
+
+    //only for PES_DIRECT mode!
+    std::vector<std::vector<std::vector<double>>> * ProbArray = nullptr;
 };
 
 // ---
@@ -43,6 +46,18 @@ public:
     std::vector<PesGenRecord> BaseRecords;
 
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
+
+    //only for PES_DIRECT mode!
+    double DX = 1.0; // mm
+    double DY = 1.0; // mm
+    double DZ = 1.0; // mm
+    int Xfrom = -100;
+    int Xto   =  100;
+    int Yfrom = -100;
+    int Yto   =  100;
+    int Zfrom = -100;
+    int Zto   =  100;
+    void saveArrays();
 
 protected:
     void loadCrossSections(const std::string & fileName);
