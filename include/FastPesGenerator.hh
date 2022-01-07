@@ -3,8 +3,6 @@
 
 #include "G4VFastSimulationModel.hh"
 
-#include <vector>
-
 class FastPesGeneratorModel : public G4VFastSimulationModel
 {
 public:
@@ -17,13 +15,6 @@ public:
 
     void DoIt(const G4FastTrack & fastTrack, G4FastStep & step) override;
 
-private:
-    double LastEnergy;
-    double LastTrackLength;
-    G4ThreeVector LastPosition;
-    int    LastMaterial;
-
-    std::vector<double> ProbVec;
 };
 
 #endif // fastpesgeneratormodel_h

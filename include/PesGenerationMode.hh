@@ -29,6 +29,8 @@ public:
 
 // ---
 
+class G4Track;
+
 class PesGenerationMode : public SimModeBase
 {
 public:
@@ -40,6 +42,8 @@ public:
     void preInit() override;
     void run() override;
     void onEventStarted() override;
+
+    bool modelTrigger(const G4Track * track);
 
     void saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const;
 
@@ -69,6 +73,19 @@ private:
     int    CurrentEvent = 0;
     double SaveDir[3];
     double SaveEnergy = 0;
+
+    double LastEnergy;
+    double LastTrackLength;
+    G4ThreeVector LastPosition;
+    int    LastMaterial;
+
+    std::vector<double> ProbVec;
+
+    bool triggerMC(const G4Track * track);
+    bool triggerDirect(const G4Track * track);
+
+    bool getVoxel(const G4ThreeVector & pos, int * index);
+    void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path);
 };
 
 #endif // pesgenerationmode_h

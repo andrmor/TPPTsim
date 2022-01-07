@@ -4,6 +4,9 @@
 #include "out.hh"
 
 #include "G4Material.hh"
+#include "G4Track.hh"
+#include "G4RandomTools.hh"
+#include "Randomize.hh"
 
 #define PES_DIRECT
 
@@ -53,7 +56,6 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
             }
         }
     }
-    saveArrays();
 #endif
 }
 
@@ -154,6 +156,10 @@ void PesGenerationMode::run()
     }
 
     SM.runManager->BeamOn(NumEvents);
+
+#ifdef PES_DIRECT
+    saveArrays();
+#endif
 }
 
 void PesGenerationMode::exploreMaterials()
@@ -270,6 +276,166 @@ void PesGenerationMode::onEventStarted()
         *SM.outStream << '#' << CurrentEvent << '\n';
 
     CurrentEvent++;
+}
+
+bool PesGenerationMode::modelTrigger(const G4Track * track)
+{
+    const int StepNumber = track->GetCurrentStepNumber();
+    //out("PES call", StepNumber);
+
+    if (StepNumber == 1)
+    {
+        LastEnergy      = track->GetKineticEnergy();
+        LastTrackLength = track->GetTrackLength();
+        LastPosition    = track->GetPosition();
+        LastMaterial    = track->GetMaterial()->GetIndex();
+        return false;
+    }
+
+    const double          Energy   = track->GetKineticEnergy();
+    const double          Length   = track->GetTrackLength();
+    const G4ThreeVector & Position = track->GetPosition();
+
+    if (LastEnergy > Energy)
+    {
+#ifdef PES_DIRECT
+        bool kill = triggerDirect(track);
+#else
+        bool kill = triggerMC(track);
+#endif
+        if (kill) return true;
+    }
+
+    LastEnergy      = Energy;
+    LastTrackLength = Length;
+    LastPosition    = Position;
+    LastMaterial    = track->GetMaterial()->GetIndex();
+    return false;
+}
+
+bool PesGenerationMode::triggerMC(const G4Track * track)
+{
+    const double stepLength = track->GetTrackLength() - LastTrackLength;
+    const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
+    //out("Step", stepLength, "MeanEenergy", meanEnergy, " Material index", LastMaterial);
+
+    const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
+    if (!Records.empty())
+    {
+        //probability is proportional to CS * NumberDensity
+        ProbVec.clear(); ProbVec.reserve(Records.size());
+        double sumProb = 0;
+        for (const PesGenRecord & r : Records)
+        {
+            const double cs = r.getCrossSection(meanEnergy);
+            const double relProb = cs * r.NumberDensity;
+            sumProb += relProb;
+            ProbVec.push_back(relProb);
+        }
+
+        if (sumProb > 0)
+        {
+            size_t index = 0;
+
+            if (ProbVec.size() > 1)
+            {
+                // selecting the reaction
+                double val = sumProb * G4UniformRand();
+                //out("Probs:",ProbVec.size(),"Sum:",sumProb,"Random:",val);
+                for (; index+1 < ProbVec.size(); index++)
+                {
+                    if (val < ProbVec[index]) break;
+                    val -= ProbVec[index];
+                }
+                //out("-->Selected:",index);
+            }
+
+            const double mfp = 1e25 / sumProb; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+
+            const double trigStep = -mfp * log(G4UniformRand());
+            if (trigStep < stepLength)
+            {
+                G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(track->GetPosition() - LastPosition);
+                //out("Triggered! Position:", TriggerPosition, "  Last/FullStep positions:", LastPosition, Position);
+                saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
+                return true; // safe to return, this proton will be killed
+            }
+        }
+    }
+    return false;
+}
+
+bool PesGenerationMode::getVoxel(const G4ThreeVector & pos, int * index)
+{
+    index[0] = floor(pos[0] / DX); if (index[0] < Xfrom || index[0] >= Xto) return false;
+    index[1] = floor(pos[1] / DY); if (index[1] < Yfrom || index[1] >= Yto) return false;
+    index[2] = floor(pos[2] / DZ); if (index[2] < Zfrom || index[2] >= Zto) return false;
+
+    return true;
+
+    //G4ThreeVector v(0,2.6,-1.2);
+    //int index[3];
+    //bool ok = getVoxel(v, index);
+    //out(ok, index[0], index[1], index[2]);
+    //exit(1);
+    // G4ThreeVector v(0, 2.6, -1.2) --> [0, 2, -2]
+}
+
+void PesGenerationMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
+{
+    // check maybe start and finish are in the same voxel
+    int here[3];
+    bool ok1 = getVoxel(posFrom, here);
+    int to[3];
+    bool ok2 = getVoxel(posTo, to);
+    if (ok1 && ok2 && here[0] == to[0] && here[1] == to[1] && here[2] == to[2])
+    {
+        path.push_back( {here[0], here[1], here[2], (posTo-posFrom).mag()} );
+        return;
+    }
+
+    // general
+    const G4ThreeVector vector = posTo - posFrom;
+    const double distance = vector.mag();
+    const int numSteps = 1 + distance * 10.0; // 0.1 mm step
+    const double dStep = distance / numSteps;
+    const double factor = 1.0/numSteps;
+    for (int iStep = 0; iStep < numSteps; iStep++)
+    {
+        G4ThreeVector curPos = posFrom + vector * factor * iStep;
+        bool ok = getVoxel(curPos, here);
+        if (ok) path.push_back( {here[0], here[1], here[2], dStep} );
+    }
+}
+
+bool PesGenerationMode::triggerDirect(const G4Track * track)
+{
+#ifdef PES_DIRECT
+
+    std::vector<std::tuple<int, int, int, double>> Path;
+    //addPath({1,1.2,1}, {1.2,1,1}, Path);
+    //addPath({1,1,1}, {2.2,1,1}, Path);
+    addPath({1.5,1.8,1}, {-2.5,2.1,1}, Path);
+    for (size_t i = 0; i < Path.size(); i++)
+        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
+
+    exit(1);
+
+
+    const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
+    if (Records.empty()) return false;
+
+
+
+    const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
+    for (const PesGenRecord & r : Records)
+    {
+        const double cs = r.getCrossSection(meanEnergy);
+        const double relProb = cs * r.NumberDensity;
+
+    }
+#endif
+    return false;
 }
 
 void PesGenerationMode::saveArrays()
