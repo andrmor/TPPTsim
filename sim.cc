@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         SM.Seed               = 10;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
-        //SM.UseStepLimiter     = true; SM.PhantomStepLimt = 3.0*mm;
+        SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
 
         SM.CutPhantomGamma    = 10.0*mm;
         SM.CutPhantomElectron = 10.0*mm;

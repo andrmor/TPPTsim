@@ -17,46 +17,57 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
 
     //loadCrossSections("ProductionCrossSections.txt");
     loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
-    //loadCrossSections(SM.WorkingDirectory + "/C12-11-exfor1.dat");
 
     //bNeedGui    = true; // used only for tests!
     bNeedOutput = true;
     SM.FileName   = outputFileName;
     SM.bBinOutput = binaryOutput;
-    SaveDir[0] = 0; SaveDir[1] = 0; SaveDir[2] = 1.0;
+    SaveDirection[0] = 0; SaveDirection[1] = 0; SaveDirection[2] = 1.0;
 
 #ifdef PES_DIRECT
-    DX = 1.0;
-    DY = 1.0;
-    DZ = 1.0;
-    Xfrom = -45;
-    Xto   =  45;
-    Yfrom = -150;
-    Yto   =  50;
-    Zfrom = -45;
-    Zto   =  45;
-
-    const int numX = Xto - Xfrom;
-    const int numY = Yto - Yfrom;
-    const int numZ = Zto - Zfrom;
+    BinSize = {1.0, 1.0, 1.0};
+    NumBins = {91, 200, 91};
+    Origin  = {-45.5, -150, -45.5};
 
     for (PesGenRecord & r : BaseRecords)
     {
         r.ProbArray = new std::vector<std::vector<std::vector<double>>>();
         // X
-        r.ProbArray->resize(numX);
+        r.ProbArray->resize(NumBins[0]);
         for (std::vector<std::vector<double>> & ary : *r.ProbArray)
         {
             // Y
-            ary.resize(numY);
+            ary.resize(NumBins[1]);
             for (std::vector<double> & arz : ary)
             {
                 // Z
-                arz.resize(numZ);
+                arz.resize(NumBins[2]);
             }
         }
     }
 #endif
+
+    //    G4ThreeVector v(0, 2.6, -1.2);
+    //    int index[3];
+    //    bool ok = getVoxel(v, index);
+    //    out(ok, index[0], index[1], index[2]);
+    //    exit(1);
+
+    //    std::vector<std::tuple<int, int, int, double>> Path;
+    //    addPath({0,1.2,1}, {2,1,1}, Path);
+    //    //addPath({1,1,1}, {2.2,1,1}, Path);
+    //    //addPath({1.5,1.8,1}, {-2.5,2.1,1}, Path);
+    //    for (size_t i = 0; i < Path.size(); i++)
+    //        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
+    //    exit(1);
+
+    //        std::vector<std::tuple<int, int, int, double>> Path;
+    //        addPathA({0,0,0}, {2.0,-1.0,0}, Path);
+    //        //addPathA({-2.0,-1.0,0}, {0,-2.0,1.0}, Path);
+    //        //addPathA({0,0,0}, {2,-2,0}, Path);
+    //        for (size_t i = 0; i < Path.size(); i++)
+    //            out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
+    //        exit(1);
 }
 
 void PesGenerationMode::loadCrossSections(const std::string & fileName)
@@ -242,20 +253,20 @@ void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, 
     {
         *SM.outStream << (char)0xFF;
         *SM.outStream << Pes << (char)0x00;
-        SM.outStream->write((char*)&SaveEnergy,   sizeof(double));
-        SM.outStream->write((char*)&X,            sizeof(double));
-        SM.outStream->write((char*)&Y,            sizeof(double));
-        SM.outStream->write((char*)&Z,            sizeof(double));
-        SM.outStream->write((char*)SaveDir,     3*sizeof(double));
-        SM.outStream->write((char*)&Time,         sizeof(double));
+        SM.outStream->write((char*)&SaveEnergy,     sizeof(double));
+        SM.outStream->write((char*)&X,              sizeof(double));
+        SM.outStream->write((char*)&Y,              sizeof(double));
+        SM.outStream->write((char*)&Z,              sizeof(double));
+        SM.outStream->write((char*)SaveDirection, 3*sizeof(double));
+        SM.outStream->write((char*)&Time,           sizeof(double));
     }
     else
     {
         std::stringstream ss;
         ss << Pes << ' ';
         ss << SaveEnergy << ' ';
-        ss << X          << ' ' << Y          << ' ' << Z          << ' ';
-        ss << SaveDir[0] << ' ' << SaveDir[1] << ' ' << SaveDir[2] << ' ';
+        ss << X << ' ' << Y << ' ' << Z << ' ';
+        ss << SaveDirection[0] << ' ' << SaveDirection[1] << ' ' << SaveDirection[2] << ' ';
         ss << Time;
 
         *SM.outStream << ss.rdbuf() << '\n';
@@ -299,9 +310,9 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
     if (LastEnergy > Energy)
     {
 #ifdef PES_DIRECT
-        bool kill = triggerDirect(track);
+        bool kill = doTriggerDirect(track);
 #else
-        bool kill = triggerMC(track);
+        bool kill = doTriggerMC(track);
 #endif
         if (kill) return true;
     }
@@ -313,7 +324,7 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
     return false;
 }
 
-bool PesGenerationMode::triggerMC(const G4Track * track)
+bool PesGenerationMode::doTriggerMC(const G4Track * track)
 {
     const double stepLength = track->GetTrackLength() - LastTrackLength;
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
@@ -367,34 +378,24 @@ bool PesGenerationMode::triggerMC(const G4Track * track)
 
 bool PesGenerationMode::getVoxel(const G4ThreeVector & pos, int * index)
 {
-    index[0] = floor(pos[0] / DX); if (index[0] < Xfrom || index[0] >= Xto) return false;
-    index[1] = floor(pos[1] / DY); if (index[1] < Yfrom || index[1] >= Yto) return false;
-    index[2] = floor(pos[2] / DZ); if (index[2] < Zfrom || index[2] >= Zto) return false;
+    for (int i = 0; i < 3; i++)
+        index[i] = floor( (pos[i] - Origin[i]) / BinSize[i] );
 
-    index[0] -= Xfrom;
-    index[1] -= Yfrom;
-    index[2] -= Zfrom;
-
+    for (int i = 0; i < 3; i++)
+        if ( index[i] < 0 || index[i] >= NumBins[i]) return false;
     return true;
-
-    //G4ThreeVector v(0,2.6,-1.2);
-    //int index[3];
-    //bool ok = getVoxel(v, index);
-    //out(ok, index[0], index[1], index[2]);
-    //exit(1);
-    // G4ThreeVector v(0, 2.6, -1.2) --> [0, 2, -2] // if XYZfrom are zeros
 }
 
 void PesGenerationMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
 {
     // check maybe start and finish are in the same voxel
-    int here[3];
-    bool ok1 = getVoxel(posFrom, here);
-    int to[3];
-    bool ok2 = getVoxel(posTo, to);
-    if (ok1 && ok2 && here[0] == to[0] && here[1] == to[1] && here[2] == to[2])
+    int From[3];
+    bool ok1 = getVoxel(posFrom, From);
+    int To[3];
+    bool ok2 = getVoxel(posTo, To);
+    if (ok1 && ok2 && From[0] == To[0] && From[1] == To[1] && From[2] == To[2])
     {
-        path.push_back( {here[0], here[1], here[2], (posTo-posFrom).mag()} );
+        path.push_back( {From[0], From[1], From[2], (posTo-posFrom).mag()} );
         return;
     }
 
@@ -407,37 +408,89 @@ void PesGenerationMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVect
     for (int iStep = 0; iStep < numSteps; iStep++)
     {
         G4ThreeVector curPos = posFrom + vector * factor * iStep;
-        bool ok = getVoxel(curPos, here);
-        if (ok) path.push_back( {here[0], here[1], here[2], dStep} );
+        bool ok = getVoxel(curPos, From);
+        if (ok) path.push_back( {From[0], From[1], From[2], dStep} );
     }
 }
 
-bool PesGenerationMode::triggerDirect(const G4Track * track)
+void PesGenerationMode::addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
+{
+    int From[3];
+    bool ok1 = getVoxel(posFrom, From);
+    int To[3];
+    bool ok2 = getVoxel(posTo, To);
+    const double totLength = (posTo-posFrom).mag();
+    //out("Total step length:", totLength);
+    if (ok1 && ok2 && From[0] == To[0] && From[1] == To[1] && From[2] == To[2])
+    {
+        path.push_back( {From[0], From[1], From[2], totLength} );
+        return;
+    }
+
+    std::vector< std::tuple<double, int, int> > store; // progress factor (0->1), axis index (0,1,2) and current index along this axis
+    for (int iAxis = 0; iAxis < 3; iAxis++)
+    {
+        //out(iAxis, "> from->to:", From[iAxis], To[iAxis]);
+        int iv = From[iAxis];
+        const int step = (posTo[iAxis] > posFrom[iAxis] ? 1 : -1);
+        while (iv != To[iAxis])
+        {
+            //if (iv >= 0 && iv < NumBins[iAxis])
+            //{
+                const double k = (BinSize[iAxis]*(iv + (step == 1 ? 1 : 0)) + Origin[iAxis] - posFrom[iAxis]) / (posTo[iAxis] - posFrom[iAxis]);  // from 0 to 1.0
+                store.push_back( {k, iAxis, iv + step} );
+            //}
+            iv += step;
+        }
+    }
+
+    std::sort(store.begin(), store.end(),
+              [](const std::tuple<double, int, int> & lhs, const std::tuple<double, int, int> & rhs)
+                {return (std::get<0>(lhs) < std::get<0>(rhs));}  );
+
+//    out("Store:");
+//    for (size_t i = 0; i < store.size(); i++)
+//        out("  ", std::get<0>(store[i]), std::get<1>(store[i]), std::get<2>(store[i]));
+//    out("");
+
+    // starting from "From" and updating indexes there
+    double length = 0;
+    double newK   = 0;
+    for (const auto & rec : store)
+    {
+        newK = std::get<0>(rec);
+        if (isValidVoxel(From))
+            path.push_back( {From[0], From[1], From[2], (newK - length) * totLength} );
+        length = newK;
+        From[std::get<1>(rec)] = std::get<2>(rec);
+    }
+    if (isValidVoxel(From))
+        path.push_back( {From[0], From[1], From[2], (1.0 - newK) * totLength} );
+}
+
+bool PesGenerationMode::isValidVoxel(int * coords) const
+{
+    for (int i = 0; i < 3; i++)
+        if (coords[i] < 0 || coords[i] >= NumBins[i]) return false;
+    return true;
+}
+
+bool PesGenerationMode::doTriggerDirect(const G4Track * track)
 {
 #ifdef PES_DIRECT
-/*
-    std::vector<std::tuple<int, int, int, double>> Path;
-    //addPath({1,1.2,1}, {1.2,1,1}, Path);
-    //addPath({1,1,1}, {2.2,1,1}, Path);
-    addPath({1.5,1.8,1}, {-2.5,2.1,1}, Path);
-    for (size_t i = 0; i < Path.size(); i++)
-        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
-    exit(1);
-*/
-
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (Records.empty()) return false;
 
     std::vector<std::tuple<int, int, int, double>> Path;
-    addPath(LastPosition, track->GetPosition(), Path);
+    addPathA(LastPosition, track->GetPosition(), Path);
 
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
     for (const PesGenRecord & r : Records)
     {
         const double cs = r.getCrossSection(meanEnergy);
-        const double relProb = cs * r.NumberDensity; // !!!*** to find proper factor to convert to number per mm!
+        const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
         for (size_t i = 0; i < Path.size(); i++)
-            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * relProb;
+            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbByMM;
     }
 #endif
     return false;

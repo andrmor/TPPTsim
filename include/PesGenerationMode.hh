@@ -3,6 +3,7 @@
 
 #include "SimMode.hh"
 
+#include <array>
 #include <vector>
 #include <string>
 
@@ -52,15 +53,9 @@ public:
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
 
     //only for PES_DIRECT mode!
-    double DX = 1.0; // mm
-    double DY = 1.0; // mm
-    double DZ = 1.0; // mm
-    int Xfrom = -100;
-    int Xto   =  100;
-    int Yfrom = -100;
-    int Yto   =  100;
-    int Zfrom = -100;
-    int Zto   =  100;
+    std::array<double, 3> BinSize; // mm
+    std::array<int,    3> NumBins;
+    std::array<double, 3> Origin;  // center coordinates of the frame
     void saveArrays();
 
 protected:
@@ -71,7 +66,7 @@ protected:
 private:
     int    NumEvents;
     int    CurrentEvent = 0;
-    double SaveDir[3];
+    double SaveDirection[3];
     double SaveEnergy = 0;
 
     double LastEnergy;
@@ -81,11 +76,13 @@ private:
 
     std::vector<double> ProbVec;
 
-    bool triggerMC(const G4Track * track);
-    bool triggerDirect(const G4Track * track);
+    bool doTriggerMC(const G4Track * track);
+    bool doTriggerDirect(const G4Track * track);
 
     bool getVoxel(const G4ThreeVector & pos, int * index);
     void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path);
+    void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path);
+    bool isValidVoxel(int * coords) const;
 };
 
 #endif // pesgenerationmode_h
