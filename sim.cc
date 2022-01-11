@@ -121,7 +121,8 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
-        SM.SimMode          = new PesGenerationMode(1e3, "Pes.dat", false);
+        //SM.SimMode          = new PesGenerationMode(1e3, "Pes.dat", false); // MC PES mode
+        SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode
 
     // --- END of user init ---
     }

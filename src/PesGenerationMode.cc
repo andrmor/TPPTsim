@@ -8,10 +8,7 @@
 #include "G4RandomTools.hh"
 #include "Randomize.hh"
 
-#define PES_DIRECT
-
-PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
-    SimModeBase(), NumEvents(numEvents)
+void PesGenerationMode::commonConstructor()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -19,15 +16,34 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
 
     //bNeedGui    = true; // used only for tests!
+}
+
+PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
+    SimModeBase(), NumEvents(numEvents), bDirectMode(false)
+{
+    commonConstructor();
+
+    SessionManager & SM = SessionManager::getInstance();
     bNeedOutput = true;
     SM.FileName   = outputFileName;
     SM.bBinOutput = binaryOutput;
     SaveDirection[0] = 0; SaveDirection[1] = 0; SaveDirection[2] = 1.0;
 
-#ifdef PES_DIRECT
-    BinSize = {1.0, 1.0, 1.0};
-    NumBins = {91, 200, 91};
-    Origin  = {-45.5, -150, -45.5};
+    // interpolation test
+    //    PesGenRecord r(1,1,"");
+    //    r.CrossSection = { {0, 1},{1, 2},{2, 3},{3, 4},{5, 5},{10, 6} };
+    //    out(r.getCrossSection(0));
+    //    out(r.getCrossSection(100));
+    //    out(r.getCrossSection(0.5));
+    //    out(r.getCrossSection(6));
+    //    exit(0);
+}
+
+PesGenerationMode::PesGenerationMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin) :
+    SimModeBase(), NumEvents(numEvents),  bDirectMode(true),
+    BinSize(binSize), NumBins(numBins), Origin(origin)
+{
+    commonConstructor();
 
     for (PesGenRecord & r : BaseRecords)
     {
@@ -45,8 +61,8 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
             }
         }
     }
-#endif
 
+    // tests for voxel finding algorithms
     //    G4ThreeVector v(0, 2.6, -1.2);
     //    int index[3];
     //    bool ok = getVoxel(v, index);
@@ -61,13 +77,13 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     //        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
     //    exit(1);
 
-    //        std::vector<std::tuple<int, int, int, double>> Path;
-    //        addPathA({0,0,0}, {2.0,-1.0,0}, Path);
-    //        //addPathA({-2.0,-1.0,0}, {0,-2.0,1.0}, Path);
-    //        //addPathA({0,0,0}, {2,-2,0}, Path);
-    //        for (size_t i = 0; i < Path.size(); i++)
-    //            out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
-    //        exit(1);
+    //    std::vector<std::tuple<int, int, int, double>> Path;
+    //    addPathA({0,0,0}, {2.0,-1.0,0}, Path);
+    //    //addPathA({-2.0,-1.0,0}, {0,-2.0,1.0}, Path);
+    //    //addPathA({0,0,0}, {2,-2,0}, Path);
+    //    for (size_t i = 0; i < Path.size(); i++)
+    //        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
+    //    exit(1);
 }
 
 void PesGenerationMode::loadCrossSections(const std::string & fileName)
@@ -128,7 +144,6 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
         out(">", r.TargetZ, r.TargetA, r.PES, "  CS range from:", r.CrossSection.front().first, "to", r.CrossSection.back().first, "MeV");
     }
     out("\n");
-
 }
 
 G4UserStackingAction * PesGenerationMode::getStackingAction()
@@ -139,17 +154,6 @@ G4UserStackingAction * PesGenerationMode::getStackingAction()
 void PesGenerationMode::preInit()
 {
     SessionManager::getInstance().FastPESGeneration = true;
-
-    /*
-    //interpolation test
-    PesGenRecord r(1,1,"");
-    r.MFP = { {0, 1},{1, 2},{2, 3},{3, 4},{5, 5},{10, 6} };
-    out(r.getMFP(0));
-    out(r.getMFP(100));
-    out(r.getMFP(0.5));
-    out(r.getMFP(6));
-    exit(0);
-    */
 }
 
 #include "G4MTRunManager.hh"
@@ -168,9 +172,7 @@ void PesGenerationMode::run()
 
     SM.runManager->BeamOn(NumEvents);
 
-#ifdef PES_DIRECT
-    saveArrays();
-#endif
+    if (bDirectMode) saveArrays();
 }
 
 void PesGenerationMode::exploreMaterials()
@@ -277,14 +279,17 @@ void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, 
 
 void PesGenerationMode::onEventStarted()
 {
-    SessionManager & SM = SessionManager::getInstance();
-    if (SM.bBinOutput)
+    if (!bDirectMode)
     {
-        *SM.outStream << char(0xEE);
-        SM.outStream->write((char*)&CurrentEvent, sizeof(int));
+        SessionManager & SM = SessionManager::getInstance();
+        if (SM.bBinOutput)
+        {
+            *SM.outStream << char(0xEE);
+            SM.outStream->write((char*)&CurrentEvent, sizeof(int));
+        }
+        else
+            *SM.outStream << '#' << CurrentEvent << '\n';
     }
-    else
-        *SM.outStream << '#' << CurrentEvent << '\n';
 
     CurrentEvent++;
 }
@@ -309,12 +314,12 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
 
     if (LastEnergy > Energy)
     {
-#ifdef PES_DIRECT
-        bool kill = doTriggerDirect(track);
-#else
-        bool kill = doTriggerMC(track);
-#endif
-        if (kill) return true;
+        if (bDirectMode) doTriggerDirect(track);
+        else
+        {
+            bool kill = doTriggerMC(track);
+            if (kill) return true;
+        }
     }
 
     LastEnergy      = Energy;
@@ -475,11 +480,10 @@ bool PesGenerationMode::isValidVoxel(int * coords) const
     return true;
 }
 
-bool PesGenerationMode::doTriggerDirect(const G4Track * track)
+void PesGenerationMode::doTriggerDirect(const G4Track * track)
 {
-#ifdef PES_DIRECT
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
-    if (Records.empty()) return false;
+    if (Records.empty()) return;
 
     std::vector<std::tuple<int, int, int, double>> Path;
     addPathA(LastPosition, track->GetPosition(), Path);
@@ -492,13 +496,10 @@ bool PesGenerationMode::doTriggerDirect(const G4Track * track)
         for (size_t i = 0; i < Path.size(); i++)
             (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbByMM;
     }
-#endif
-    return false;
 }
 
 void PesGenerationMode::saveArrays()
 {
-#ifdef PES_DIRECT
     SessionManager & SM = SessionManager::getInstance();
     for (PesGenRecord & r : BaseRecords)
     {
@@ -525,5 +526,4 @@ void PesGenerationMode::saveArrays()
             }
         }
     }
-#endif
 }
