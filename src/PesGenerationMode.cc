@@ -595,6 +595,12 @@ void PesGenerationMode::saveArrays()
         }
         else out("\nSaving array data to file", fullFileName);
 
+        json11::Json::object json;
+        doWriteToJson(json);
+        json11::Json aa(json);
+        std::string str = '#' + aa.dump();
+        stream << str << '\n';
+
         for (const std::vector<std::vector<double>> & ary : *r.ProbArray)
         {
             for (const std::vector<double> & arz : ary)
