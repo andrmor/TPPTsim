@@ -2,6 +2,7 @@
 #include "SessionManager.hh"
 #include "StackingAction.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include "G4Material.hh"
 #include "G4Track.hh"
@@ -45,22 +46,7 @@ PesGenerationMode::PesGenerationMode(int numEvents, std::array<double, 3> binSiz
 {
     commonConstructor();
 
-    for (PesGenRecord & r : BaseRecords)
-    {
-        r.ProbArray = new std::vector<std::vector<std::vector<double>>>();
-        // X
-        r.ProbArray->resize(NumBins[0]);
-        for (std::vector<std::vector<double>> & ary : *r.ProbArray)
-        {
-            // Y
-            ary.resize(NumBins[1]);
-            for (std::vector<double> & arz : ary)
-            {
-                // Z
-                arz.resize(NumBins[2]);
-            }
-        }
-    }
+    initProbArrays();
 
     // tests for voxel finding algorithms
     //    G4ThreeVector v(0, 2.6, -1.2);
@@ -84,6 +70,26 @@ PesGenerationMode::PesGenerationMode(int numEvents, std::array<double, 3> binSiz
     //    for (size_t i = 0; i < Path.size(); i++)
     //        out(std::get<0>(Path[i]), std::get<1>(Path[i]), std::get<2>(Path[i]), std::get<3>(Path[i])); // --> 1 1 1 0.282843
     //    exit(1);
+}
+
+void PesGenerationMode::initProbArrays()
+{
+    for (PesGenRecord & r : BaseRecords)
+    {
+        r.ProbArray = new std::vector<std::vector<std::vector<double>>>();
+        // X
+        r.ProbArray->resize(NumBins[0]);
+        for (std::vector<std::vector<double>> & ary : *r.ProbArray)
+        {
+            // Y
+            ary.resize(NumBins[1]);
+            for (std::vector<double> & arz : ary)
+            {
+                // Z
+                arz.resize(NumBins[2]);
+            }
+        }
+    }
 }
 
 void PesGenerationMode::loadCrossSections(const std::string & fileName)
@@ -275,6 +281,78 @@ void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, 
     }
 
     //out("->",Pes, "(",X,Y,Z,")", Time);
+}
+
+void PesGenerationMode::readFromJson(const json11::Json & json)
+{
+    jstools::readInt(json, "NumEvents",   NumEvents);
+    jstools::readBool(json, "DirectMode", bDirectMode);
+
+    if (bDirectMode)
+    {
+        // !!!*** control array sizes = 3
+        // BinSize
+        {
+            json11::Json::array ar;
+            jstools::readArray(json, "BinSize", ar);
+            for (int i = 0; i < 3; i++) BinSize[i] = ar[i].number_value();
+        }
+        // NumBins
+        {
+            json11::Json::array ar;
+            jstools::readArray(json, "NumBins", ar);
+            for (int i = 0; i < 3; i++) NumBins[i] = ar[i].int_value();
+        }
+        // Origin
+        {
+            json11::Json::array ar;
+            jstools::readArray(json, "Origin", ar);
+            for (int i = 0; i < 3; i++) Origin[i] = ar[i].number_value();
+        }
+
+        bNeedOutput = false;
+        initProbArrays();
+    }
+    else
+    {
+        SessionManager & SM = SessionManager::getInstance();
+        jstools::readString(json, "OutputFileName", SM.FileName);
+        jstools::readBool  (json, "BinaryOutput",   SM.bBinOutput);
+    }
+}
+
+void PesGenerationMode::doWriteToJson(json11::Json::object & json) const
+{
+    json["NumEvents"] = NumEvents;
+    json["DirectMode"] = bDirectMode;
+
+    if (bDirectMode)
+    {
+        // BinSize
+        {
+            json11::Json::array ar;
+            for (int i = 0; i < 3; i++) ar.push_back(BinSize[i]);
+            json["BinSize"] = ar;
+        }
+        // NumBins
+        {
+            json11::Json::array ar;
+            for (int i = 0; i < 3; i++) ar.push_back(NumBins[i]);
+            json["NumBins"] = ar;
+        }
+        // Origin
+        {
+            json11::Json::array ar;
+            for (int i = 0; i < 3; i++) ar.push_back(Origin[i]);
+            json["Origin"] = ar;
+        }
+    }
+    else
+    {
+        SessionManager & SM = SessionManager::getInstance();
+        json["OutputFileName"] = SM.FileName;
+        json["BinaryOutput"]   = SM.bBinOutput;
+    }
 }
 
 void PesGenerationMode::onEventStarted()

@@ -24,7 +24,7 @@ public:
     double NumberDensity;
     double getCrossSection(double energy) const;
 
-    //only for PES_DIRECT mode!
+    //only for direct mode
     std::vector<std::vector<std::vector<double>>> * ProbArray = nullptr;
 };
 
@@ -53,7 +53,11 @@ public:
 
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
 
+    void readFromJson(const json11::Json & json) override;
+
 protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
     void loadCrossSections(const std::string & fileName);
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
@@ -87,6 +91,7 @@ private:
     void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path);
     void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path);
     bool isValidVoxel(int * coords) const;
+    void initProbArrays();
     void saveArrays();
 };
 
