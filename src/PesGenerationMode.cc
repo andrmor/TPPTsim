@@ -393,12 +393,7 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
     if (LastEnergy > Energy)
     {
         if (bDirectMode) doTriggerDirect(track);
-        else
-        {
-            //bool kill =
-            doTriggerMC(track);
-            //if (kill) return true;
-        }
+        else             doTriggerMC(track);      // ignore kill!
     }
 
     LastEnergy      = Energy;
@@ -453,7 +448,7 @@ bool PesGenerationMode::doTriggerMC(const G4Track * track)
                 G4ThreeVector TriggerPosition = LastPosition + trigStep/stepLength*(track->GetPosition() - LastPosition);
                 //out("Triggered! Position:", TriggerPosition, "  Last/FullStep positions:", LastPosition, Position);
                 saveRecord(Records[index].PES, TriggerPosition[0], TriggerPosition[1], TriggerPosition[2], track->GetGlobalTime());
-                return true; // safe to return, this proton will be killed
+                return true;
             }
         }
     }

@@ -84,7 +84,7 @@ private:
     std::array<double, 3> Origin;  // center coordinates of the frame
 
     void commonConstructor();
-    bool doTriggerMC(const G4Track * track);
+    bool doTriggerMC(const G4Track * track); // return status (true = kill) is now ignored, proton is traced to the end of track
     void doTriggerDirect(const G4Track * track);
 
     bool getVoxel(const G4ThreeVector & pos, int * index);
