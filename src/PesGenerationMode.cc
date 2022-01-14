@@ -395,8 +395,9 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
         if (bDirectMode) doTriggerDirect(track);
         else
         {
-            bool kill = doTriggerMC(track);
-            if (kill) return true;
+            //bool kill =
+            doTriggerMC(track);
+            //if (kill) return true;
         }
     }
 
