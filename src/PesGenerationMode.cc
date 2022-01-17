@@ -16,6 +16,8 @@ void PesGenerationMode::commonConstructor()
     //loadCrossSections("ProductionCrossSections.txt");
     loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
 
+    loadLifeTimes("IsotopeHalfTimes.txt");
+
     //bNeedGui    = true; // used only for tests!
 }
 
@@ -148,6 +150,48 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
     for (const auto & r : BaseRecords)
     {
         out(">", r.TargetZ, r.TargetA, r.PES, "  CS range from:", r.CrossSection.front().first, "to", r.CrossSection.back().first, "MeV");
+    }
+    out("\n");
+}
+
+void PesGenerationMode::loadLifeTimes(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with PES half-times:\n", fileName);
+        exit(1);
+    }
+
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+
+        std::string isotope; // e.g. "C11"
+        double halfLife;     // in seconds
+        std::stringstream ss(line);
+        ss >> isotope >> halfLife;
+        if (ss.fail())
+        {
+            out("Unexpected format of a record line in the file with the PES half-lifes");
+            exit(2);
+        }
+
+        if (LifeTimes.find(isotope) != LifeTimes.end())
+        {
+            out("Found dublicate info for half-life for isotope", isotope);
+            exit(2);
+        }
+        LifeTimes[isotope] = halfLife / log(2);
+    }
+
+    out("\n===== PES decay:");
+    for (const auto & r : LifeTimes)
+    {
+        double decayTime = r.second;
+        double halfTime  = decayTime * log(2);
+        out(r.first, " -> decay time = ", decayTime, "s,  half time = ", halfTime, "s  (", halfTime/60, " min )");
     }
     out("\n");
 }

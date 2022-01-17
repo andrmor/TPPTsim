@@ -5,6 +5,7 @@
 
 #include <array>
 #include <vector>
+#include <map>
 #include <string>
 
 class PesGenRecord
@@ -49,7 +50,8 @@ public:
 
     void saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const;
 
-    std::vector<PesGenRecord> BaseRecords;
+    std::vector<PesGenRecord>     BaseRecords;
+    std::map<std::string, double> LifeTimes;
 
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
 
@@ -59,6 +61,7 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
     void loadCrossSections(const std::string & fileName);
+    void loadLifeTimes(const std::string & fileName);
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
 
