@@ -2,6 +2,7 @@
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
+#include "PesGenerationMode.hh"
 #include "Hist1D.hh"
 #include "out.hh"
 #include "jstools.hh"
@@ -31,6 +32,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, "dummy.txt", false);
     else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
     else if (Type == "SimModeFirstStage")     sm = new SimModeFirstStage(0, "dummy.txt", false);
+    else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
     else
     {
         out("Unknown simulation mode type!");

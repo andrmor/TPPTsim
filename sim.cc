@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         SM.Seed               = 10;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
-        //SM.UseStepLimiter     = true; SM.PhantomStepLimt = 3.0*mm;
+        SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
 
         SM.CutPhantomGamma    = 10.0*mm;
         SM.CutPhantomElectron = 10.0*mm;
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/TMP";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -116,12 +116,13 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeAnnihilTest(1000, 0, "Annihil.txt", false);
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
-        //SM.SimMode          = new SimModeMultipleEvents(100000, "SimOutput.txt", false);
+        //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
         //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
-        SM.SimMode          = new PesGenerationMode(1e3, "Pes.dat", false);
+        SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events times last argument in PencilBeam!
+        //SM.SimMode          = new PesGenerationMode(10, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
 
     // --- END of user init ---
     }
