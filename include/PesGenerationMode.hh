@@ -103,7 +103,7 @@ private:
     void initProbArrays();
     void saveArrays();
     void clearTimeFactors();
-    void calculateTimeFactor(PesGenRecord & r, double globalTime);
+    void calculateTimeFactor(PesGenRecord & r, double generationTime);
 };
 
 #endif // pesgenerationmode_h

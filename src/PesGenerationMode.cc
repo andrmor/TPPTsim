@@ -623,21 +623,21 @@ void PesGenerationMode::clearTimeFactors()
             r.TimeFactor = -1.0;
 }
 
-void PesGenerationMode::calculateTimeFactor(PesGenRecord & r, double globalTime)
+void PesGenerationMode::calculateTimeFactor(PesGenRecord & r, double generationTime)
 {
-    globalTime *= 1e-9; // ns -> seconds
+    generationTime *= 1e-9; // ns -> seconds
 
     r.TimeFactor = 0;
     for (size_t i = 0; i < TimeWindows.size(); i++)
     {
-        double timeFrom = TimeWindows[i].first;
-        const double timeTo   = TimeWindows[i].second;
-        if (globalTime > timeTo)   continue;
-        if (globalTime > timeFrom) timeFrom = globalTime;
+        const double timeTo = TimeWindows[i].second - generationTime;
+        if (timeTo  <= 0) continue;
+        double timeFrom     = TimeWindows[i].first  - generationTime;
+        if (timeFrom < 0) timeFrom = 0;
 
         const double from = exp(-timeFrom/r.DecayTime);
         const double to   = exp(-timeTo/r.DecayTime);
-        const double delta = -to + from;
+        const double delta = from - to;    // (1 - expTo) - (1 - expFrom)
         r.TimeFactor += delta;
     }
 }
