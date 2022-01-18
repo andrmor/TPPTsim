@@ -16,8 +16,6 @@ void PesGenerationMode::commonConstructor()
     //loadCrossSections("ProductionCrossSections.txt");
     loadCrossSections(SM.WorkingDirectory + "/SecretFile.txt");
 
-    loadLifeTimes("IsotopeHalfTimes.txt");
-
     //bNeedGui    = true; // used only for tests!
 }
 
@@ -42,11 +40,17 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     //    exit(0);
 }
 
-PesGenerationMode::PesGenerationMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin) :
+PesGenerationMode::PesGenerationMode(int numEvents,
+                                     std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
+                                     const std::vector<std::pair<double,double>> & timeWindows) :
     SimModeBase(), NumEvents(numEvents),  bDirectMode(true),
-    BinSize(binSize), NumBins(numBins), Origin(origin)
+    BinSize(binSize), NumBins(numBins), Origin(origin),
+    TimeWindows(timeWindows)
 {
     commonConstructor();
+
+    loadLifeTimes("IsotopeHalfTimes.txt");
+    updateDecayTimes();
 
     initProbArrays();
 
@@ -178,22 +182,35 @@ void PesGenerationMode::loadLifeTimes(const std::string & fileName)
             exit(2);
         }
 
-        if (LifeTimes.find(isotope) != LifeTimes.end())
+        if (DecayTimes.find(isotope) != DecayTimes.end())
         {
             out("Found dublicate info for half-life for isotope", isotope);
             exit(2);
         }
-        LifeTimes[isotope] = halfLife / log(2);
+        DecayTimes[isotope] = halfLife / log(2);
     }
 
     out("\n===== PES decay:");
-    for (const auto & r : LifeTimes)
+    for (const auto & r : DecayTimes)
     {
         double decayTime = r.second;
         double halfTime  = decayTime * log(2);
         out(r.first, " -> decay time = ", decayTime, "s,  half time = ", halfTime, "s  (", halfTime/60, " min )");
     }
     out("\n");
+}
+
+void PesGenerationMode::updateDecayTimes()
+{
+    for (auto & r : BaseRecords)
+    {
+        if (DecayTimes.find(r.PES) == DecayTimes.end())
+        {
+            out("Decay time is not defined for isotope", r.PES);
+            exit(2);
+        }
+        r.DecayTime = DecayTimes[r.PES];
+    }
 }
 
 G4UserStackingAction * PesGenerationMode::getStackingAction()
@@ -427,6 +444,7 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
         LastTrackLength = track->GetTrackLength();
         LastPosition    = track->GetPosition();
         LastMaterial    = track->GetMaterial()->GetIndex();
+        if (bDirectMode) clearTimeFactors();
         return false;
     }
 
@@ -598,21 +616,48 @@ bool PesGenerationMode::isValidVoxel(int * coords) const
     return true;
 }
 
+void PesGenerationMode::clearTimeFactors()
+{
+    for (std::vector<PesGenRecord> & rvec : MaterialRecords)
+        for (PesGenRecord & r : rvec)
+            r.TimeFactor = -1.0;
+}
+
+void PesGenerationMode::calculateTimeFactor(PesGenRecord & r, double globalTime)
+{
+    globalTime *= 1e-9; // ns -> seconds
+
+    r.TimeFactor = 0;
+    for (size_t i = 0; i < TimeWindows.size(); i++)
+    {
+        double timeFrom = TimeWindows[i].first;
+        const double timeTo   = TimeWindows[i].second;
+        if (globalTime > timeTo)   continue;
+        if (globalTime > timeFrom) timeFrom = globalTime;
+
+        const double from = exp(-timeFrom/r.DecayTime);
+        const double to   = exp(-timeTo/r.DecayTime);
+        const double delta = -to + from;
+        r.TimeFactor += delta;
+    }
+}
+
 void PesGenerationMode::doTriggerDirect(const G4Track * track)
 {
-    const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
+    std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (Records.empty()) return;
 
     std::vector<std::tuple<int, int, int, double>> Path;
     addPathA(LastPosition, track->GetPosition(), Path);
 
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
-    for (const PesGenRecord & r : Records)
+    for (PesGenRecord & r : Records)
     {
         const double cs = r.getCrossSection(meanEnergy);
         const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+        if (r.TimeFactor < 0) calculateTimeFactor(r, track->GetGlobalTime());
         for (size_t i = 0; i < Path.size(); i++)
-            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbByMM;
+            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbByMM * r.TimeFactor;
     }
 }
 

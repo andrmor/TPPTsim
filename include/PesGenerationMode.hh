@@ -14,12 +14,13 @@ public:
     PesGenRecord(int targetZ, int targetA, std::string pes) : TargetZ(targetZ), TargetA(targetA), PES(pes) {}
     PesGenRecord(){}
 
-    int         TargetZ; // 6;
-    int         TargetA; // 12;
+    int TargetZ;      // 6;
+    int TargetA;      // 12;
 
-    std::string PES;     // "C11";
+    std::string PES;  // "C11";
 
     std::vector<std::pair<double,double>> CrossSection; // [MeV] [millibarn]
+    double DecayTime = -1.0; // decay time (not half-time!) in seconds; Needed only in the DirectMode
 
     //runtime
     double NumberDensity;
@@ -27,6 +28,7 @@ public:
 
     //only for direct mode
     std::vector<std::vector<std::vector<double>>> * ProbArray = nullptr;
+    double TimeFactor = -1;
 };
 
 // ---
@@ -36,8 +38,10 @@ class G4Track;
 class PesGenerationMode : public SimModeBase
 {
 public:
-    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput);                                // MC mode
-    PesGenerationMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin); // Direct mode
+    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput);  // MC mode
+    PesGenerationMode(int numEvents,
+                      std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
+                      const std::vector<std::pair<double,double>> & timeWindows);             // Direct mode
 
     std::string getTypeName() const override {return "PesGenerationMode";}
     G4UserStackingAction * getStackingAction() override;
@@ -51,7 +55,7 @@ public:
     void saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const;
 
     std::vector<PesGenRecord>     BaseRecords;
-    std::map<std::string, double> LifeTimes;
+    std::map<std::string, double> DecayTimes;
 
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
 
@@ -64,6 +68,7 @@ protected:
     void loadLifeTimes(const std::string & fileName);
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
+    void updateDecayTimes();
 
 private:
     int    NumEvents;
@@ -85,6 +90,7 @@ private:
     std::array<double, 3> BinSize; // mm
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
+    std::vector<std::pair<double,double>> TimeWindows; // observation windows, [from, to] in seconds
 
     void commonConstructor();
     bool doTriggerMC(const G4Track * track); // return status (true = kill) is now ignored, proton is traced to the end of track
@@ -96,6 +102,8 @@ private:
     bool isValidVoxel(int * coords) const;
     void initProbArrays();
     void saveArrays();
+    void clearTimeFactors();
+    void calculateTimeFactor(PesGenRecord & r, double globalTime);
 };
 
 #endif // pesgenerationmode_h
