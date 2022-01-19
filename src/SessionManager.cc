@@ -28,6 +28,7 @@
 #include "G4Gamma.hh"
 #include "G4RegionStore.hh"
 #include "G4AutoDelete.hh"
+#include "G4Colour.hh"
 
 #include <iostream>
 #include <sstream>
@@ -130,12 +131,15 @@ void SessionManager::scanMaterials()
         G4Material * mat = lv->GetMaterial();
         //out(lv->GetName(), mat->GetName(), mat->GetChemicalFormula(), mat->GetDensity());
 
+        G4Colour brown(0.45,0.25,0.0);
+        G4Colour grey(0.5,0.5,0.5);
+
         if      (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
-        else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+        else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(new G4VisAttributes(brown));
         else if (mat->GetName() == "PMMA") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 1.0)));
-        else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+        else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
         else if (mat->GetName() == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
-        else if (mat->GetName() == "ABS") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 1.0)));
+        else if (mat->GetName() == "ABS") lv->SetVisAttributes(new G4VisAttributes(grey));
     }
 
     out("<--Material scan completed");

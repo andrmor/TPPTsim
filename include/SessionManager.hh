@@ -137,15 +137,20 @@ class SessionManager
 
         double InnerDiam       = 335.4 * mm;
 
-     // Geometry - Base
+     // Geometry - Base and Base Plate
         double BaseRMin        = 162.5 * mm;
         double BaseRMax        = 300.0   * mm;
         double SystHeight      = EncapsSizeY * 4.0 + RowGap * 3.0; //105.0 mm
         double BaseHeight      = 6.35  * mm;
         double BaseSegment     = 120.0 * deg;
 
+        double BPlateRMin      = 170.2 * mm;
+        double BPlateRMax      = 290.793 * mm;
+        double BPlateHeight    = 0.7938 * mm;
+        double BPlateSegment   = 116.0 * deg;
+
         double GlobalZ0        = 0;
-        double IsoCenterGDML   = 0.5 * (BaseHeight + SystHeight); //55.675 mm
+        double IsoCenterGDML   = 0.5 * (BaseHeight + SystHeight) + 3.9688*mm;
 
      // Geometry - Closed Structure
         double InnerWallThick  = 1.0 * mm;
