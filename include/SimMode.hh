@@ -10,6 +10,7 @@
 
 class G4UserSteppingAction;
 class G4UserStackingAction;
+class G4UserTrackingAction;
 class G4VSensitiveDetector;
 class Hist1D;
 
@@ -34,6 +35,7 @@ public:
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
     virtual G4UserStackingAction * getStackingAction() {return nullptr;}
+    virtual G4UserTrackingAction * getTrackingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
     virtual void onEventStarted() {}

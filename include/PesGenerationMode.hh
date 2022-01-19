@@ -39,6 +39,7 @@ public:
     PesGenerationMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin); // Direct mode
 
     std::string getTypeName() const override {return "PesGenerationMode";}
+    G4UserTrackingAction * getTrackingAction() override;
     G4UserStackingAction * getStackingAction() override;
 
     void preInit() override;
@@ -52,6 +53,8 @@ public:
     std::vector<PesGenRecord> BaseRecords;
 
     std::vector<std::vector<PesGenRecord>> MaterialRecords; // [indexInMatTable] [Records]
+
+    bool bNewTrackStarted = false;
 
     void readFromJson(const json11::Json & json) override;
 
