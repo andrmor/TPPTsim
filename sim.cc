@@ -9,6 +9,7 @@
 #include "DetComp.hh"
 #include "out.hh"
 #include "PesGenerationMode.hh"
+#include "ActivityProfiler.hh"
 
 #include <chrono>
 
@@ -123,7 +124,8 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
         //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
-        SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
+        //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
+        SM.SimMode          = new ActivityProfilerMode({{0,200,1}}, {{450,451}}, "/home/andr/WORK/TPPT/TMP", "tttteeeeessssttt.txt");
 
     // --- END of user init ---
     }
