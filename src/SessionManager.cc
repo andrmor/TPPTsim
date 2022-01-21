@@ -136,7 +136,6 @@ void SessionManager::scanMaterials()
 
         if      (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
         else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(new G4VisAttributes(brown));
-        else if (mat->GetName() == "PMMA") lv->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 1.0)));
         else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
         else if (mat->GetName() == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
         else if (mat->GetName() == "ABS") lv->SetVisAttributes(new G4VisAttributes(grey));

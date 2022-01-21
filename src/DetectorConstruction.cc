@@ -37,17 +37,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Materials
     G4Material * matVacuum = man->FindOrBuildMaterial("G4_Galactic");
 
-    std::vector<G4int> natoms;
-    std::vector<G4String> elements;
-    elements.push_back("C"); natoms.push_back(5);
-    elements.push_back("H"); natoms.push_back(8);
-    elements.push_back("O"); natoms.push_back(2);
-    G4Material * matPMMA = man->ConstructNewMaterial("PMMA", elements, natoms, 1.18*g/cm3);
-
     //LYSO:Ce - https://www.crystals.saint-gobain.com/sites/imdf.crystals.com/files/documents/lyso-material-data-sheet.pdf
     //The scintillating material should be LYSO, Lu(2-2x)Y(2x)SiO5:Ce and x should be < 0.03; the density should be at least 7.31 g/cm3
     //Considering x=0.02: Lu(1.96)Y(0.04)SiO5
-    natoms.clear();
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
     elements.clear();
     elements.push_back("Lu"); natoms.push_back(49);
     elements.push_back("Y") ; natoms.push_back(1);
@@ -64,8 +58,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     SM.ScintMat = matLYSOCe;
 
-    //EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
-    EncapsMat = matPMMA;
+    EncapsMat = man->FindOrBuildMaterial("G4_TEFLON");
 
     // Geometry
     G4Box * solidWorld   = new G4Box("World", 750.0*mm, 750.0*mm, 750.0*mm);

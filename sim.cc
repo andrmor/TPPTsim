@@ -76,10 +76,10 @@ int main(int argc, char** argv)
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
 
-        //SM.DetectorComposition.add(DetComp::Base);
+        SM.DetectorComposition.add(DetComp::Base);
         //SM.DetectorComposition.add(DetComp::ClosedStructure);
-        //SM.DetectorComposition.add(DetComp::SIPM);
-        //SM.DetectorComposition.add(DetComp::PCB);
+        SM.DetectorComposition.add(DetComp::SIPM);
+        SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         //SM.DetectorComposition.add(DetComp::CoolingAssemblies);
 
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
-//        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
+        //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
         SM.SimMode          = new SimModeGui();
