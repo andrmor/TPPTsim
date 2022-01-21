@@ -28,6 +28,8 @@ void ActivityProfilerMode::run()
 
     // TODO -> check isotopoes are uniques in the database
 
+    std::vector<double> yArr;
+
     bool bOnStart = true;
     for (const IsotopeDataRecord & iso : IsotopeBase)
     {
@@ -45,6 +47,7 @@ void ActivityProfilerMode::run()
         }
 
         initArray(isoDATA);
+        yArr.resize(Mapping.NumBins[1], 0);
 
         double tauHalf = iso.HalfLife;
         out("Half-time:", tauHalf, "s");
@@ -52,32 +55,47 @@ void ActivityProfilerMode::run()
         const double tau = tauHalf / log(2);
         const double timeFactor = calculateTimeFactor(tau);
 
-        /*
-        for (var iR = 0; iR < numRec; iR++)
+        for (size_t iR = 0; iR < numRec; iR++)
         {
-            var fn = dir + DB[isotope]["files"][iR]
-                     core.print(fn)
-                     var dataObj = extractData(fn)
-                                   for (var i=0; i<3; i++)
-                    if (configObj["NumBins"][i] != dataObj["NumBins"][i] || configObj["BinSize"][i] != dataObj["BinSize"][i] || configObj["Origin"][i] != dataObj["Origin"][i]) core.abort("Mismatch in data arrays")
+            std::string fn = DataDirectory + '/' + iso.SpatialFiles[iR];
+            out(fn);
 
-                    var txt = core.loadText(fn)
-                              var lineArr = txt.split('\n')
-                                            lineArr.shift()
-                                            var index = 0
-                                                        for (var ix = 0; ix < numX; ix++)
-                    for (var iy = 0; iy < numY; iy++)
+            SpatialParameters thisMapping;
+            thisMapping.read(fn);
+            if (thisMapping != Mapping)
             {
-                var line = lineArr[index].split(' '); index++
-                        for (var iz = 0; iz < numZ; iz++)
+                out("Mismatch in data arrays");
+                exit(3);
+            }
+
+            std::ifstream in(fn);
+            std::string line;
+            std::getline(in, line); // first line is the json
+
+
+            for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
+                for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
                 {
-                    val = Number(line[iz]) * timeFactor
-                          DATA[ix][iy][iz] += val
-                                              isoDATA[ix][iy][iz] += val
-                }
+                    std::getline(in, line);
+                    std::string::size_type sz;     // alias of size_t
+
+                    for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
+                    {
+                        double val = std::stod(line, &sz);
+                        line = line.substr(sz);
+
+                        val *= timeFactor;
+
+                        DATA[ix][iy][iz] += val;
+                        isoDATA[ix][iy][iz] += val;
+                        yArr[iy] += val;
+                    }
             }
         }
 
+        for (int iy = 0; iy < Mapping.NumBins[1]; iy++) out(yArr[iy]);
+
+        /*
         hist.NewHist("iso", numY,  OriginY, OriginY + BinSizeY * numY)
                 for (var ix = 0; ix < numX; ix++)
                 for (var iy = 0; iy < numY; iy++)
@@ -97,6 +115,17 @@ void ActivityProfilerMode::run()
                 core.print("------")
     */
     }
+}
+
+bool SpatialParameters::operator!=(const SpatialParameters & other) const
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if (BinSize[i] != other.BinSize[i]) return true;
+        if (NumBins[i] != other.NumBins[i]) return true;
+        if (Origin[i]  != other.Origin[i])  return true;
+    }
+    return false;
 }
 
 void SpatialParameters::read(const std::string & fileName)

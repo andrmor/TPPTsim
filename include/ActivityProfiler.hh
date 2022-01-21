@@ -41,6 +41,8 @@ struct SpatialParameters
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;
 
+    bool operator!=(const SpatialParameters & other) const;
+
     void read(const std::string & fileName);
     void report();
 };
