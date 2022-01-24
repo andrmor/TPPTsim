@@ -74,9 +74,10 @@ protected:
     void   init2DArray(std::vector<std::vector<double>> & ar);
     double calculateTimeFactor(double tau);
     double sampleGenerationTime();
+    void   checkInputData();
 
-    void   save1D(std::vector<double> & ar, const std::string & fileName);
-    void   save2D(std::vector<std::vector<double>> & ar, const std::string & fileName);
+    void   save1D(std::vector<double> & ar, const std::string & nameId);
+    void   save2D(std::vector<std::vector<double>> & ar, const std::string & nameId);
 };
 
 #endif // activityprofilermode_h

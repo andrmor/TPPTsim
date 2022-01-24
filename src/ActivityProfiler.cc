@@ -22,14 +22,51 @@ ActivityProfilerMode::ActivityProfilerMode(const std::vector<BeamTimeWindow> & b
         SumBeamFactors += (win.To - win.From) * win.Weight;
 }
 
+void ActivityProfilerMode::checkInputData()
+{
+    for (auto it = IsotopeBase.begin(); it < IsotopeBase.end(); ++it)
+    {
+        for (auto itOther = IsotopeBase.begin(); itOther < IsotopeBase.end(); ++itOther)
+        {
+            if (it == itOther) continue;
+            if (it->Isotope == itOther->Isotope)
+            {
+                out("Found non-unique record for PES:", it->Isotope);
+                exit(3);
+            }
+        }
+    }
+
+    for (const BeamTimeWindow & btw : BeamTimeWindows)
+    {
+        if (btw.Weight <= 0)
+        {
+            out("Beam time window weight factor should be > 0");
+            exit(3);
+        }
+        if (btw.From > btw.To)
+        {
+            out("Beam time window 'To' should not be smaller than 'From'");
+            exit(3);
+        }
+    }
+
+    for (const ScanTimeWindow & stw : ScanTimeWindows)
+    {
+        if (stw.From > stw.To)
+        {
+            out("Scan time window 'To' should not be smaller than 'From'");
+            exit(3);
+        }
+    }
+}
+
 void ActivityProfilerMode::run()
 {
-    // TODO -> check time windows (to > from , weigt > 0 etc)
+    checkInputData(); // calls exit(3) if there are problems
 
-    // TODO -> check isotopoes are uniques in the database
-
-    std::vector<double> ar1D;
-    std::vector<std::vector<double>> ar2D;
+    std::vector<double> arAll1D;
+    std::vector<std::vector<double>> arAll2D;
 
     std::vector<double> arIso1D;
     std::vector<std::vector<double>> arIso2D;
@@ -50,8 +87,8 @@ void ActivityProfilerMode::run()
             Mapping.report();
             bOnStart = false;
 
-            arIso1D.resize(Mapping.NumBins[1], 0);
-            init2DArray(arIso2D);
+            arAll1D.resize(Mapping.NumBins[1], 0);
+            init2DArray(arAll2D);
             //init3DArray(DATA);
         }
 
@@ -94,8 +131,8 @@ void ActivityProfilerMode::run()
                         val *= timeFactor;
 
                         // Overall activity
-                        ar1D[iy] += val;
-                        ar2D[ix][iy] += val;
+                        arAll1D[iy] += val;
+                        arAll2D[ix][iy] += val;
                         //DATA[ix][iy][iz] += val;
 
                         // Activity for this isotope
@@ -104,14 +141,13 @@ void ActivityProfilerMode::run()
                     }
                 }
 
-            save1D(arIso1D, DataDirectory + '/' + iso.Isotope + "-1D.txt");
-            save2D(arIso2D, DataDirectory + '/' + iso.Isotope + "-2D.txt");
+            save1D(arIso1D, iso.Isotope);
+            save2D(arIso2D, iso.Isotope);
         }
-
     }
 
-    save1D(ar1D, DataDirectory + "/Activity-1D.txt");
-    save2D(ar2D, DataDirectory + "/Activity-2D.txt");
+    save1D(arAll1D, "all");
+    save2D(arAll2D, "all");
 }
 
 bool SpatialParameters::operator!=(const SpatialParameters & other) const
@@ -239,36 +275,64 @@ double ActivityProfilerMode::sampleGenerationTime()
     exit(3);
 }
 
-void ActivityProfilerMode::save1D(std::vector<double> & ar, const std::string & fileName)
+void ActivityProfilerMode::save1D(std::vector<double> & ar, const std::string & nameId)
 {
+    std::string fullFineName = DataDirectory + '/' + BaseFileName + '-' + nameId + "-1D.txt";
+
     std::ofstream outStream;
-    outStream.open(fileName);
+    outStream.open(fullFineName);
     if (!outStream.is_open() || outStream.fail() || outStream.bad())
     {
-        out("Cannot open file:", fileName);
+        out("Cannot open file:", fullFineName);
         exit(2);
     }
-    else out("\nSaving output to file", fileName);
+    else out("\nSaving output to file", fullFineName);
 
     for (size_t i = 0; i < ar.size(); i++)
     {
-        if (i != 0) outStream << ' ';
-        outStream << ar[i];
+        if (i != 0) outStream << '\n';
+        outStream << Mapping.Origin[1] + Mapping.BinSize[1] * i << ' ' << ar[i];
     }
 
     outStream.close();
 }
 
-void ActivityProfilerMode::save2D(std::vector<std::vector<double>> & ar, const std::string & fileName)
+void ActivityProfilerMode::save2D(std::vector<std::vector<double>> & ar, const std::string & nameId)
 {
+    const std::string fullFineName = DataDirectory + '/' + BaseFileName + '-' + nameId + "-2D.txt";
+
     std::ofstream outStream;
-    outStream.open(fileName);
+    outStream.open(fullFineName);
     if (!outStream.is_open() || outStream.fail() || outStream.bad())
     {
-        out("Cannot open file:", fileName);
+        out("Cannot open file:", fullFineName);
         exit(2);
     }
-    else out("\nSaving output to file", fileName);
+    else out("\nSaving output to file", fullFineName);
+
+
+    json11::Json::object json;
+    //BinSize
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Mapping.BinSize[i]);
+        json["BinSize"] = jar;
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Mapping.NumBins[i]);
+        json["NumBins"] = jar;
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Mapping.Origin[i]);
+        json["Origin"] = jar;
+    }
+    json11::Json aa(json);
+    std::string str = '#' + aa.dump();
+    outStream << str << '\n';
 
     for (size_t i0 = 0; i0 < ar.size(); i0++)
     {
@@ -282,3 +346,4 @@ void ActivityProfilerMode::save2D(std::vector<std::vector<double>> & ar, const s
 
     outStream.close();
 }
+
