@@ -68,14 +68,15 @@ protected:
 
     SpatialParameters Mapping;
 
-    std::vector<std::vector<std::vector<double>>> DATA;
-    std::vector<std::vector<std::vector<double>>> isoDATA;
-
     int numTimeRuns = 10000;
 
-    void initArray(std::vector<std::vector<std::vector<double>>> & ar);
+    void   init3DArray(std::vector<std::vector<std::vector<double>>> & ar);
+    void   init2DArray(std::vector<std::vector<double>> & ar);
     double calculateTimeFactor(double tau);
     double sampleGenerationTime();
+
+    void   save1D(std::vector<double> & ar, const std::string & fileName);
+    void   save2D(std::vector<std::vector<double>> & ar, const std::string & fileName);
 };
 
 #endif // activityprofilermode_h

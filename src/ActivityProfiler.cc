@@ -28,36 +28,44 @@ void ActivityProfilerMode::run()
 
     // TODO -> check isotopoes are uniques in the database
 
-    std::vector<double> yArr;
+    std::vector<double> ar1D;
+    std::vector<std::vector<double>> ar2D;
+
+    std::vector<double> arIso1D;
+    std::vector<std::vector<double>> arIso2D;
+
+    //std::vector<std::vector<std::vector<double>>> DATA;
 
     bool bOnStart = true;
     for (const IsotopeDataRecord & iso : IsotopeBase)
     {
-        const size_t numRec = iso.SpatialFiles.size();
-        out("Isotope", iso.Isotope, " -> ", numRec, "record(s)");
-        if (numRec == 0) continue;
+        const size_t numChan = iso.SpatialFiles.size();
+        out("Isotope", iso.Isotope, " -> ", numChan, "channel(s)");
+        if (numChan == 0) continue;
 
-        if (bOnStart) // first record of the first isotope -> configure Mapping
+        if (bOnStart) // first channel of the first isotope -> configure Mapping
         {
             out("OnStart");
             Mapping.read(DataDirectory + '/' + iso.SpatialFiles[0]);
             Mapping.report();
-            initArray(DATA);
             bOnStart = false;
+
+            arIso1D.resize(Mapping.NumBins[1], 0);
+            init2DArray(arIso2D);
+            //init3DArray(DATA);
         }
 
-        initArray(isoDATA);
-        yArr.resize(Mapping.NumBins[1], 0);
+        arIso1D.resize(Mapping.NumBins[1], 0);
+        init2DArray(arIso2D);
 
-        double tauHalf = iso.HalfLife;
+        const double tauHalf = iso.HalfLife;
         out("Half-time:", tauHalf, "s");
-
         const double tau = tauHalf / log(2);
         const double timeFactor = calculateTimeFactor(tau);
 
-        for (size_t iR = 0; iR < numRec; iR++)
+        for (size_t iChan = 0; iChan < numChan; iChan++)
         {
-            std::string fn = DataDirectory + '/' + iso.SpatialFiles[iR];
+            const std::string fn = DataDirectory + '/' + iso.SpatialFiles[iChan];
             out(fn);
 
             SpatialParameters thisMapping;
@@ -70,14 +78,13 @@ void ActivityProfilerMode::run()
 
             std::ifstream in(fn);
             std::string line;
-            std::getline(in, line); // first line is the json
-
+            std::getline(in, line); // skip the first line which is the mapping json
 
             for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
                 for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
                 {
                     std::getline(in, line);
-                    std::string::size_type sz;     // alias of size_t
+                    size_t sz; // std::string::size_type sz;
 
                     for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
                     {
@@ -86,35 +93,25 @@ void ActivityProfilerMode::run()
 
                         val *= timeFactor;
 
-                        DATA[ix][iy][iz] += val;
-                        isoDATA[ix][iy][iz] += val;
-                        yArr[iy] += val;
+                        // Overall activity
+                        ar1D[iy] += val;
+                        ar2D[ix][iy] += val;
+                        //DATA[ix][iy][iz] += val;
+
+                        // Activity for this isotope
+                        arIso1D[iy] += val;
+                        arIso2D[ix][iy] += val;
                     }
-            }
+                }
+
+            save1D(arIso1D, DataDirectory + '/' + iso.Isotope + "-1D.txt");
+            save2D(arIso2D, DataDirectory + '/' + iso.Isotope + "-2D.txt");
         }
 
-        for (int iy = 0; iy < Mapping.NumBins[1]; iy++) out(yArr[iy]);
-
-        /*
-        hist.NewHist("iso", numY,  OriginY, OriginY + BinSizeY * numY)
-                for (var ix = 0; ix < numX; ix++)
-                for (var iy = 0; iy < numY; iy++)
-        {
-            var y = OriginY + BinSizeY * iy
-                    for (var iz = 0; iz < numZ; iz++)
-            {
-                hist.Fill("iso", y, isoDATA[ix][iy][iz])
-            }
-        }
-
-        hist.Smear("iso", SpatialResolution)
-                hist.Draw("iso", "hist")
-                grwin.AddToBasket("y_" + isotope)
-
-
-                core.print("------")
-    */
     }
+
+    save1D(ar1D, DataDirectory + "/Activity-1D.txt");
+    save2D(ar2D, DataDirectory + "/Activity-2D.txt");
 }
 
 bool SpatialParameters::operator!=(const SpatialParameters & other) const
@@ -174,7 +171,7 @@ void SpatialParameters::report()
         );
 }
 
-void ActivityProfilerMode::initArray(std::vector<std::vector<std::vector<double>>> & ar)
+void ActivityProfilerMode::init3DArray(std::vector<std::vector<std::vector<double>>> & ar)
 {
     ar.resize(Mapping.NumBins[0]);
     for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
@@ -186,6 +183,17 @@ void ActivityProfilerMode::initArray(std::vector<std::vector<std::vector<double>
             for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
                 ar[ix][iy][iz] = 0;
         }
+    }
+}
+
+void ActivityProfilerMode::init2DArray(std::vector<std::vector<double> > & ar)
+{
+    ar.resize(Mapping.NumBins[0]);
+    for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
+    {
+        ar[ix].resize(Mapping.NumBins[1]);
+        for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
+            ar[ix][iy] = 0;
     }
 }
 
@@ -229,4 +237,48 @@ double ActivityProfilerMode::sampleGenerationTime()
 
     out("Error in PES time generator");
     exit(3);
+}
+
+void ActivityProfilerMode::save1D(std::vector<double> & ar, const std::string & fileName)
+{
+    std::ofstream outStream;
+    outStream.open(fileName);
+    if (!outStream.is_open() || outStream.fail() || outStream.bad())
+    {
+        out("Cannot open file:", fileName);
+        exit(2);
+    }
+    else out("\nSaving output to file", fileName);
+
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        if (i != 0) outStream << ' ';
+        outStream << ar[i];
+    }
+
+    outStream.close();
+}
+
+void ActivityProfilerMode::save2D(std::vector<std::vector<double>> & ar, const std::string & fileName)
+{
+    std::ofstream outStream;
+    outStream.open(fileName);
+    if (!outStream.is_open() || outStream.fail() || outStream.bad())
+    {
+        out("Cannot open file:", fileName);
+        exit(2);
+    }
+    else out("\nSaving output to file", fileName);
+
+    for (size_t i0 = 0; i0 < ar.size(); i0++)
+    {
+        if (i0 != 0) outStream << '\n';
+        for (size_t i1 = 0; i1 < ar[i0].size(); i1++)
+        {
+            if (i1 != 0) outStream << ' ';
+            outStream << ar[i0][i1];
+        }
+    }
+
+    outStream.close();
 }
