@@ -308,7 +308,7 @@ void PhantomDICOM::readPhantomData()
   finDF >> compression; // not used here
   finDF >> fNoFiles;
 
-  G4String fname;
+  std::string fname;
   for(int i = 0; i < fNoFiles; i++)
   {
     finDF >> fname;
@@ -323,28 +323,22 @@ void PhantomDICOM::readPhantomData()
   finDF.close();
 }
 
-void PhantomDICOM::ReadPhantomDataFile(const G4String& fname)
+void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
 {
-#ifdef G4VERBOSE
-  G4cout << " PhantomModeDICOM::ReadPhantomDataFile opening file "
-         << fname << G4endl;
-#endif
-  
-  std::ifstream fin(fname.c_str(), std::ios_base::in);
-  if( !fin.is_open() ) {
-    G4Exception("PhantomModeDICOM::ReadPhantomDataFile",
-                "",
-                FatalErrorInArgument,
-                G4String("File not found " + fname ).c_str());
-  }
+    out("Reading phantom data file", fname);
+    std::ifstream fin(fname.c_str(), std::ios_base::in);
+    if(!fin.is_open())
+    {
+        out("cannot open phantom data file", fname);
+        exit(10);
+    }
 
 
-  //----- Define density differences (maximum density difference to create
-  // a new material)
+  //----- Define density differences (maximum density difference to create a new material)
 
   char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
 
-  G4double densityDiff = -1.;
+  double densityDiff = -1.0;
   if( part ) densityDiff = G4UIcommand::ConvertToDouble(part);
   if( densityDiff != -1. )
   {
@@ -356,11 +350,11 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String& fname)
   }
   else
   {
-    if( fMaterials.size() == 0 ) { // do it only for first slice
-      for( unsigned int ii = 0; ii < fOriginalMaterials.size(); ++ii )
-      {
-        fMaterials.push_back( fOriginalMaterials[ii] );
-      }
+    if (fMaterials.empty())
+    {
+        // do it only for first slice
+        for (size_t ii = 0; ii < fOriginalMaterials.size(); ++ii)
+            fMaterials.push_back(fOriginalMaterials[ii]);
     }
   }
   
@@ -372,7 +366,8 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String& fname)
   G4int nVoxels = sliceHeader->GetNoVoxels();
   
   //--- If first slice, initiliaze fMateIDs
-  if( fZSliceHeaders.size() == 1 ) {
+  if( fZSliceHeaders.size() == 1 )
+  {
     //fMateIDs = new unsigned int[fNoFiles*nVoxels];
     fMateIDs = new size_t[fNoFiles*nVoxels];
   }
