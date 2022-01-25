@@ -26,6 +26,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <cmath>
+#include <algorithm>
 
 PhantomDICOM::PhantomDICOM(double phantRadius, const std::vector<double> & posContainer, std::string dataFile, bool delFiles) :
     PhantRadius(phantRadius), PosContainer(posContainer),
@@ -334,71 +335,64 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
     }
 
 
-  //----- Define density differences (maximum density difference to create a new material)
+    //----- Define density differences (maximum density difference to create a new material)
 
-  char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
+    //double densityDiff = -1.0;
+    //char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
+    //if (part) densityDiff = G4UIcommand::ConvertToDouble(part);
+    if (densityDiff != -1.0)
+    {
+        for (size_t ii = 0; ii < fOriginalMaterials.size(); ii++)
+        {
+            fDensityDiffs[ii] = densityDiff; //currently all materials with the same difference
+        }
+    }
+    else
+    {
+        if (fMaterials.empty())
+        {
+            // do it only for the first slice
+            for (size_t ii = 0; ii < fOriginalMaterials.size(); ++ii)
+                fMaterials.push_back(fOriginalMaterials[ii]);
+        }
+    }
 
-  double densityDiff = -1.0;
-  if( part ) densityDiff = G4UIcommand::ConvertToDouble(part);
-  if( densityDiff != -1. )
-  {
-    for( unsigned int ii = 0; ii < fOriginalMaterials.size(); ++ii )
-    {
-      fDensityDiffs[ii] = densityDiff; //currently all materials with 
-      // same difference
-    }
-  }
-  else
-  {
-    if (fMaterials.empty())
-    {
-        // do it only for first slice
-        for (size_t ii = 0; ii < fOriginalMaterials.size(); ++ii)
-            fMaterials.push_back(fOriginalMaterials[ii]);
-    }
-  }
-  
   //----- Read data header
-  DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader( fin );
-  fZSliceHeaders.push_back( sliceHeader );
+  DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader(fin);
+  fZSliceHeaders.push_back(sliceHeader);
  
   //----- Read material indices
-  G4int nVoxels = sliceHeader->GetNoVoxels();
+  int nVoxels = sliceHeader->GetNoVoxels();
   
   //--- If first slice, initiliaze fMateIDs
   if( fZSliceHeaders.size() == 1 )
   {
-    //fMateIDs = new unsigned int[fNoFiles*nVoxels];
-    fMateIDs = new size_t[fNoFiles*nVoxels];
+        //fMateIDs = new unsigned int[fNoFiles*nVoxels];
+        fMateIDs = new size_t[fNoFiles*nVoxels];
   }
 
-
-  unsigned int mateID;
-  // number of voxels from previously read slices
-
+  unsigned int mateID; // number of voxels from previously read slices
 
   int voxelCopyNo = int((fZSliceHeaders.size()-1)*nVoxels);
   //int voxelInit = voxelCopyNo;
 
-  for( G4int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++)
+  for (int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++)
   {
       fin >> mateID;
       fMateIDs[voxelCopyNo] = mateID;
-
   }
 
 
   // HS, 2021/07/07, NOT TESTED yet
   //----- Read material densities and build new materials if two voxels have
-  //  same material but its density is in a different density interval 
-  // (size of density intervals defined by densityDiff)
-  G4double density;
-  // number of voxels from previously read slices
-  voxelCopyNo = G4int((fZSliceHeaders.size()-1)*nVoxels);
+  //  the same material but its density is in a different density interval
+  // (size of density intervals is defined by densityDiff)
+  double density;
 
-  for( G4int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++ )
+  voxelCopyNo = G4int((fZSliceHeaders.size()-1)*nVoxels); // number of voxels from previously read slices
+
+  for (int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++)
   {
-
     fin >> density;
 
     //-- Get material from list of original materials
@@ -406,52 +400,50 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
 
     //G4cout << mateID << G4endl;
 
-    G4Material* mateOrig  = fOriginalMaterials[mateID];
+    G4Material* mateOrig = fOriginalMaterials[mateID];
 
-    //-- Get density bin: middle point of the bin in which the current
-    // density is included
+    //-- Get density bin: middle point of the bin in which the current density is included
     G4String newMateName = mateOrig->GetName();
     //G4cout << mateOrig->GetName() << G4endl;
     G4float densityBin = 0.;
-    if( densityDiff != -1.) {
-      densityBin = G4float(fDensityDiffs[mateID]) * 
-                   (G4int(density/fDensityDiffs[mateID])+0.5);
-      //-- Build the new material name
-      newMateName += G4UIcommand::ConvertToString(densityBin);
+    if (densityDiff != -1.0)
+    {
+        densityBin = G4float(fDensityDiffs[mateID]) * (G4int(density/fDensityDiffs[mateID])+0.5);
+        //-- Build the new material name
+        newMateName += G4UIcommand::ConvertToString(densityBin);
     }
-    
 
     //-- Look if a material with this name is already created
     //  (because a previous voxel was already in this density bin)
     unsigned int im;
-    for( im = 0; im < fMaterials.size(); ++im )
+    for (im = 0; im < fMaterials.size(); ++im)
     {
-      if( fMaterials[im]->GetName() == newMateName ) {
-        break;
-      }
+        if( fMaterials[im]->GetName() == newMateName )
+            break;
     }
+
     //-- If material is already created use index of this material
-    if( im != fMaterials.size() ) {
-      fMateIDs[voxelCopyNo] = im;
-      //-- else, create the material
-    } else {
-      if( densityDiff != -1.) {
-        fMaterials.push_back( BuildMaterialWithChangingDensity( mateOrig,
-                                                  densityBin, newMateName ) );
-        fMateIDs[voxelCopyNo] = fMaterials.size()-1;
-      } else {
-        G4cerr << " im " << im << " < " << fMaterials.size() << " name "
-               << newMateName << G4endl;
-        G4Exception("PhantomModeDICOM::ReadPhantomDataFile",
-                    "",
-                    FatalErrorInArgument,
-                    "Wrong index in material"); //it should never reach here
-      }
+    if (im != fMaterials.size())
+    {
+        fMateIDs[voxelCopyNo] = im;
+    }
+    else // create the material
+    {
+        if (densityDiff != -1.0)
+        {
+            fMaterials.push_back( BuildMaterialWithChangingDensity(mateOrig, densityBin, newMateName) );
+            fMateIDs[voxelCopyNo] = fMaterials.size()-1;
+        }
+        else
+        {
+            out(" im ", im, " < ", fMaterials.size(), " name ", newMateName);
+            out("Wrong index in material");
+            exit(10);
+        }
     }
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 void PhantomDICOM::MergeZSliceHeaders()
 {
   //----- Images must have the same dimension ...

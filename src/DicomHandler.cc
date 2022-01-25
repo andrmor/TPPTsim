@@ -67,8 +67,6 @@
 
 DicomHandler* DicomHandler::fInstance = 0;
 
-G4String driverPath;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DicomHandler* DicomHandler::Instance()

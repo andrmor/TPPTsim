@@ -75,6 +75,9 @@ public:
     // static accessor
     static DicomHandler* Instance();
     
+    void setDriverPath(const G4String & path) {driverPath = path;}
+    void setDriverFileName(const G4String & fileName) {fDriverFile = fileName;}
+
     G4int ReadFile(FILE *,char *);
     G4int ReadData(FILE *); // note: always use readHeader
     // before readData
@@ -131,6 +134,7 @@ private:
     G4bool fReadCalibration;
     DicomPhantomZSliceMerged* fMergedSlices;
 
+    G4String driverPath;
     G4String fDriverFile;
     G4String fCt2DensityFile;
 

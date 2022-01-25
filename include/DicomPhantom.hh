@@ -80,28 +80,24 @@ protected:
     size_t * fMateIDs; // index of material of each voxel
     //unsigned int* fMateIDs; // index of material of each voxel
 
-    std::map<int, double> fDensityDiffs;
-    // Density difference to distinguish material for each original
-    // material (by index)
+    std::map<int, double> fDensityDiffs; // Density difference to distinguish material for each original material (by index)
 
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;
-    // list of z slice header (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged;
-    // z slice header resulted from merging all z slice headers
+    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders; // list of z slice header (one per DICOM files)
+    DicomPhantomZSliceHeader * fZSliceHeaderMerged;        // z slice header resulted from merging all z slice headers
 
     int    fNVoxelX, fNVoxelY, fNVoxelZ;
     double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
     double fMinX,fMinY,fMinZ; // minimum extension of voxels (position wall)
     double fMaxX,fMaxY,fMaxZ; // maximum extension of voxels (position wall)
 
-    std::map<int, G4Material*> thePhantomMaterialsOriginal;
-    // map numberOfMaterial to G4Material. They are the list of materials as
-    // built from .geom file
+    std::map<int, G4Material*> thePhantomMaterialsOriginal; // map numberOfMaterial to G4Material. They are the list of materials as built from .geom file
 
     //DicomPhantomZSliceMerged * fMergedSlices;
     //std::set<G4LogicalVolume*> fScorers;
     //G4IntersectionSolid * test;// =new G4IntersectionSolid("bx2CyleafTr", box2leaf, cyLeafTr);
     //bool fConstructed;
+
+    double densityDiff = -1.0; // former from "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
 
 private:
     void buildMaterials();
