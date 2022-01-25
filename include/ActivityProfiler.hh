@@ -70,8 +70,9 @@ protected:
 
     int numTimeRuns = 10000;
 
-    void   init3DArray(std::vector<std::vector<std::vector<double>>> & ar);
+    void   init1DArray(std::vector<double> & ar);
     void   init2DArray(std::vector<std::vector<double>> & ar);
+    void   init3DArray(std::vector<std::vector<std::vector<double>>> & ar);
     double calculateTimeFactor(double tau);
     double sampleGenerationTime();
     void   checkInputData();

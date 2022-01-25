@@ -105,7 +105,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
-//        SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
+        //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
         //SM.SimMode          = new SimModeGui();
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
-        SM.SimMode          = new ActivityProfilerMode({{0,200,1}}, {{450,451}}, "/home/andr/WORK/TPPT/TMP", "test");
+        SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/TMP", "test");
 
     // --- END of user init ---
     }

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 ActivityProfilerMode::ActivityProfilerMode(const std::vector<BeamTimeWindow> & beamStructure, const std::vector<ScanTimeWindow> & scanWindows,
                                            const std::string & dataDirectory, const std::string & baseFileName) :
@@ -63,6 +64,7 @@ void ActivityProfilerMode::checkInputData()
 
 void ActivityProfilerMode::run()
 {
+    out("\n\n");
     checkInputData(); // calls exit(3) if there are problems
 
     std::vector<double> arAll1D;
@@ -77,7 +79,7 @@ void ActivityProfilerMode::run()
     for (const IsotopeDataRecord & iso : IsotopeBase)
     {
         const size_t numChan = iso.SpatialFiles.size();
-        out("Isotope", iso.Isotope, " -> ", numChan, "channel(s)");
+        out("\n====>Isotope", iso.Isotope, " -> ", numChan, "channel(s)");
         if (numChan == 0) continue;
 
         if (bOnStart) // first channel of the first isotope -> configure Mapping
@@ -87,12 +89,12 @@ void ActivityProfilerMode::run()
             Mapping.report();
             bOnStart = false;
 
-            arAll1D.resize(Mapping.NumBins[1], 0);
+            init1DArray(arAll1D);
             init2DArray(arAll2D);
             //init3DArray(DATA);
         }
 
-        arIso1D.resize(Mapping.NumBins[1], 0);
+        init1DArray(arIso1D);
         init2DArray(arIso2D);
 
         const double tauHalf = iso.HalfLife;
@@ -146,6 +148,7 @@ void ActivityProfilerMode::run()
         }
     }
 
+    out("\n----");
     save1D(arAll1D, "all");
     save2D(arAll2D, "all");
 }
@@ -207,7 +210,23 @@ void SpatialParameters::report()
         );
 }
 
-void ActivityProfilerMode::init3DArray(std::vector<std::vector<std::vector<double>>> & ar)
+void ActivityProfilerMode::init1DArray(std::vector<double> & ar)
+{
+    ar.resize(Mapping.NumBins[1]);
+    std::fill(ar.begin(), ar.end(), 0);
+}
+
+void ActivityProfilerMode::init2DArray(std::vector<std::vector<double> > & ar)
+{
+    ar.resize(Mapping.NumBins[0]);
+    for (auto & vec : ar)
+    {
+        vec.resize(Mapping.NumBins[1]);
+        std::fill(vec.begin(), vec.end(), 0);
+    }
+}
+
+void ActivityProfilerMode::init3DArray(std::vector<std::vector<std::vector<double>>> & ar) // TODO : refactor
 {
     ar.resize(Mapping.NumBins[0]);
     for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
@@ -216,20 +235,8 @@ void ActivityProfilerMode::init3DArray(std::vector<std::vector<std::vector<doubl
         for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
         {
             ar[ix][iy].resize(Mapping.NumBins[2]);
-            for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
-                ar[ix][iy][iz] = 0;
+            std::fill(ar[ix][iy].begin(), ar[ix][iy].end(), 0);
         }
-    }
-}
-
-void ActivityProfilerMode::init2DArray(std::vector<std::vector<double> > & ar)
-{
-    ar.resize(Mapping.NumBins[0]);
-    for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
-    {
-        ar[ix].resize(Mapping.NumBins[1]);
-        for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
-            ar[ix][iy] = 0;
     }
 }
 
@@ -253,7 +260,7 @@ double ActivityProfilerMode::calculateTimeFactor(double tau)
         }
     }
     timeFactor /= numTimeRuns;
-
+    out("Time factor:",timeFactor);
     return timeFactor;
 }
 
@@ -266,7 +273,11 @@ double ActivityProfilerMode::sampleGenerationTime()
     {
         double val = (win.To - win.From) * win.Weight;
         if (rnd < val)
-            return win.From + rnd / win.Weight;
+        {
+            const double genTime = win.From + rnd / win.Weight;
+            //out(genTime);
+            return genTime;
+        }
 
         rnd -= val;
     }
@@ -286,7 +297,7 @@ void ActivityProfilerMode::save1D(std::vector<double> & ar, const std::string & 
         out("Cannot open file:", fullFineName);
         exit(2);
     }
-    else out("\nSaving output to file", fullFineName);
+    else out("Saving output to file", fullFineName);
 
     for (size_t i = 0; i < ar.size(); i++)
     {
@@ -308,7 +319,7 @@ void ActivityProfilerMode::save2D(std::vector<std::vector<double>> & ar, const s
         out("Cannot open file:", fullFineName);
         exit(2);
     }
-    else out("\nSaving output to file", fullFineName);
+    else out("Saving output to file", fullFineName);
 
 
     json11::Json::object json;
