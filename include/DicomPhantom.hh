@@ -53,7 +53,7 @@ protected:
 
 
 protected:
-    const std::string   DriverFileName = "Data.dat";
+    const std::string   DriverFileName     = "Data.dat";
     const std::string   ConvertionFileName = "CT2Density.dat";
 
     std::string         DataDir;

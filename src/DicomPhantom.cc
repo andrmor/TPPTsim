@@ -40,7 +40,7 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
         std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
         system(cmd.data());
     }
-    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if do not exist, create them
+    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if at least one does not exist, (re)create them
 
     buildMaterials();
     readPhantomData();
@@ -290,33 +290,27 @@ void PhantomDICOM::buildMaterials()
 
 void PhantomDICOM::readPhantomData()
 {
-    std::string dataFile = DataDir + "/Data.dat";
-
-    std::ifstream finDF(dataFile.c_str());
-
-    if (!finDF.good())
+    const std::string dataFile = DataDir + '/' + DriverFileName;
+    std::ifstream inStream(dataFile);
+    if (!inStream.good())
     {
-        G4String descript = "Problem reading data file: "+dataFile;
-        G4Exception("PhantomDICOM::ReadPhantomData"," ", FatalException, descript);
+        out("PhantomDICOM: Cannot read driver file:", dataFile);
+        exit(10);
     }
 
-  int compression;
-  finDF >> compression; // not used here
-  finDF >> fNoFiles;
+    int compression;
+    inStream >> compression; // not used here
+    inStream >> fNoFiles;
 
-  std::string fname;
-  for(int i = 0; i < fNoFiles; i++)
-  {
-    finDF >> fname;
+    std::string fname;
+    for (int i = 0; i < fNoFiles; i++)
+    {
+        inStream >> fname;
+        ReadPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
+    }
 
-    //--- Read one data file
-    fname += ".g4dcm";
-    ReadPhantomDataFile(DataDir + "/" + fname);
-  }
-
-  //----- Merge data headers
-  MergeZSliceHeaders();
-  finDF.close();
+    MergeZSliceHeaders();
+    inStream.close();
 }
 
 void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
