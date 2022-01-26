@@ -33,7 +33,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     else if (Type == "PhantomCustomBox") ph = new PhantomCustomBox();
     else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")     ph = new PhantomParam();
-    else if (Type == "PhantomDICOM")     ph = new PhantomDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
+    else if (Type == "PhantomDICOM")     ph = new PhantomDICOM("", 100.0, {0,0,50.0}, true);
     else if (Type == "PhantomEspana")    ph = new PhantomEspana();
     else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
     else if (Type == "PhantomBauerCa")   ph = new PhantomBauerCa();

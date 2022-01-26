@@ -61,7 +61,6 @@
 #include "DicomHandler.hh"
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomPhantomZSliceMerged.hh"
-#include "SessionManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -79,14 +78,13 @@ DicomHandler* DicomHandler::Instance()
   return fInstance;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void DicomHandler::setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName)
+{
+    driverPath = path;
 
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    fDriverFile     = driverPath + '/' + driverFileName;
+    fCt2DensityFile = driverPath + '/' + convertionFileName;
+}
 
 DicomHandler::DicomHandler()
 :DATABUFFSIZE(8192), LINEBUFFSIZE(5020), FILENAMESIZE(512),
@@ -100,15 +98,6 @@ DicomHandler::DicomHandler()
 
 {
  fMergedSlices = new DicomPhantomZSliceMerged;
-
- SessionManager & SM = SessionManager::getInstance();
- driverPath = SM.WorkingDirectory;
-
- // Getting processing files
-
- fDriverFile     = driverPath + "/Data.dat";
- fCt2DensityFile = driverPath + "/CT2Density.dat";
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -656,6 +645,13 @@ G4float DicomHandler::Pixel2density(G4int pixel)
 
 void DicomHandler::CheckFileFormat()
 {
+    if (driverPath == "" || fDriverFile == "")
+    {
+        G4Exception("DicomHandler::ReadFile",
+                    "DICOM001",
+                    FatalException,
+                    "DicomHandler driver file is not defined");
+    }
 
   std::ifstream checkData(fDriverFile.c_str());
 
@@ -683,7 +679,8 @@ void DicomHandler::CheckFileFormat()
   checkData.getline(oneLine,100);
   std::ifstream testExistence;
   G4bool existAlready = true;
-  for(G4int rep = 0; rep < fNFiles; ++rep) {
+  for(G4int rep = 0; rep < fNFiles; ++rep)
+  {
     checkData.getline(oneLine,100);
     oneName = driverPath.c_str();
     oneName += "/";
@@ -691,7 +688,8 @@ void DicomHandler::CheckFileFormat()
     oneName += ".g4dcm"; // create dicomFile.g4dcm
     G4cout << fNFiles << "Teste tes" << oneName << G4endl;
     testExistence.open(oneName.data());
-    if(!(testExistence.is_open())) {
+    if(!(testExistence.is_open()))
+    {
       existAlready = false;
       testExistence.clear();
       testExistence.close();

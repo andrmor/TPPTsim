@@ -69,14 +69,12 @@ class DicomPhantomZSliceMerged;
 class DicomHandler
 {
 public:
-    
     ~DicomHandler();
     
     // static accessor
     static DicomHandler* Instance();
     
-    void setDriverPath(const G4String & path) {driverPath = path;}
-    void setDriverFileName(const G4String & fileName) {fDriverFile = fileName;}
+    void setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName);
 
     G4int ReadFile(FILE *,char *);
     G4int ReadData(FILE *); // note: always use readHeader
@@ -108,7 +106,7 @@ private:
     G4int read_defined_nested(FILE *, G4int);
     void read_undefined_nested(FILE *);
     void read_undefined_item(FILE *);
-    
+
     short fCompression;
     G4int fNFiles;
     short fRows;

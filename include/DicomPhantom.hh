@@ -27,7 +27,7 @@ struct matInfo
 class PhantomDICOM : public PhantomModeBase
 {
 public:
-    PhantomDICOM(double phantRadius, const std::vector<double> & posContainer, std::string dataFile, bool delFiles);
+    PhantomDICOM(const std::string & dataDir, double phantRadius, const std::vector<double> & posContainer, bool recreateFiles);
 
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
     std::string       getTypeName() const override {return "PhantomDICOM";}
@@ -53,11 +53,13 @@ protected:
 
 
 protected:
+    const std::string   DriverFileName = "Data.dat";
+    const std::string   ConvertionFileName = "CT2Density.dat";
+
+    std::string         DataDir;
     double              PhantRadius;
     std::vector<double> PosContainer;
-    std::string         DicomPath;
-    std::string         DataFile;
-    bool                DelFiles;
+    bool                bRecreateFiles;
     double              zStart;
 
     std::vector<std::pair<double,double>> BoxXY;

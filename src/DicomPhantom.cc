@@ -1,5 +1,4 @@
 #include "DicomPhantom.hh"
-#include "SessionManager.hh"
 #include "DicomPhantomParameterisation.hh"
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomHandler.hh"
@@ -28,18 +27,20 @@
 #include <cmath>
 #include <algorithm>
 
-PhantomDICOM::PhantomDICOM(double phantRadius, const std::vector<double> & posContainer, std::string dataFile, bool delFiles) :
-    PhantRadius(phantRadius), PosContainer(posContainer),
-    DicomPath(SessionManager::getInstance().WorkingDirectory),
-    DataFile(dataFile), DelFiles(delFiles) {}
+PhantomDICOM::PhantomDICOM(const std::string & dataDir, double phantRadius, const std::vector<double> & posContainer,  bool recreateFiles) :
+    DataDir(dataDir), PhantRadius(phantRadius), PosContainer(posContainer), bRecreateFiles(recreateFiles) {}
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
     DicomHandler * dcmHandler = DicomHandler::Instance();
-    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if do not exist, create them
+    dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
 
-    // Assumes that the "necessary" files are at "working directory".
-    //G4cout << DicomPath << G4endl;
+    if (bRecreateFiles)
+    {
+        std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
+        system(cmd.data());
+    }
+    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if do not exist, create them
 
     buildMaterials();
     readPhantomData();
@@ -47,12 +48,6 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
     constructPhantomContainer(logicWorld);
     constructPhantom();
 
-    // To be "optimized": PET_PT directory should be considered automatically
-    if (DelFiles)
-    {
-        G4String cmd = "rm -f " + DicomPath + "/PET_PT/*.g4dcm*";
-        system(cmd);
-    }
 
     return fContainer_logic;
 }
@@ -295,7 +290,7 @@ void PhantomDICOM::buildMaterials()
 
 void PhantomDICOM::readPhantomData()
 {
-    std::string dataFile = DicomPath + "/" + DataFile;
+    std::string dataFile = DataDir + "/Data.dat";
 
     std::ifstream finDF(dataFile.c_str());
 
@@ -316,7 +311,7 @@ void PhantomDICOM::readPhantomData()
 
     //--- Read one data file
     fname += ".g4dcm";
-    ReadPhantomDataFile(DicomPath+"/"+fname);
+    ReadPhantomDataFile(DataDir + "/" + fname);
   }
 
   //----- Merge data headers
