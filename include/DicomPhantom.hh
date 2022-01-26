@@ -44,8 +44,6 @@ protected:
     // (usually one per Z slice).
     //  Build a DicomPhantomZSliceHeader for each file
 
-    void MergeZSliceHeaders();
-    // merge the slice headers of all the files
 
     G4Material * BuildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName);
     // build a new material if the density of the voxel is different
@@ -84,7 +82,7 @@ protected:
 
     std::map<int, double> fDensityDiffs; // Density difference to distinguish material for each original material (by index)
 
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders; // list of z slice header (one per DICOM files)
+    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders; // list of z slice headers (one per DICOM files)
     DicomPhantomZSliceHeader * fZSliceHeaderMerged;        // z slice header resulted from merging all z slice headers
 
     int    fNVoxelX, fNVoxelY, fNVoxelZ;
@@ -104,6 +102,7 @@ protected:
 private:
     void buildMaterials();
     void readPhantomData();
+    void mergeZSliceHeaders();
     void computePhantomVoxelization(); // TODO : refactor
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();

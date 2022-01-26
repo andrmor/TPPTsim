@@ -44,10 +44,10 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 
     buildMaterials();
     readPhantomData();
+    mergeZSliceHeaders();
     computePhantomVoxelization();
     constructPhantomContainer(logicWorld);
     constructPhantom();
-
 
     return fContainer_logic;
 }
@@ -309,8 +309,15 @@ void PhantomDICOM::readPhantomData()
         ReadPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
     }
 
-    MergeZSliceHeaders();
     inStream.close();
+}
+
+void PhantomDICOM::mergeZSliceHeaders()
+{
+    //----- Images must have the same dimension ...
+    fZSliceHeaderMerged = new DicomPhantomZSliceHeader( *fZSliceHeaders[0] );
+    for (size_t ii = 1; ii < fZSliceHeaders.size(); ii++)
+        *fZSliceHeaderMerged += *fZSliceHeaders[ii];
 }
 
 void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
@@ -430,16 +437,6 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
             exit(10);
         }
     }
-  }
-}
-
-void PhantomDICOM::MergeZSliceHeaders()
-{
-  //----- Images must have the same dimension ...
-  fZSliceHeaderMerged = new DicomPhantomZSliceHeader( *fZSliceHeaders[0] );
-  for( unsigned int ii = 1; ii < fZSliceHeaders.size(); ++ii )
-  {
-    *fZSliceHeaderMerged += *fZSliceHeaders[ii];
   }
 }
 
