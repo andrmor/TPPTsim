@@ -39,10 +39,6 @@ protected:
     // read the DICOM files describing the phantom
     //void ReadVoxelDensities(std::ifstream & fin);   // NOT IN USE
 
-    void ReadPhantomDataFile(const G4String & fname);
-    // read one of the DICOM files describing the phantom
-    // (usually one per Z slice).
-    //  Build a DicomPhantomZSliceHeader for each file
 
 
     G4Material * BuildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName);
@@ -53,6 +49,7 @@ protected:
 protected:
     const std::string   DriverFileName     = "Data.dat";
     const std::string   ConvertionFileName = "CT2Density.dat";
+    const double        densityDiff = -1.0;      // former was read from env variable "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
 
     std::string         DataDir;
     double              PhantRadius;
@@ -73,9 +70,7 @@ protected:
     int                 fNoFiles; // number of DICOM files
 
     std::vector<G4Material*> fOriginalMaterials;  // list of original materials
-    std::vector<G4Material*> fMaterials;
-    // list of new materials created to distinguish different density
-    //  voxels that have the same original materials
+    std::vector<G4Material*> fMaterials;    // list of new materials created to distinguish different density voxels that have the same original materials
 
     size_t * fMateIDs; // index of material of each voxel
     //unsigned int* fMateIDs; // index of material of each voxel
@@ -83,7 +78,7 @@ protected:
     std::map<int, double> fDensityDiffs; // Density difference to distinguish material for each original material (by index)
 
     std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders; // list of z slice headers (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged;        // z slice header resulted from merging all z slice headers
+    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr;        // z slice header resulted from merging all z slice headers
 
     int    fNVoxelX, fNVoxelY, fNVoxelZ;
     double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
@@ -97,13 +92,12 @@ protected:
     //G4IntersectionSolid * test;// =new G4IntersectionSolid("bx2CyleafTr", box2leaf, cyLeafTr);
     //bool fConstructed;
 
-    double densityDiff = -1.0; // former from "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
-
 private:
     void buildMaterials();
     void readPhantomData();
+    void readPhantomDataFile(const G4String & fname); // read one of the DICOM files describing the phantom (usually one per Z slice) and builds a corresponding DicomPhantomZSliceHeader
     void mergeZSliceHeaders();
-    void computePhantomVoxelization(); // TODO : refactor
+    void computePhantomVoxelization();
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();
 };

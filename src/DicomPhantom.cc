@@ -306,42 +306,30 @@ void PhantomDICOM::readPhantomData()
     for (int i = 0; i < fNoFiles; i++)
     {
         inStream >> fname;
-        ReadPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
+        readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
     }
 
     inStream.close();
 }
 
-void PhantomDICOM::mergeZSliceHeaders()
-{
-    //----- Images must have the same dimension ...
-    fZSliceHeaderMerged = new DicomPhantomZSliceHeader( *fZSliceHeaders[0] );
-    for (size_t ii = 1; ii < fZSliceHeaders.size(); ii++)
-        *fZSliceHeaderMerged += *fZSliceHeaders[ii];
-}
-
-void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
+void PhantomDICOM::readPhantomDataFile(const G4String & fname)
 {
     out("Reading phantom data file", fname);
     std::ifstream fin(fname.c_str(), std::ios_base::in);
     if(!fin.is_open())
     {
-        out("cannot open phantom data file", fname);
+        out("Cannot open phantom data file", fname);
         exit(10);
     }
 
-
     //----- Define density differences (maximum density difference to create a new material)
-
     //double densityDiff = -1.0;
     //char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
     //if (part) densityDiff = G4UIcommand::ConvertToDouble(part);
     if (densityDiff != -1.0)
     {
         for (size_t ii = 0; ii < fOriginalMaterials.size(); ii++)
-        {
             fDensityDiffs[ii] = densityDiff; //currently all materials with the same difference
-        }
     }
     else
     {
@@ -353,23 +341,23 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
         }
     }
 
-  //----- Read data header
-  DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader(fin);
-  fZSliceHeaders.push_back(sliceHeader);
- 
-  //----- Read material indices
-  int nVoxels = sliceHeader->GetNoVoxels();
-  
-  //--- If first slice, initiliaze fMateIDs
-  if( fZSliceHeaders.size() == 1 )
-  {
+    //----- Read data header
+    DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader(fin);
+    fZSliceHeaders.push_back(sliceHeader);
+
+    //----- Read material indices
+    int nVoxels = sliceHeader->GetNoVoxels();
+
+    //--- If first slice, initiliaze fMateIDs
+    if (fZSliceHeaders.size() == 1)
+    {
         //fMateIDs = new unsigned int[fNoFiles*nVoxels];
-        fMateIDs = new size_t[fNoFiles*nVoxels];
-  }
+        fMateIDs = new size_t[fNoFiles * nVoxels];
+    }
 
   unsigned int mateID; // number of voxels from previously read slices
 
-  int voxelCopyNo = int((fZSliceHeaders.size()-1)*nVoxels);
+  int voxelCopyNo = int( (fZSliceHeaders.size() - 1) * nVoxels);
   //int voxelInit = voxelCopyNo;
 
   for (int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++)
@@ -440,6 +428,13 @@ void PhantomDICOM::ReadPhantomDataFile(const G4String & fname)
   }
 }
 
+void PhantomDICOM::mergeZSliceHeaders()
+{
+    fZSliceHeaderMerged = new DicomPhantomZSliceHeader( *fZSliceHeaders[0] );
+    for (size_t ii = 1; ii < fZSliceHeaders.size(); ii++)
+        *fZSliceHeaderMerged += *fZSliceHeaders[ii];
+}
+
 // NOT TESTED YET
 G4Material* PhantomDICOM::BuildMaterialWithChangingDensity(const G4Material* origMate, G4float density, G4String newMateName )
 {
@@ -472,28 +467,18 @@ void PhantomDICOM::computePhantomVoxelization()
 
 void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
 {
-    G4Tubs * fContainer_solid = new G4Tubs("PhContTube", 0, PhantRadius*mm,
-                                           fNVoxelZ*fVoxelHalfDimZ*mm, 0, 360*deg);
+    G4Tubs * solid   = new G4Tubs("PhContTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
+    fContainer_logic = new G4LogicalVolume(solid, fMaterials[0], "phantomContainer", 0, 0, 0); //the material is not important, it will be fully filled by the voxels
 
-    fContainer_logic = new G4LogicalVolume(fContainer_solid,
-                           //the material is not important, it will be fully filled by the voxels
-                           fMaterials[0],
-                           "phantomContainer",
-                           0, 0, 0);
-
-    //Start position relatively to cylinder
-    // Variable to pass to parameterization
+    //Start position relatively to cylinder // Variable to pass to parameterization
     zStart = -fNVoxelZ*fVoxelHalfDimZ + fVoxelHalfDimZ;
 
-    G4ThreeVector posCentreVoxels(PosContainer[0]*mm, PosContainer[1]*mm, PosContainer[2]*mm);
+    G4ThreeVector pos(PosContainer[0]*mm, PosContainer[1]*mm, PosContainer[2]*mm);
 
-    fContainer_phys = new G4PVPlacement(nullptr,  // rotation
-                          posCentreVoxels,
-                          fContainer_logic,     // The logic volume
-                          "phantomContainer",  // Name
-                          logicWorld,  // Mother
-                          false,           // No op. bool.
-                          1);              // Copy number
+    fContainer_phys = new G4PVPlacement(nullptr, pos,                    // rotation, position
+                                        fContainer_logic, "PhContainer", // The logic volume, Name
+                                        logicWorld,                      // Mother (logical)
+                                        false, 1);                       // Many?, Copy number
 
     fContainer_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
     //fContainer_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
@@ -502,101 +487,82 @@ void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
 void PhantomDICOM::constructPhantom()
 {
     //Compute the "phantom parameterization" coordinates
-    //in order to get a circular cross section, only for one phantom slice
-    //(equal to the others)
+    //in order to get a circular cross section, only for one phantom slice (equal to the others)
 
     const int voxelsSlice = fNVoxelX * fNVoxelY;
     int xxx, yyy;
 
-        // Reduce the voxel size to "put it" inside the cylinder
-        double radius = (PhantRadius-2*fVoxelHalfDimX)/(fVoxelHalfDimX*2); // convert from milimetrs to "pixels"
-        double XC = fNVoxelX / 2.0;
-        double YC = fNVoxelY / 2.0;
+    // Reduce the voxel size to "put it" inside the cylinder
+    double radius = (PhantRadius - 2 * fVoxelHalfDimX) / (fVoxelHalfDimX * 2); // convert from millimeters to "pixels"
+    double XC = fNVoxelX / 2.0;
+    double YC = fNVoxelY / 2.0;
 
-        int hShift = 0;
-        int vShift = 0;
+    int hShift = 0;
+    int vShift = 0;
 
-        for (int inc = 0; inc < voxelsSlice; inc++)
+    for (int inc = 0; inc < voxelsSlice; inc++)
+    {
+        xxx = inc / fNVoxelX;
+        yyy = inc % fNVoxelY;
+
+        // TO DO: check the phatom position
+
+        if ( pow((xxx-XC-vShift),2) + pow((yyy-YC+hShift),2) < pow(radius,2) )
         {
-            xxx = inc / fNVoxelX;
-            yyy = inc % fNVoxelY;
-
-            // TO DO: check the phatom position
-
-            if (pow((xxx-XC-vShift),2)+pow((yyy-YC+hShift),2) < pow(radius,2))
-            {
-                BoxXY.push_back({-(hShift+yyy-YC)*fVoxelHalfDimY*2.,(-vShift+xxx-XC)*fVoxelHalfDimX*2.});
-            }
+            BoxXY.push_back( {-(hShift + yyy - YC) * fVoxelHalfDimY * 2.0, (-vShift + xxx - XC) * fVoxelHalfDimX * 2.0} );
         }
+    }
 
-        // Reduce the number of material indices to fit into the cylinder container
-        // fNoFiles -> Variable with the number of files (already declared)
-        int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
+    // Reduce the number of material indices to fit into the cylinder container
+    // fNoFiles -> Variable with the number of files (already declared)
+    const int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
+    out("Number of voxels per slice:", nVoxSlice);
 
-        out("Number of voxels per slice:", nVoxSlice);
+    reducedIDs = new size_t[nVoxSlice * fNoFiles];
+    int redVoxCpNo = 0;
 
-        reducedIDs = new size_t[nVoxSlice*fNoFiles];
-        int redVoxCpNo = 0;
+    const int totalOrigVoxels = fNVoxelX * fNVoxelY * fNVoxelZ;
 
-        int totalOrigVoxels = fNVoxelX*fNVoxelY*fNVoxelZ; //fNVoxelX/Y/Z already declared before
+    for (int voxelCopyNo = 0; voxelCopyNo < totalOrigVoxels; voxelCopyNo++)
+    {
+        const int numSlice = (int)voxelCopyNo/(int)voxelsSlice;
 
-        for (int voxelCopyNo = 0; voxelCopyNo < totalOrigVoxels; voxelCopyNo++)
+        xxx = (voxelCopyNo - (numSlice * voxelsSlice)) / fNVoxelX;
+        yyy = (voxelCopyNo - (numSlice * voxelsSlice)) % fNVoxelX;
+
+        if ( pow((xxx - XC - vShift),2) + pow((yyy - YC + hShift),2) < pow(radius,2) )
         {
-            int numSlice = (int)voxelCopyNo/(int)voxelsSlice;
-
-            xxx = (voxelCopyNo-(numSlice*voxelsSlice)) / fNVoxelX;
-            yyy = (voxelCopyNo-(numSlice*voxelsSlice)) % fNVoxelX;
-
-            if (pow((xxx-XC-vShift),2) + pow((yyy-YC+hShift),2) < pow(radius,2))
-            {
-                reducedIDs[redVoxCpNo] = fMateIDs[voxelCopyNo];
-                redVoxCpNo++;
-            }
-
+            reducedIDs[redVoxCpNo] = fMateIDs[voxelCopyNo];
+            redVoxCpNo++;
         }
+    }
 
-    //----- Create parameterisation
     DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart);
-
-    //----- Set voxel dimensions
     param->SetVoxelDimensions(fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-
     param->SetNoVoxel(fNVoxelX, fNVoxelY, fNVoxelZ);
-
-    //----- Set list of materials
     param->SetMaterials(fMaterials);
 
-    //----- Set list of material indices: for each voxel it is a number that
-    // correspond to the index of its material in the vector of materials
-    // defined above
-
+    // Set list of material indices: for each voxel it is a number that
+    // correspond to the index of its material in the vector of materials defined above
     // Passing only the IDs of the voxels "inside" the container
     param->SetMaterialIndices(reducedIDs);
 
-    //----- Define voxel logical volume
-    G4Box * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-
-    G4LogicalVolume* voxel_logic = new G4LogicalVolume(voxel_solid,fMaterials[0],"VoxelLogical",  0,0,0);
-    // material is not relevant, it will be changed by the
-    // ComputeMaterial method of the parameterisation
-
+    G4Box           * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
+    G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, fMaterials[0], "VoxelLogical",  0,0,0);
+    // material is not relevant, it will be changed by the ComputeMaterial method of the parameterisation
     voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
 
-    //--- Assign the fContainer volume of the parameterisation
-    param->BuildContainerSolid(fContainer_phys);
+    param->BuildContainerSolid(fContainer_phys); // assign the container volume of the parameterisation
 
-    //----- The G4PVParameterised object that uses the created parameterisation
-    // should be placed in the fContainer logical volume
+    // The G4PVParameterised object should be placed in the fContainer_logical volume
     G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, fContainer_logic,
                                                              kUndefined, nVoxSlice*fNoFiles, param);
 
     // if axis is set as kUndefined instead of kXAxis, GEANT4 will
-    //  do an smart voxel optimisation
-    //(not needed if G4RegularNavigation is used)
+    //  do an smart voxel optimisation (not needed if G4RegularNavigation is used)
 
-    //----- Set this physical volume as having a regular structure of type 1,
-    // so that G4RegularNavigation is used
-    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead    TODO check!
+    //----- Set this physical volume as having a regular structure of type 1, so that G4RegularNavigation is used
+    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
 }
 
 
