@@ -101,6 +101,7 @@ private:
     void computePhantomVoxelization();
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();
+    void readMaterialFile(const std::string & fileName);
 };
 
 #endif

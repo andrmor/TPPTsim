@@ -32,6 +32,8 @@ PhantomDICOM::PhantomDICOM(const std::string & dataDir, double phantRadius, cons
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
+    readMaterialFile(DataDir + '/' + "Materials.dat");
+
     DicomHandler * dcmHandler = DicomHandler::Instance();
     dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
 
@@ -569,7 +571,35 @@ void PhantomDICOM::constructPhantom()
     //  do an smart voxel optimisation (not needed if G4RegularNavigation is used)
 
     //----- Set this physical volume as having a regular structure of type 1, so that G4RegularNavigation is used
-//    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
+    //    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
+}
+
+void PhantomDICOM::readMaterialFile(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open data file with materials", fileName);
+        exit(10);
+    }
+
+    std::vector<std::pair<std::string, double>> data;
+    std::string name;
+    double density;
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+
+            std::stringstream ss(line);
+            ss >> name >> density;
+            if (ss.fail())
+            {
+                out("Unexpected format in data file with materials:", fileName);
+                exit(10);
+            }
+            data.push_back({name, density});
+    }
 }
 
 
