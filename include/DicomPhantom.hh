@@ -60,7 +60,6 @@ protected:
     std::vector<std::pair<double,double>> BoxXY;
 
     int                 BoxesPerSlice;
-    size_t            * reducedIDs;
 
     G4Material        * fAir = nullptr;
 
@@ -72,8 +71,10 @@ protected:
     std::vector<G4Material*> fOriginalMaterials;  // list of original materials
     std::vector<G4Material*> fMaterials;    // list of new materials created to distinguish different density voxels that have the same original materials
 
-    size_t * fMateIDs; // index of material of each voxel
-    //unsigned int* fMateIDs; // index of material of each voxel
+    std::vector<size_t>      MaterialIDs;        // index of material of each voxel
+
+    std::vector<size_t>      ReducedMaterialIDs; // same but for voxels inside container
+    std::vector<G4Material*> ReducedMaterials;
 
     std::map<int, double> fDensityDiffs; // Density difference to distinguish material for each original material (by index)
 

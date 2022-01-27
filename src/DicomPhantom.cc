@@ -348,14 +348,10 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
     //----- Read material indices
     int nVoxels = sliceHeader->GetNoVoxels();
 
-    //--- If first slice, initiliaze fMateIDs
-    if (fZSliceHeaders.size() == 1)
-    {
-        //fMateIDs = new unsigned int[fNoFiles*nVoxels];
-        fMateIDs = new size_t[fNoFiles * nVoxels];
-    }
+    //--- If first slice, initiliaze MaterialIDs
+    if (fZSliceHeaders.size() == 1) MaterialIDs.resize(fNoFiles * nVoxels);
 
-  unsigned int mateID; // number of voxels from previously read slices
+    size_t mateID; // number of voxels from previously read slices
 
   int voxelCopyNo = int( (fZSliceHeaders.size() - 1) * nVoxels);
   //int voxelInit = voxelCopyNo;
@@ -363,7 +359,7 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
   for (int ii = 0; ii < nVoxels; ++ii, voxelCopyNo++)
   {
       fin >> mateID;
-      fMateIDs[voxelCopyNo] = mateID;
+      MaterialIDs[voxelCopyNo] = mateID;
   }
 
 
@@ -380,7 +376,7 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
     fin >> density;
 
     //-- Get material from list of original materials
-    mateID = unsigned(fMateIDs[voxelCopyNo]);
+    mateID = MaterialIDs[voxelCopyNo];
 
     //G4cout << mateID << G4endl;
 
@@ -409,14 +405,14 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
     //-- If material is already created use index of this material
     if (im != fMaterials.size())
     {
-        fMateIDs[voxelCopyNo] = im;
+        MaterialIDs[voxelCopyNo] = im;
     }
     else // create the material
     {
         if (densityDiff != -1.0)
         {
             fMaterials.push_back( BuildMaterialWithChangingDensity(mateOrig, densityBin, newMateName) );
-            fMateIDs[voxelCopyNo] = fMaterials.size()-1;
+            MaterialIDs[voxelCopyNo] = fMaterials.size()-1;
         }
         else
         {
@@ -493,7 +489,8 @@ void PhantomDICOM::constructPhantom()
     int xxx, yyy;
 
     // Reduce the voxel size to "put it" inside the cylinder
-    double radius = (PhantRadius - 2 * fVoxelHalfDimX) / (fVoxelHalfDimX * 2); // convert from millimeters to "pixels"
+    const double radius = (PhantRadius - 2 * fVoxelHalfDimX) / (fVoxelHalfDimX * 2); // convert from millimeters to "pixels"
+    const double radius2 = radius * radius;
     double XC = fNVoxelX / 2.0;
     double YC = fNVoxelY / 2.0;
 
@@ -505,11 +502,13 @@ void PhantomDICOM::constructPhantom()
         xxx = inc / fNVoxelX;
         yyy = inc % fNVoxelY;
 
-        // TO DO: check the phatom position
+        const double x = xxx - XC - vShift;
+        const double y = yyy - YC + hShift;
 
-        if ( pow((xxx-XC-vShift),2) + pow((yyy-YC+hShift),2) < pow(radius,2) )
+        if ( x*x + y*y < radius2 )
         {
-            BoxXY.push_back( {-(hShift + yyy - YC) * fVoxelHalfDimY * 2.0, (-vShift + xxx - XC) * fVoxelHalfDimX * 2.0} );
+            //BoxXY.push_back( {-(hShift + yyy - YC) * fVoxelHalfDimY * 2.0, (-vShift + xxx - XC) * fVoxelHalfDimX * 2.0} );
+            BoxXY.push_back( {-y * fVoxelHalfDimY * 2.0, x * fVoxelHalfDimX * 2.0} );
         }
     }
 
@@ -518,7 +517,8 @@ void PhantomDICOM::constructPhantom()
     const int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
     out("Number of voxels per slice:", nVoxSlice);
 
-    reducedIDs = new size_t[nVoxSlice * fNoFiles];
+    ReducedMaterialIDs.resize(nVoxSlice * fNoFiles); // no need?
+    ReducedMaterials.resize(nVoxSlice * fNoFiles);
     int redVoxCpNo = 0;
 
     const int totalOrigVoxels = fNVoxelX * fNVoxelY * fNVoxelZ;
@@ -532,7 +532,8 @@ void PhantomDICOM::constructPhantom()
 
         if ( pow((xxx - XC - vShift),2) + pow((yyy - YC + hShift),2) < pow(radius,2) )
         {
-            reducedIDs[redVoxCpNo] = fMateIDs[voxelCopyNo];
+            ReducedMaterialIDs[redVoxCpNo] = MaterialIDs[voxelCopyNo];
+            ReducedMaterials[redVoxCpNo] = fMaterials[ MaterialIDs[voxelCopyNo] ];
             redVoxCpNo++;
         }
     }
@@ -542,10 +543,8 @@ void PhantomDICOM::constructPhantom()
     new G4PVParameterised("DicomPhant", logicBox, logicCyl, kUndefined, 317*10, param);
     */
 
-    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart);
+    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart, ReducedMaterials, "/home/andr/WORK/TPPT/ColourMap.dat");
     param->SetVoxelDimensions(fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-    param->SetAir(fMaterials[1]);
-    param->SetAir1(fMaterials[2]);
 //    param->SetNoVoxel(fNVoxelX, fNVoxelY, fNVoxelZ);
 //    param->SetMaterials(fMaterials);
 
