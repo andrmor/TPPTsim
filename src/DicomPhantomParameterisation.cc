@@ -45,14 +45,14 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<std::pair<double,double>> coord2D, double zStart)
-    :G4PhantomParameterisation(), XY(coord2D), ZStart(zStart)
+//    :G4PhantomParameterisation(), XY(coord2D), ZStart(zStart)
+    : G4VPVParameterisation(), XY(coord2D), ZStart(zStart)
 {
-        G4cout << "Placing phantom container volume at " << ZStart<< G4endl;
-    SessionManager & SM = SessionManager::getInstance();
-
-    G4String colourFile = SM.WorkingDirectory+"/ColourMap.dat";
-    ReadColourData(colourFile);
-    SetSkipEqualMaterials(false);
+//        G4cout << "Placing phantom container volume at " << ZStart<< G4endl;
+//    SessionManager & SM = SessionManager::getInstance();
+//    G4String colourFile = SM.WorkingDirectory+"/ColourMap.dat";
+//    ReadColourData(colourFile);
+//    SetSkipEqualMaterials(false);
 
 }
 
@@ -90,13 +90,14 @@ void DicomPhantomParameterisation::ReadColourData(G4String colourFile)
 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4Material* DicomPhantomParameterisation::
 ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * physVol,
                 const G4VTouchable *)
 {
+    return air1;
 
-
+    //return (copyNo % 3 == 0 ? air : air1);
+/*
     G4Material* mate = G4PhantomParameterisation::ComputeMaterial(
         copyNo, physVol, 0 );
 
@@ -146,22 +147,22 @@ ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * physVol,
     }
 
     return mate;
+    */
 }
 
-
+#include "out.hh"
 void DicomPhantomParameterisation::ComputeTransformation(const int copyNo, G4VPhysicalVolume * physVol) const
 {
-
-    G4double HalfVoxelZ = GetVoxelHalfZ();
+    out("<--in");
+//    G4double HalfVoxelZ = GetVoxelHalfZ();
     int BoxesPerSlice = XY.size();
 
-    double Z = ZStart + std::ceil(copyNo/BoxesPerSlice) * 2.*HalfVoxelZ;
+    double Z = ZStart + std::ceil(copyNo/BoxesPerSlice) * 2.0*HalfVoxelZ;
     int numInSlice = copyNo % BoxesPerSlice;
     const std::pair<double, double> & XYpair = XY[numInSlice];
 
     G4ThreeVector origin(XYpair.first, XYpair.second, Z);
-
     physVol->SetTranslation(origin);
     physVol->SetRotation(nullptr);
-
+    out("-->out", XYpair.first, XYpair.second, Z);
 }

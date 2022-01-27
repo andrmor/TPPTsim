@@ -67,6 +67,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomNone;
         //SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
+        //SM.PhantomMode      = new PhantomParam();
         SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", 155.0, {0,0,0}, true);
         //SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
         //SM.PhantomMode      = new PhantomEspana();
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
         //SM.SourceMode       = new PencilBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
         //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 194.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PMMA-E2
-        SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 0, 12.3*mm}, {1.0,0,0});
+        SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {0, 200, 0.1}, {0,-1.0,0});
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new ExponentialTime(0, 2.034*60.0*s), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "/home/andr/WORK/TPPT/der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);

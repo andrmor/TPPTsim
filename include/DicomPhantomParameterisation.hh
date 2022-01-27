@@ -40,7 +40,7 @@ class G4VisAttributes;
 class DicomPhantomZSliceHeader;
 
 
-class DicomPhantomParameterisation : public G4PhantomParameterisation
+class DicomPhantomParameterisation : public G4VPVParameterisation //G4PhantomParameterisation
 {
 public:
     typedef std::map<G4String,G4VisAttributes*> ColourMap_t;
@@ -62,6 +62,12 @@ public:  // with description
     const ColourMap_t& GetColourMap() const { return fColours; }
     ColourMap_t& GetColourMap() { return fColours; }
 
+    // ANDR
+    void SetVoxelDimensions(double DX, double DY, double DZ) {HalfVoxelX = DX; HalfVoxelY = DY; HalfVoxelZ = DZ;}
+    void SetAir(G4Material * mat) {air = mat;}
+    void SetAir1(G4Material * mat) {air1 = mat;}
+    // ----
+
 protected:
     std::vector<std::pair<double,double>> XY;
     double ZStart;
@@ -75,6 +81,14 @@ private:
 
     DicomPhantomZSliceHeader* ZSliceHeader;
     //G4int control;
+
+    //ANDR
+    double HalfVoxelX;
+    double HalfVoxelY;
+    double HalfVoxelZ;
+    G4Material * air;
+    G4Material * air1;
+    //----
 
 };
 

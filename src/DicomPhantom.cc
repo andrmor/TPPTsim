@@ -537,22 +537,30 @@ void PhantomDICOM::constructPhantom()
         }
     }
 
+    /*
+    G4VPVParameterisation * param = new TestParameterisation({10.0*mm, 10.0*mm, 10.0*mm}, 100.0*mm, -50.0*mm);
+    new G4PVParameterised("DicomPhant", logicBox, logicCyl, kUndefined, 317*10, param);
+    */
+
     DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart);
     param->SetVoxelDimensions(fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-    param->SetNoVoxel(fNVoxelX, fNVoxelY, fNVoxelZ);
-    param->SetMaterials(fMaterials);
+    param->SetAir(fMaterials[1]);
+    param->SetAir1(fMaterials[2]);
+//    param->SetNoVoxel(fNVoxelX, fNVoxelY, fNVoxelZ);
+//    param->SetMaterials(fMaterials);
 
     // Set list of material indices: for each voxel it is a number that
     // correspond to the index of its material in the vector of materials defined above
     // Passing only the IDs of the voxels "inside" the container
-    param->SetMaterialIndices(reducedIDs);
+//    param->SetMaterialIndices(reducedIDs);
 
     G4Box           * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, fMaterials[0], "VoxelLogical",  0,0,0);
     // material is not relevant, it will be changed by the ComputeMaterial method of the parameterisation
-    voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
+//    voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
+    voxel_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 
-    param->BuildContainerSolid(fContainer_phys); // assign the container volume of the parameterisation
+//    param->BuildContainerSolid(fContainer_phys); // assign the container volume of the parameterisation
 
     // The G4PVParameterised object should be placed in the fContainer_logical volume
     G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, fContainer_logic,
@@ -562,7 +570,7 @@ void PhantomDICOM::constructPhantom()
     //  do an smart voxel optimisation (not needed if G4RegularNavigation is used)
 
     //----- Set this physical volume as having a regular structure of type 1, so that G4RegularNavigation is used
-    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
+//    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
 }
 
 
