@@ -2,11 +2,11 @@
 #include "DicomPhantomParameterisation.hh"
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomHandler.hh"
+#include "DicomPhantomZSliceHeader.hh"
 #include "jstools.hh"
 #include "out.hh"
 
 #include "G4NistManager.hh"
-#include "globals.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
@@ -27,23 +27,23 @@
 #include <cmath>
 #include <algorithm>
 
-PhantomDICOM::PhantomDICOM(const std::string & dataDir, double phantRadius, const std::vector<double> & posContainer,  bool recreateFiles) :
-    DataDir(dataDir), PhantRadius(phantRadius), PosContainer(posContainer), bRecreateFiles(recreateFiles) {}
+PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo,
+                           int lateralCompression, double containerRadius, const std::vector<double> & posInContainer) :
+                           DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
+                           LateralCompression(lateralCompression),
+                           PhantRadius(containerRadius), PosContainer(posInContainer)
+{
+    ContainerInvisible = true;
+}
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
-    if (true)//bRecreateFiles)
-    {
-        std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
-        system(cmd.data());
-    }
+    // clear old g4dcm files in the phantom directory - if compression changes, they are invalid!
+    // we can consider saving compression factor in a file in the same directory not to force-rebuild existent files
+    std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
+    system(cmd.data());
 
     readMaterialFile(DataDir + '/' + "Materials.dat");
-
-    SliceFileBase = "headCT_";
-    SliceFrom = 84;
-    SliceTo = 252;
-    LateralCompression = 16;
 
     generateSliceFileNames();
 
@@ -145,10 +145,10 @@ void PhantomDICOM::buildMaterials()
 
     // Air
     density = 0.00121*g/cm3;  numberofElements = 3;
-    fAir = new G4Material("Air", density, numberofElements);
-    fAir->AddElement(elN, 75.5*perCent);
-    fAir->AddElement(elO, 23.3*perCent);
-    fAir->AddElement(elAr, 1.3*perCent);
+    AirMat = new G4Material("Air", density, numberofElements);
+    AirMat->AddElement(elN, 75.5*perCent);
+    AirMat->AddElement(elO, 23.3*perCent);
+    AirMat->AddElement(elAr, 1.3*perCent);
 
     // Lung
     density = 0.500*g/cm3; numberofElements = 9;
@@ -284,7 +284,7 @@ void PhantomDICOM::buildMaterials()
     G4Material* iiron = new G4Material ("IIron", density, numberofElements);
     iiron->AddElement(elFe, 100.0*perCent);
 
-    fOriginalMaterials.push_back(fAir);           // 0.00129 g/cm3
+    fOriginalMaterials.push_back(AirMat);           // 0.00129 g/cm3
     fOriginalMaterials.push_back(lung);           // 0.50 g/cm3
     fOriginalMaterials.push_back(adiposeTissue);  // 0.95 g/cm3
     fOriginalMaterials.push_back(muscle);         // 1.05 g/cm3
@@ -301,28 +301,6 @@ void PhantomDICOM::buildMaterials()
 
 void PhantomDICOM::readPhantomData()
 {
-     /*
-    const std::string dataFile = DataDir + '/' + DriverFileName;
-    std::ifstream inStream(dataFile);
-    if (!inStream.good())
-    {
-        out("PhantomDICOM: Cannot read driver file:", dataFile);
-        exit(10);
-    }
-
-    int compression;
-    inStream >> compression; // not used here
-    inStream >> fNoFiles;
-
-    std::string fname;
-    for (int i = 0; i < fNoFiles; i++)
-    {
-        inStream >> fname;
-        readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
-    }
-    inStream.close();
-     */
-
     fNoFiles = SliceFiles.size();
     for (const auto & fname : SliceFiles)
         readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
@@ -332,7 +310,7 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
 {
     out("Reading phantom data file", fname);
     std::ifstream fin(fname.c_str(), std::ios_base::in);
-    if(!fin.is_open())
+    if (!fin.is_open())
     {
         out("Cannot open phantom data file", fname);
         exit(10);
@@ -427,7 +405,7 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
     {
         if (densityDiff != -1.0)
         {
-            fMaterials.push_back( BuildMaterialWithChangingDensity(mateOrig, densityBin, newMateName) );
+            fMaterials.push_back( buildMaterialWithChangingDensity(mateOrig, densityBin, newMateName) );
             MaterialIDs[voxelCopyNo] = fMaterials.size()-1;
         }
         else
@@ -447,25 +425,6 @@ void PhantomDICOM::mergeZSliceHeaders()
         *fZSliceHeaderMerged += *fZSliceHeaders[ii];
 }
 
-// NOT TESTED YET
-G4Material* PhantomDICOM::BuildMaterialWithChangingDensity(const G4Material* origMate, G4float density, G4String newMateName )
-{
-  //----- Copy original material, but with new density
-  G4int nelem = G4int(origMate->GetNumberOfElements());
-  G4Material* mate = new G4Material( newMateName, density*g/cm3, nelem,
-                                     kStateUndefined, STP_Temperature );
-  
-
-  for( G4int ii = 0; ii < nelem; ++ii )
-  {
-    G4double frac = origMate->GetFractionVector()[ii];
-    G4Element* elem = const_cast<G4Element*>(origMate->GetElement(ii));
-    mate->AddElement( elem, frac );
-  }
-  
-  return mate;
-}
-
 void PhantomDICOM::computePhantomVoxelization()
 {
     fNVoxelX = fZSliceHeaderMerged->GetNoVoxelX();
@@ -480,20 +439,17 @@ void PhantomDICOM::computePhantomVoxelization()
 void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
 {
     G4Tubs * solid   = new G4Tubs("PhContTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
-    fContainer_logic = new G4LogicalVolume(solid, fMaterials[0], "phantomContainer", 0, 0, 0); //the material is not important, it will be fully filled by the voxels
+    fContainer_logic = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
-    //Start position relatively to cylinder // Variable to pass to parameterization
-    zStart = -fNVoxelZ*fVoxelHalfDimZ + fVoxelHalfDimZ;
+    //Start position relatively to the container, will be passed to the parameterization
+    zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
 
     G4ThreeVector pos(PosContainer[0]*mm, PosContainer[1]*mm, PosContainer[2]*mm);
 
-    fContainer_phys = new G4PVPlacement(nullptr, pos,                    // rotation, position
-                                        fContainer_logic, "PhContainer", // The logic volume, Name
-                                        logicWorld,                      // Mother (logical)
-                                        false, 1);                       // Many?, Copy number
+    fContainer_phys = new G4PVPlacement(nullptr, pos, fContainer_logic, "PhCont", logicWorld, false, 1);
 
-    fContainer_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
-    //fContainer_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
+    if (ContainerInvisible) fContainer_logic->SetVisAttributes(G4VisAttributes::Invisible);
+    else                    fContainer_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 }
 
 void PhantomDICOM::constructPhantom()
@@ -631,6 +587,25 @@ void PhantomDICOM::generateSliceFileNames()
     }
 }
 
+
+// NOT TESTED YET
+G4Material* PhantomDICOM::buildMaterialWithChangingDensity(const G4Material* origMate, G4float density, G4String newMateName )
+{
+  //----- Copy original material, but with new density
+  G4int nelem = G4int(origMate->GetNumberOfElements());
+  G4Material* mate = new G4Material( newMateName, density*g/cm3, nelem,
+                                     kStateUndefined, STP_Temperature );
+
+
+  for( G4int ii = 0; ii < nelem; ++ii )
+  {
+    G4double frac = origMate->GetFractionVector()[ii];
+    G4Element* elem = const_cast<G4Element*>(origMate->GetElement(ii));
+    mate->AddElement( elem, frac );
+  }
+
+  return mate;
+}
 
 // ----------------------- NOT IN USE -------------------------
 
