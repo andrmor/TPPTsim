@@ -40,11 +40,14 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 
     readMaterialFile(DataDir + '/' + "Materials.dat");
 
-    DicomHandler * dcmHandler = DicomHandler::Instance();
+    SliceFileBase = "headCT_";
+    SliceFrom = 84;
+    SliceTo = 252;
+    LateralCompression = 16;
 
-    //SliceFiles = {"headCT_151", "headCT_152", "headCT_153", "headCT_154", "headCT_155", "headCT_156", "headCT_157", "headCT_158"};
-    SliceFiles = {"headCT_084", "headCT_085", "headCT_086", "headCT_087", "headCT_088", "headCT_089", "headCT_090", "headCT_091"};
-    LateralCompression = 8;
+    generateSliceFileNames();
+
+    DicomHandler * dcmHandler = DicomHandler::Instance();
     dcmHandler->configure(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
 
     //dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
@@ -611,6 +614,20 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
         }
         out(name, density);
         MatUpperDens.push_back({name, density});
+    }
+}
+
+void PhantomDICOM::generateSliceFileNames()
+{
+    SliceFiles.clear();
+
+    for (int iSlice = SliceFrom; iSlice < SliceTo; iSlice++)
+    {
+        std::string numStr = std::to_string(iSlice);
+        if      (numStr.size() == 1) numStr = "00" + numStr;
+        else if (numStr.size() == 2) numStr = "0" + numStr;
+        std::string name = SliceFileBase + numStr;
+        SliceFiles.push_back(name);
     }
 }
 

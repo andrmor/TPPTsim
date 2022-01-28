@@ -57,6 +57,15 @@ G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G
 //        std::string::size_type iuu = matName.find("__");
 //        if (iuu != std::string::npos) matName = matName.substr(0, iuu);
 
+
+        if (matName == "Air")
+        {
+            physVol->GetLogicalVolume()->SetVisAttributes(G4VisAttributes::Invisible);
+            return mat;
+        }
+
+
+
         auto it = fColours.find(matName);
         if (it != fColours.end())
             physVol->GetLogicalVolume()->SetVisAttributes(it->second);

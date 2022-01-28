@@ -95,8 +95,9 @@ protected:
 
     std::vector<std::pair<std::string, float>> MatUpperDens;
     int LateralMergeFactor;
-    std::string SliceNameFrom;
-    std::string SliceNameTo;
+    std::string SliceFileBase;
+    int SliceFrom;
+    int SliceTo;
 
 private:
     void buildMaterials();
@@ -107,6 +108,7 @@ private:
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();
     void readMaterialFile(const std::string & fileName);
+    void generateSliceFileNames();
 };
 
 #endif
