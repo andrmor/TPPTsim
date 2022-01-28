@@ -70,38 +70,29 @@ class DicomPhantomZSliceMerged;
 class DicomHandler
 {
 public:
+    static DicomHandler & getInstance();
+
+private:
+    DicomHandler();
     ~DicomHandler();
-    
-    // static accessor
-    static DicomHandler* Instance(); // ANDR remove, not needed to be singleton
-    
+
+public:
     void configure(const G4String & path, const G4String & convertionFileName, int lateralCompression,
                    const std::vector<std::pair<std::string, float> > & materialUpperDens,
                    const std::vector<std::string> & sliceFiles);
 
     void setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName);
-
-    G4int ReadFile(FILE *, const char *);
-    G4int ReadData(FILE *); // note: always use readHeader
-    // before readData
-    
-    // use ImageMagick to display the image
-    //G4int displayImage(char[500]);
-    
     void CheckFileFormat();
 
 private:
-    DicomHandler();
-    
     template <class Type> void GetValue(char *, Type &);
     
-private:
-    static DicomHandler* fInstance;
- 
     const G4int DATABUFFSIZE;
     const G4int LINEBUFFSIZE;
     const G4int FILENAMESIZE;
     
+    G4int ReadFile(FILE *, const char *);
+    G4int ReadData(FILE *);
     void ReadCalibration();
     void GetInformation(G4int &, char *);
     G4float Pixel2density(G4int pixel);
@@ -140,7 +131,6 @@ private:
     G4String driverPath;
     G4String fDriverFile;
     G4String fCt2DensityFile;
-
 };
-#endif
 
+#endif

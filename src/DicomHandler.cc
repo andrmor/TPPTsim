@@ -62,20 +62,10 @@
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomPhantomZSliceMerged.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-DicomHandler* DicomHandler::fInstance = 0;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-DicomHandler* DicomHandler::Instance()
+DicomHandler & DicomHandler::getInstance()
 {
-  if (fInstance == 0)
-  {
-    static DicomHandler dicomhandler;
-    fInstance = &dicomhandler;
-  }
-  return fInstance;
+    static DicomHandler instance;
+    return instance;
 }
 
 void DicomHandler::setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName)
@@ -102,8 +92,7 @@ DicomHandler::DicomHandler()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DicomHandler::~DicomHandler()
-{}
+DicomHandler::~DicomHandler(){}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

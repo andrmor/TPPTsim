@@ -47,11 +47,11 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 
     generateSliceFileNames();
 
-    DicomHandler * dcmHandler = DicomHandler::Instance();
-    dcmHandler->configure(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
+    DicomHandler & dcmHandler = DicomHandler::getInstance();
+    dcmHandler.configure(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
 
-    //dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
-    //dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if at least one does not exist, (re)create them
+    //dcmHandler.setDriver(DataDir, DriverFileName, ConvertionFileName);
+    //dcmHandler.CheckFileFormat(); // Look for .g4dcm files: if at least one does not exist, (re)create them
 
     buildMaterials();
     readPhantomData();
