@@ -48,8 +48,6 @@ void DicomPhantomParameterisation::ReadColourData(G4String colourFile)
 #include "out.hh"
 G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * physVol, const G4VTouchable *)
 {
-    //return (copyNo % 3 == 0 ? air : air1);
-
     //G4Material* mate = G4PhantomParameterisation::ComputeMaterial(copyNo, physVol, 0);
     G4Material * mat = Materials[copyNo];
 

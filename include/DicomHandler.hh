@@ -47,6 +47,7 @@
 #include <cstdio>
 #include <map>
 #include <fstream>
+#include <vector>
 
 #include "globals.hh"
 
@@ -72,11 +73,15 @@ public:
     ~DicomHandler();
     
     // static accessor
-    static DicomHandler* Instance();
+    static DicomHandler* Instance(); // ANDR remove, not needed to be singleton
     
+    void configure(const G4String & path, const G4String & convertionFileName, int lateralCompression,
+                   const std::vector<std::pair<std::string, float> > & materialUpperDens,
+                   const std::vector<std::string> & sliceFiles);
+
     void setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName);
 
-    G4int ReadFile(FILE *,char *);
+    G4int ReadFile(FILE *, const char *);
     G4int ReadData(FILE *); // note: always use readHeader
     // before readData
     
@@ -127,10 +132,10 @@ private:
     std::map<G4float,G4String> fMaterialIndices;
     
     G4int fNbrequali;
-    G4double* fValueDensity;
-    G4double* fValueCT;
+    G4double * fValueDensity = nullptr;
+    G4double * fValueCT = nullptr;
     G4bool fReadCalibration;
-    DicomPhantomZSliceMerged* fMergedSlices;
+    DicomPhantomZSliceMerged * fMergedSlices = nullptr;
 
     G4String driverPath;
     G4String fDriverFile;

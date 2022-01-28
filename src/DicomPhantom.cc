@@ -32,17 +32,23 @@ PhantomDICOM::PhantomDICOM(const std::string & dataDir, double phantRadius, cons
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
-    readMaterialFile(DataDir + '/' + "Materials.dat");
-
-    DicomHandler * dcmHandler = DicomHandler::Instance();
-    dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
-
-    if (bRecreateFiles)
+    if (true)//bRecreateFiles)
     {
         std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
         system(cmd.data());
     }
-    dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if at least one does not exist, (re)create them
+
+    readMaterialFile(DataDir + '/' + "Materials.dat");
+
+    DicomHandler * dcmHandler = DicomHandler::Instance();
+
+    //SliceFiles = {"headCT_151", "headCT_152", "headCT_153", "headCT_154", "headCT_155", "headCT_156", "headCT_157", "headCT_158"};
+    SliceFiles = {"headCT_084", "headCT_085", "headCT_086", "headCT_087", "headCT_088", "headCT_089", "headCT_090", "headCT_091"};
+    LateralCompression = 8;
+    dcmHandler->configure(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
+
+    //dcmHandler->setDriver(DataDir, DriverFileName, ConvertionFileName);
+    //dcmHandler->CheckFileFormat(); // Look for .g4dcm files: if at least one does not exist, (re)create them
 
     buildMaterials();
     readPhantomData();
@@ -292,6 +298,7 @@ void PhantomDICOM::buildMaterials()
 
 void PhantomDICOM::readPhantomData()
 {
+     /*
     const std::string dataFile = DataDir + '/' + DriverFileName;
     std::ifstream inStream(dataFile);
     if (!inStream.good())
@@ -310,8 +317,12 @@ void PhantomDICOM::readPhantomData()
         inStream >> fname;
         readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
     }
-
     inStream.close();
+     */
+
+    fNoFiles = SliceFiles.size();
+    for (const auto & fname : SliceFiles)
+        readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
 }
 
 void PhantomDICOM::readPhantomDataFile(const G4String & fname)
@@ -583,22 +594,23 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
         exit(10);
     }
 
-    std::vector<std::pair<std::string, double>> data;
+    out("Reading materials and the corresponding upper densities:");
     std::string name;
-    double density;
+    float density;
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue; //allow empty lines
 
-            std::stringstream ss(line);
-            ss >> name >> density;
-            if (ss.fail())
-            {
-                out("Unexpected format in data file with materials:", fileName);
-                exit(10);
-            }
-            data.push_back({name, density});
+        std::stringstream ss(line);
+        ss >> name >> density;
+        if (ss.fail())
+        {
+            out("Unexpected format in data file with materials:", fileName);
+            exit(10);
+        }
+        out(name, density);
+        MatUpperDens.push_back({name, density});
     }
 }
 

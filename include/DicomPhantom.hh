@@ -39,17 +39,17 @@ protected:
     // read the DICOM files describing the phantom
     //void ReadVoxelDensities(std::ifstream & fin);   // NOT IN USE
 
-
-
     G4Material * BuildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName);
-    // build a new material if the density of the voxel is different
-    // to the other voxels
+    // build a new material if the density of the voxel is different to the other voxels
 
 
 protected:
     const std::string   DriverFileName     = "Data.dat";
     const std::string   ConvertionFileName = "CT2Density.dat";
     const double        densityDiff = -1.0;      // former was read from env variable "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
+
+    std::vector<std::string> SliceFiles;
+    int                      LateralCompression;
 
     std::string         DataDir;
     double              PhantRadius;
@@ -92,6 +92,11 @@ protected:
     //std::set<G4LogicalVolume*> fScorers;
     //G4IntersectionSolid * test;// =new G4IntersectionSolid("bx2CyleafTr", box2leaf, cyLeafTr);
     //bool fConstructed;
+
+    std::vector<std::pair<std::string, float>> MatUpperDens;
+    int LateralMergeFactor;
+    std::string SliceNameFrom;
+    std::string SliceNameTo;
 
 private:
     void buildMaterials();

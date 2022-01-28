@@ -50,7 +50,7 @@
 ///        - Transforming pixel to density and creating *.g4dcm
 ///          files
 //*******************************************************
-
+#include "out.hh"
 #include "globals.hh"
 #include "G4ios.hh"
 #include <fstream>
@@ -107,7 +107,7 @@ DicomHandler::~DicomHandler()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int DicomHandler::ReadFile(FILE* dicom, char* filename2)
+G4int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
 {
     G4cout << " ReadFile " << filename2 << G4endl;
 
@@ -490,7 +490,6 @@ void DicomHandler::StoreData(DicomPhantomZSliceHeader* dcmPZSH)
     dcmPZSH->FlipData();
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo..
 void DicomHandler::ReadMaterialIndices( std::ifstream& finData)
 {
@@ -506,7 +505,6 @@ void DicomHandler::ReadMaterialIndices( std::ifstream& finData)
     finData >> mateName >> densityMax;
     fMaterialIndices[densityMax] = mateName;
   }
-  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -641,7 +639,33 @@ G4float DicomHandler::Pixel2density(G4int pixel)
   return density;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void DicomHandler::configure(const G4String & path, const G4String & convertionFileName, int lateralCompression,
+                             const std::vector<std::pair<std::string, float> > & materialUpperDens,
+                             const std::vector<std::string> & sliceFiles)
+{
+    driverPath = path;
+    fCt2DensityFile = driverPath + '/' + convertionFileName;
+
+    fCompression = lateralCompression;
+    fNFiles = sliceFiles.size();
+
+    for (const auto & r : materialUpperDens) fMaterialIndices[r.second] = r.first;
+
+    for (const auto & fn : sliceFiles)
+    {
+        std::string name = driverPath + '/' + fn + ".dcm";
+        FILE * dicom = std::fopen(name.data(), "rb");
+        if (dicom) ReadFile(dicom, fn.data());
+        else
+        {
+            G4cout << "\nError opening file : " << name << G4endl;
+            exit(10);
+        }
+        std::fclose(dicom);
+    }
+
+    fMergedSlices->CheckSlices(); // Checks the spacing is correct. Dumps to files
+}
 
 void DicomHandler::CheckFileFormat()
 {
@@ -657,10 +681,10 @@ void DicomHandler::CheckFileFormat()
 
   char * oneLine = new char[128];
   
-  if(!(checkData.is_open())) { //Check existance of Data.dat
+  if(!(checkData.is_open()))
+  { //Check existance of Data.dat
     
-    G4String message = 
-      "\nDicomG4 needs Data.dat (or another driver file specified";
+    G4String message = "\nDicomG4 needs Data.dat (or another driver file specified";
     message += " in command line):\n";
     message += "\tFirst line: number of image pixel for a voxel (G4Box)\n";
     message += "\tSecond line: number of images (CT slices) to read\n";
@@ -742,7 +766,8 @@ void DicomHandler::CheckFileFormat()
       // Reading the .dcm in two steps:
       //      1.  reading the header
       //      2. reading the pixel data and store the density in Moyenne.dat
-      if( dicom != 0 ) {
+      if( dicom != 0 )
+      {
         ReadFile(dicom,inputFile);
       } else {
         G4cout << "\nError opening file : " << name << G4endl;
