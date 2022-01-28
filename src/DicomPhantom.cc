@@ -44,6 +44,7 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
     system(cmd.data());
 
     readMaterialFile(DataDir + '/' + "Materials.dat");
+    readColorMap(DataDir + '/' + "ColorMap.dat");
 
     generateSliceFileNames();
 
@@ -485,7 +486,6 @@ void PhantomDICOM::constructPhantom()
     }
 
     // Reduce the number of material indices to fit into the cylinder container
-    // fNoFiles -> Variable with the number of files (already declared)
     const int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
     out("Number of voxels per slice:", nVoxSlice);
 
@@ -510,38 +510,14 @@ void PhantomDICOM::constructPhantom()
         }
     }
 
-    /*
-    G4VPVParameterisation * param = new TestParameterisation({10.0*mm, 10.0*mm, 10.0*mm}, 100.0*mm, -50.0*mm);
-    new G4PVParameterised("DicomPhant", logicBox, logicCyl, kUndefined, 317*10, param);
-    */
-
-    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart, ReducedMaterials, "/home/andr/WORK/TPPT/ColourMap.dat");
-    param->SetVoxelDimensions(fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-//    param->SetNoVoxel(fNVoxelX, fNVoxelY, fNVoxelZ);
-//    param->SetMaterials(fMaterials);
-
-    // Set list of material indices: for each voxel it is a number that
-    // correspond to the index of its material in the vector of materials defined above
-    // Passing only the IDs of the voxels "inside" the container
-//    param->SetMaterialIndices(reducedIDs);
-
     G4Box           * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, fMaterials[0], "VoxelLogical",  0,0,0);
     // material is not relevant, it will be changed by the ComputeMaterial method of the parameterisation
-//    voxel_logic->SetVisAttributes(new G4VisAttributes(G4VisAttributes::GetInvisible()));
     voxel_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 
-//    param->BuildContainerSolid(fContainer_phys); // assign the container volume of the parameterisation
-
-    // The G4PVParameterised object should be placed in the fContainer_logical volume
-    G4PVParameterised * phantom_phys = new G4PVParameterised("phantom", voxel_logic, fContainer_logic,
-                                                             kUndefined, nVoxSlice*fNoFiles, param);
-
-    // if axis is set as kUndefined instead of kXAxis, GEANT4 will
-    //  do an smart voxel optimisation (not needed if G4RegularNavigation is used)
-
-    //----- Set this physical volume as having a regular structure of type 1, so that G4RegularNavigation is used
-    //    phantom_phys->SetRegularStructureId(1); // if not set, G4VoxelNavigation will be used instead         --> TODO check!
+    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart, ReducedMaterials, ColourMap);
+    param->setVoxelHalfSizeZ(fVoxelHalfDimZ);
+    new G4PVParameterised("phantom", voxel_logic, fContainer_logic, kUndefined, nVoxSlice*fNoFiles, param);
 }
 
 void PhantomDICOM::readMaterialFile(const std::string & fileName)
@@ -570,6 +546,39 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
         }
         out(name, density);
         MatUpperDens.push_back({name, density});
+    }
+}
+
+void PhantomDICOM::readColorMap(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open color map file", fileName);
+        exit(10);
+    }
+
+    out("Reading color map");
+    G4String name;
+    double red, green, blue, opacity;
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue;   //allow empty lines
+        if (line[0] == '#') continue; //comment
+
+        std::stringstream ss(line);
+        ss >> name >> red >> green >> blue >> opacity;
+        if (ss.fail())
+        {
+            out("Unexpected format in color map data file:", fileName);
+            exit(10);
+        }
+        out(name, red, green, blue, opacity);
+        G4Colour colour(red, green, blue, opacity);
+        G4VisAttributes * visAtt = new G4VisAttributes(colour);
+        visAtt->SetVisibility(opacity != 0);
+        ColourMap[name] = visAtt;
     }
 }
 

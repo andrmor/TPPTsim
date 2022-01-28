@@ -15,6 +15,7 @@ class G4Material;
 class G4LogicalVolume;
 class DicomPhantomZSliceHeader;
 class G4VPhysicalVolume;
+class G4VisAttributes;
 
 class PhantomDICOM : public PhantomModeBase
 {
@@ -42,6 +43,7 @@ protected:
 
     bool                     ContainerInvisible = true;
     std::vector<std::pair<std::string, float>> MatUpperDens;
+    std::map<G4String, G4VisAttributes*> ColourMap;
     std::vector<std::string> SliceFiles;
     double                   zStart;
     std::vector<std::pair<double,double>> BoxXY;
@@ -87,6 +89,7 @@ private:
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();
     void readMaterialFile(const std::string & fileName);
+    void readColorMap(const std::string & fileName);
     void generateSliceFileNames();
 
     G4Material * buildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName); // build a new material if the density of the voxel is different to the other voxels
