@@ -84,17 +84,17 @@ private:
     const G4int LINEBUFFSIZE = 5020;
     const G4int FILENAMESIZE = 512;
     
-    G4int ReadFile(FILE *, const char *);
-    G4int ReadData(FILE *);
-    void ReadCalibration();
-    void GetInformation(G4int &, char *);
-    G4float Pixel2density(G4int pixel);
-    void ReadMaterialIndices( std::ifstream& finData);
+    int   ReadFile(FILE *, const char *);
+    int   ReadData(FILE *);
+    void  ReadCalibration();
+    void  GetInformation(G4int &, char *);
+    float Pixel2density(G4int pixel);
+    void  ReadMaterialIndices( std::ifstream& finData);
     unsigned int GetMaterialIndex( G4float density );
-    void StoreData(DicomPhantomZSliceHeader* dcmPZSH);
-    G4int read_defined_nested(FILE *, G4int);
-    void read_undefined_nested(FILE *);
-    void read_undefined_item(FILE *);
+    void  StoreData(DicomPhantomZSliceHeader* dcmPZSH);
+    int   read_defined_nested(FILE *, G4int);
+    void  read_undefined_nested(FILE *);
+    void  read_undefined_item(FILE *);
 
     short fCompression = 0;
     G4int fNFiles = 0;
@@ -116,14 +116,15 @@ private:
     G4bool fImplicitEndian = false;
     short fPixelRepresentation = 0;
     
-    G4int** fTab;
+    //G4int** fTab;  // TODO refactor - not deleted!
+    std::vector<std::vector<int>> fTab;
     std::map<G4float,G4String> fMaterialIndices;
     
     G4int fNbrequali = 0;
-    G4double * fValueDensity = nullptr;
-    G4double * fValueCT = nullptr;
+    G4double * fValueDensity = nullptr; // ok
+    G4double * fValueCT = nullptr;      // ok
     G4bool fReadCalibration = false;
-    DicomPhantomZSliceMerged * fMergedSlices = nullptr;
+    DicomPhantomZSliceMerged * fMergedSlices = nullptr;  // ok
 
     G4String driverPath;
     G4String fCt2DensityFile;

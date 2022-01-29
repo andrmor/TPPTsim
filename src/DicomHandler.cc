@@ -66,7 +66,7 @@ DicomHandler::DicomHandler() : fMergedSlices(new DicomPhantomZSliceMerged()){}
 
 DicomHandler::~DicomHandler(){}
 
-G4int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
+int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
 {
     G4cout << " ReadFile " << filename2 << G4endl;
 
@@ -487,26 +487,25 @@ unsigned int DicomHandler::GetMaterialIndex( G4float density )
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int DicomHandler::ReadData(FILE *dicom)
+int DicomHandler::ReadData(FILE *dicom)
 {
-
-  G4int returnvalue = 0; size_t rflag = 0;
+  int returnvalue = 0; size_t rflag = 0;
   
   //  READING THE PIXELS :
   G4int w = 0;
   
-  fTab = new G4int*[fRows];
-  for ( G4int i = 0; i < fRows; ++i )
-  {
-    fTab[i] = new G4int[fColumns];
-  }
+  //fTab = new G4int*[fRows];
+  //for (G4int i = 0; i < fRows; ++i) fTab[i] = new G4int[fColumns];
+  fTab.resize(fRows);
+  for (short i = 0; i < fRows; ++i) fTab[i].resize(fColumns);
   
-  if(fBitAllocated == 8) { // Case 8 bits :
-    
+  if(fBitAllocated == 8)
+  {
+      // Case 8 bits :
     std::printf("@@@ Error! Picture != 16 bits...\n");
     std::printf("@@@ Error! Picture != 16 bits...\n");
     std::printf("@@@ Error! Picture != 16 bits...\n");
-    
+
     unsigned char ch = 0;
     
     for(G4int j = 0; j < fRows; ++j) {
@@ -557,7 +556,7 @@ void DicomHandler::ReadCalibration()
     fReadCalibration = true;
 }
 
-G4float DicomHandler::Pixel2density(G4int pixel)
+float DicomHandler::Pixel2density(G4int pixel)
 {
   if(!fReadCalibration) { ReadCalibration(); }
   
@@ -620,7 +619,7 @@ void DicomHandler::processFiles(const G4String & path, const G4String & converti
     delete    fMergedSlices; fMergedSlices = nullptr;
 }
 
-G4int DicomHandler::read_defined_nested(FILE * nested,G4int SQ_Length)
+int DicomHandler::read_defined_nested(FILE * nested,G4int SQ_Length)
 {
   //      VARIABLES
   unsigned short item_GroupNumber;
