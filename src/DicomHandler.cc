@@ -62,41 +62,9 @@
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomPhantomZSliceMerged.hh"
 
-/*
-DicomHandler & DicomHandler::getInstance()
-{
-    static DicomHandler instance;
-    return instance;
-}
-*/
-
-void DicomHandler::setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName)
-{
-    driverPath = path;
-
-    fDriverFile     = driverPath + '/' + driverFileName;
-    fCt2DensityFile = driverPath + '/' + convertionFileName;
-}
-
-DicomHandler::DicomHandler()
-:DATABUFFSIZE(8192), LINEBUFFSIZE(5020), FILENAMESIZE(512),
- fCompression(0), fNFiles(0), fRows(0), fColumns(0),
- fBitAllocated(0), fMaxPixelValue(0), fMinPixelValue(0),
- fPixelSpacingX(0.), fPixelSpacingY(0.),fSliceThickness(0.), 
- fSliceLocation(0.), fRescaleIntercept(0), fRescaleSlope(0),
- fLittleEndian(true),fImplicitEndian(false),fPixelRepresentation(0),
- fNbrequali(0),fValueDensity(NULL),fValueCT(NULL),
- fReadCalibration(false),fMergedSlices(NULL)
-
-{
- fMergedSlices = new DicomPhantomZSliceMerged;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+DicomHandler::DicomHandler() : fMergedSlices(new DicomPhantomZSliceMerged()){}
 
 DicomHandler::~DicomHandler(){}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
 {
@@ -567,37 +535,27 @@ G4int DicomHandler::ReadData(FILE *dicom)
   return returnvalue;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.......
-
-
-// Separated out of Pixel2density
-// No need to read in same calibration EVERY time
-// Increases the speed of reading file by several orders of magnitude
-
 void DicomHandler::ReadCalibration()
 {
- fNbrequali = 0;
-// CT2Density.dat contains the calibration curve to convert CT (Hounsfield)
-// number to physical density
- std::ifstream calibration(fCt2DensityFile.c_str());
- calibration >> fNbrequali; 
- fValueDensity = new G4double[fNbrequali];
- fValueCT = new G4double[fNbrequali];
+    fNbrequali = 0;
+    // CT2Density.dat contains the calibration curve to convert CT (Hounsfield) number to physical density
+    std::ifstream calibration(fCt2DensityFile.c_str());
+    calibration >> fNbrequali;
+    fValueDensity = new G4double[fNbrequali];
+    fValueCT = new G4double[fNbrequali];
 
- if(!calibration) {
-   G4Exception("DicomHandler::ReadFile","DICOM001", FatalException,
-               "@@@ No value to transform pixels in density!");
-   } 
-   else { // calibration was successfully opened
-      for(G4int i = 0; i < fNbrequali; ++i) 
-         { // Loop to store all the pts in CT2Density.dat
-        calibration >> fValueCT[i] >> fValueDensity[i];
-        }
-  }
-calibration.close();
-fReadCalibration = true;
+    if (!calibration)
+        G4Exception("DicomHandler::ReadFile","DICOM001", FatalException, "@@@ No value to transform pixels in density!");
+    else
+    {
+        // Loop to store all the pts in CT2Density.dat
+        for (G4int i = 0; i < fNbrequali; ++i)
+            calibration >> fValueCT[i] >> fValueDensity[i];
+    }
+    calibration.close();
+
+    fReadCalibration = true;
 }
-
 
 G4float DicomHandler::Pixel2density(G4int pixel)
 {
@@ -630,9 +588,9 @@ G4float DicomHandler::Pixel2density(G4int pixel)
   return density;
 }
 
-void DicomHandler::configure(const G4String & path, const G4String & convertionFileName, int lateralCompression,
-                             const std::vector<std::pair<std::string, float> > & materialUpperDens,
-                             const std::vector<std::string> & sliceFiles)
+void DicomHandler::processFiles(const G4String & path, const G4String & convertionFileName, int lateralCompression,
+                                const std::vector<std::pair<std::string, float> > & materialUpperDens,
+                                const std::vector<std::string> & sliceFiles)
 {
     driverPath = path;
     fCt2DensityFile = driverPath + '/' + convertionFileName;
@@ -657,140 +615,10 @@ void DicomHandler::configure(const G4String & path, const G4String & convertionF
 
     fMergedSlices->CheckSlices(); // Checks the spacing is correct. Dumps to files
 
-    delete [] fValueDensity;
-    delete [] fValueCT;
-    delete fMergedSlices;
+    delete [] fValueDensity; fValueDensity = nullptr;
+    delete [] fValueCT;      fValueCT      = nullptr;
+    delete    fMergedSlices; fMergedSlices = nullptr;
 }
-
-void DicomHandler::CheckFileFormat()
-{
-    if (driverPath == "" || fDriverFile == "")
-    {
-        G4Exception("DicomHandler::ReadFile",
-                    "DICOM001",
-                    FatalException,
-                    "DicomHandler driver file is not defined");
-    }
-
-  std::ifstream checkData(fDriverFile.c_str());
-
-  char * oneLine = new char[128];
-  
-  if(!(checkData.is_open()))
-  { //Check existance of Data.dat
-    
-    G4String message = "\nDicomG4 needs Data.dat (or another driver file specified";
-    message += " in command line):\n";
-    message += "\tFirst line: number of image pixel for a voxel (G4Box)\n";
-    message += "\tSecond line: number of images (CT slices) to read\n";
-    message += "\tEach following line contains the name of a Dicom image";
-    message += " except for the .dcm extension";
-    G4Exception("DicomHandler::ReadFile",
-                "DICOM001",
-                FatalException,
-                message.c_str());
-  }
-
-
-  checkData >> fCompression;
-  checkData >> fNFiles;
-  G4String oneName;
-  checkData.getline(oneLine,100);
-  std::ifstream testExistence;
-  G4bool existAlready = true;
-  for(G4int rep = 0; rep < fNFiles; ++rep)
-  {
-    checkData.getline(oneLine,100);
-    oneName = driverPath.c_str();
-    oneName += "/";
-    oneName += oneLine;
-    oneName += ".g4dcm"; // create dicomFile.g4dcm
-    G4cout << fNFiles << "Teste tes" << oneName << G4endl;
-    testExistence.open(oneName.data());
-    if(!(testExistence.is_open()))
-    {
-      existAlready = false;
-      testExistence.clear();
-      testExistence.close();
-    }
-    testExistence.clear();
-    testExistence.close();
-  }
-  
-  ReadMaterialIndices( checkData );
-  
-  checkData.close();
-  delete [] oneLine;
-  
-  if( existAlready == false  ) { // The files *.g4dcm have to be created
-    
-    G4cout << "\nAll the necessary images were not found in processed form "
-           << ", starting with .dcm images\n";
-    
-    FILE * dicom;
-    FILE * lecturePref;
-    char * fCompressionc = new char[LINEBUFFSIZE];
-    char * maxc = new char[LINEBUFFSIZE];
-    //char name[300], inputFile[300];
-    char * name = new char[FILENAMESIZE];
-    char * inputFile = new char[FILENAMESIZE];
-    G4int rflag;
-    lecturePref = std::fopen(fDriverFile.c_str(),"r");
- 
-    rflag = std::fscanf(lecturePref,"%s",fCompressionc);
-    fCompression = atoi(fCompressionc);
-    rflag = std::fscanf(lecturePref,"%s",maxc);
-    fNFiles = atoi(maxc);
-    G4cout << " fNFiles " << fNFiles << G4endl;
-  
-///////////////////// 
-
-
-
-     for( G4int i = 1; i <= fNFiles; ++i ) 
-     { // Begin loop on filenames
-      rflag = std::fscanf(lecturePref,"%s",inputFile);
-
-      std::sprintf(name,"%s/%s.dcm", driverPath.c_str(), inputFile);
-      //Writes the results to a character string buffer.
-      
-
-      //  Open input file and give it to gestion_dicom :
-      std::printf("### Opening %s and reading :\n",name);
-      dicom = std::fopen(name,"rb");
-      // Reading the .dcm in two steps:
-      //      1.  reading the header
-      //      2. reading the pixel data and store the density in Moyenne.dat
-      if( dicom != 0 )
-      {
-        ReadFile(dicom,inputFile);
-      } else {
-        G4cout << "\nError opening file : " << name << G4endl;
-      }
-      rflag = std::fclose(dicom);
-    }
-
-
-    rflag = std::fclose(lecturePref);
-    
-    // Checks the spacing is correct. Dumps to files
-    fMergedSlices->CheckSlices();
-    
-    delete [] fCompressionc;
-    delete [] maxc;
-    delete [] name;
-    delete [] inputFile;
-    if (rflag) return;
-    
-  }
-  
-  if(fValueDensity) { delete [] fValueDensity; }
-  if(fValueCT) { delete [] fValueCT; }
-  if(fMergedSlices) { delete fMergedSlices; }
-  
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4int DicomHandler::read_defined_nested(FILE * nested,G4int SQ_Length)
 {

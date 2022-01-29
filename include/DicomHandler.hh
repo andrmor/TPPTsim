@@ -70,26 +70,19 @@ class DicomPhantomZSliceMerged;
 class DicomHandler
 {
 public:
-//    static DicomHandler & getInstance();
-
-//private:
     DicomHandler();
     ~DicomHandler();
 
-public:
-    void configure(const G4String & path, const G4String & convertionFileName, int lateralCompression,
+    void processFiles(const G4String & path, const G4String & convertionFileName, int lateralCompression,
                    const std::vector<std::pair<std::string, float> > & materialUpperDens,
                    const std::vector<std::string> & sliceFiles);
-
-    void setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName);
-    void CheckFileFormat();
 
 private:
     template <class Type> void GetValue(char *, Type &);
     
-    const G4int DATABUFFSIZE;
-    const G4int LINEBUFFSIZE;
-    const G4int FILENAMESIZE;
+    const G4int DATABUFFSIZE = 8192;
+    const G4int LINEBUFFSIZE = 5020;
+    const G4int FILENAMESIZE = 512;
     
     G4int ReadFile(FILE *, const char *);
     G4int ReadData(FILE *);
@@ -103,33 +96,36 @@ private:
     void read_undefined_nested(FILE *);
     void read_undefined_item(FILE *);
 
-    short fCompression;
-    G4int fNFiles;
-    short fRows;
-    short fColumns;
-    short fBitAllocated;
-    G4int fMaxPixelValue, fMinPixelValue;
+    short fCompression = 0;
+    G4int fNFiles = 0;
+    short fRows = 0;
+    short fColumns = 0;
+    short fBitAllocated = 0;
+    G4int fMaxPixelValue = 0;
+    G4int fMinPixelValue = 0;
     
-    G4double fPixelSpacingX, fPixelSpacingY;
-    G4double fSliceThickness;
-    G4double fSliceLocation;
+    G4double fPixelSpacingX = 0;
+    G4double fPixelSpacingY = 0;
+    G4double fSliceThickness = 0;
+    G4double fSliceLocation = 0;
     
-    G4int fRescaleIntercept, fRescaleSlope;
+    G4int fRescaleIntercept = 0;
+    G4int fRescaleSlope = 0;
     
-    G4bool fLittleEndian, fImplicitEndian;
-    short fPixelRepresentation;
+    G4bool fLittleEndian = true;
+    G4bool fImplicitEndian = false;
+    short fPixelRepresentation = 0;
     
     G4int** fTab;
     std::map<G4float,G4String> fMaterialIndices;
     
-    G4int fNbrequali;
+    G4int fNbrequali = 0;
     G4double * fValueDensity = nullptr;
     G4double * fValueCT = nullptr;
-    G4bool fReadCalibration;
+    G4bool fReadCalibration = false;
     DicomPhantomZSliceMerged * fMergedSlices = nullptr;
 
     G4String driverPath;
-    G4String fDriverFile;
     G4String fCt2DensityFile;
 };
 
