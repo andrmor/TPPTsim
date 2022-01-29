@@ -205,11 +205,30 @@ DicomPhantomZSliceHeader DicomPhantomZSliceHeader::operator+(
     return temp;
 }
 
+void DicomPhantomZSliceHeader::AddRow() { fValues.push_back(std::vector<G4double>(0));
+                                          fMateIDs.push_back(std::vector<G4int>(0)); }
+
+void DicomPhantomZSliceHeader::AddValue(G4double val) { (fValues.size() > 0) ?
+                fValues.back().push_back(val) :
+                fValues.push_back(std::vector<G4double>(1,val)); }
+
+void DicomPhantomZSliceHeader::AddValue(const std::vector<std::vector<G4double> > & val) {
+    for(unsigned int i = 0; i < val.size(); ++i) { fValues.push_back(val.at(i)); }
+}
+
+void DicomPhantomZSliceHeader::AddMateID(G4int val) { (fMateIDs.size() > 0) ?
+                fMateIDs.back().push_back(val) :
+                fMateIDs.push_back(std::vector<G4int>(1,val)); }
+
+void DicomPhantomZSliceHeader::AddMateID(const std::vector<std::vector<G4int> > & val) {
+    for(unsigned int i = 0; i < val.size(); ++i) { fMateIDs.push_back(val.at(i)); }
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo..
 void DicomPhantomZSliceHeader::DumpToFile()
 {
 
-  G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to " 
+    G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to "
          << fFilename << "..." << G4endl;
   //sleep(5);
   
@@ -336,4 +355,20 @@ void DicomPhantomZSliceHeader::ReadDataFromFile()
   
   in.close();
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void DicomPhantomZSliceHeader::DumpExcessMemory()
+{
+    if (fFilename.length() != 0)
+    {
+        fValues.clear(); fValues.shrink_to_fit();
+        fMateIDs.clear(); fMateIDs.shrink_to_fit();
+    }
+}
+
+// This function flips all the data
+// Otherwise, the image is upside-down
+void DicomPhantomZSliceHeader::FlipData()
+{
+    std::reverse(fValues.begin(), fValues.end());
+    std::reverse(fMateIDs.begin(), fMateIDs.end());
+}

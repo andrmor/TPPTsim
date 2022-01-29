@@ -113,28 +113,19 @@ public:
   //
   void SetFilename(const G4String& val) { fFilename = val; }
   void SetSliceLocation(const G4double& val) { fSliceLocation = val; }
-    void AddMaterial(const G4String& val) { fMaterialNames.push_back(val); }
+  void AddMaterial(const G4String& val) { fMaterialNames.push_back(val); }
   
   const G4double& GetSliceLocation() const { return fSliceLocation; }
   
-  void AddRow() { fValues.push_back(std::vector<G4double>(0)); 
-    fMateIDs.push_back(std::vector<G4int>(0)); }
+  void AddRow();
   
-  void AddValue(G4double val) { (fValues.size() > 0) ? 
-      fValues.back().push_back(val) : 
-      fValues.push_back(std::vector<G4double>(1,val)); }
+  void AddValue(G4double val);
   void AddValue(const std::vector<G4double>& val) { fValues.push_back(val); }
-  void AddValue(const std::vector<std::vector<G4double> >& val) {
-    for(unsigned int i = 0; i < val.size(); ++i) { fValues.push_back(val.at(i)); }
-  }
+  void AddValue(const std::vector<std::vector<G4double> >& val);
   
-  void AddMateID(G4int val) { (fMateIDs.size() > 0) ? 
-      fMateIDs.back().push_back(val) : 
-      fMateIDs.push_back(std::vector<G4int>(1,val)); }
+  void AddMateID(G4int val);
   void AddMateID(const std::vector<G4int>& val) { fMateIDs.push_back(val); }
-  void AddMateID(const std::vector<std::vector<G4int> >& val) {
-    for(unsigned int i = 0; i < val.size(); ++i) { fMateIDs.push_back(val.at(i)); }
-  }
+  void AddMateID(const std::vector<std::vector<G4int> >& val);
   
   const std::vector<std::vector<G4double> >& GetValues() const { return fValues; }
   const std::vector<std::vector<G4int> >& GetMateIDs() const { return fMateIDs; }
@@ -142,14 +133,13 @@ public:
   void DumpToFile();
   void ReadDataFromFile();
   
-  void DumpExcessMemory() { 
-    if(fFilename.length() != 0) { fValues.clear(); fMateIDs.clear(); } }
+  void DumpExcessMemory();
   
   void FlipData();
   
 private:
 
-  inline G4bool IsInteger(const G4String&);
+  inline G4bool IsInteger(const G4String&) const;
   template <typename T> 
   inline void Print(std::ostream&, const std::vector<T>&, const G4String&, 
                     G4int breakLine = -1);
@@ -177,16 +167,8 @@ private:
   
 };
 
-//============================================================================
-// This function flips all the data
-// Otherwise, the image is upside-down
-inline void DicomPhantomZSliceHeader::FlipData()
-{
-  std::reverse(fValues.begin(), fValues.end());
-  std::reverse(fMateIDs.begin(), fMateIDs.end());    
-}
 //=============================================================================
-inline G4bool DicomPhantomZSliceHeader::IsInteger(const G4String& str)
+inline G4bool DicomPhantomZSliceHeader::IsInteger(const G4String& str) const
 {
   return (str.find_first_not_of("0123456789") == std::string::npos) ? true : false;
 }
