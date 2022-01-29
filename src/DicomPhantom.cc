@@ -48,7 +48,8 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 
     generateSliceFileNames();
 
-    DicomHandler & dcmHandler = DicomHandler::getInstance();
+    //DicomHandler & dcmHandler = DicomHandler::getInstance();
+    DicomHandler dcmHandler;
     dcmHandler.configure(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
 
     //dcmHandler.setDriver(DataDir, DriverFileName, ConvertionFileName);
@@ -61,7 +62,24 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
     constructPhantomContainer(logicWorld);
     constructPhantom();
 
+    clearTmpAndOptimizeContainers();
+
     return fContainer_logic;
+}
+
+void PhantomDICOM::clearTmpAndOptimizeContainers()
+{
+    BoxXY.shrink_to_fit(); // need dureng tracking!
+    out("BoxXY", BoxXY.capacity());
+
+    ReducedMaterials.shrink_to_fit(); // need dureng tracking!
+    out("ReducedMaterials", ReducedMaterials.capacity());
+
+    fMaterials.clear(); fMaterials.shrink_to_fit();
+    out("fMaterials", fMaterials.capacity());
+
+    MaterialIDs.clear(); MaterialIDs.shrink_to_fit();
+    out("MaterialIDs", MaterialIDs.capacity());
 }
 
 void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
@@ -489,7 +507,7 @@ void PhantomDICOM::constructPhantom()
     const int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
     out("Number of voxels per slice:", nVoxSlice);
 
-    ReducedMaterialIDs.resize(nVoxSlice * fNoFiles); // no need?
+    //ReducedMaterialIDs.resize(nVoxSlice * fNoFiles); // no need?
     ReducedMaterials.resize(nVoxSlice * fNoFiles);
     int redVoxCpNo = 0;
 
@@ -504,7 +522,7 @@ void PhantomDICOM::constructPhantom()
 
         if ( pow((xxx - XC - vShift),2) + pow((yyy - YC + hShift),2) < pow(radius,2) )
         {
-            ReducedMaterialIDs[redVoxCpNo] = MaterialIDs[voxelCopyNo];
+            //ReducedMaterialIDs[redVoxCpNo] = MaterialIDs[voxelCopyNo];
             ReducedMaterials[redVoxCpNo] = fMaterials[ MaterialIDs[voxelCopyNo] ];
             redVoxCpNo++;
         }

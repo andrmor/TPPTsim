@@ -12,7 +12,7 @@ class G4VisAttributes;
 class DicomPhantomParameterisation : public G4VPVParameterisation
 {
 public:
-    DicomPhantomParameterisation(std::vector<std::pair<double,double>> coord2D, double zStart,
+    DicomPhantomParameterisation(const std::vector<std::pair<double,double>> & coord2D, double zStart,
                                  const std::vector<G4Material*> & materials,
                                  const std::map<G4String,G4VisAttributes*> & colourMap);
 
@@ -22,8 +22,8 @@ public:
     void         setVoxelHalfSizeZ(double dz) {HalfVoxelZ = dz;}
 
 protected:
-    std::vector<std::pair<double,double>> XY;
-    double ZStart;
+    const std::vector<std::pair<double,double>> & XY;
+    const double ZStart;
     const std::vector<G4Material*> & Materials;
     const std::map<G4String, G4VisAttributes*> & ColourMap;
 

@@ -62,11 +62,13 @@
 #include "DicomPhantomZSliceHeader.hh"
 #include "DicomPhantomZSliceMerged.hh"
 
+/*
 DicomHandler & DicomHandler::getInstance()
 {
     static DicomHandler instance;
     return instance;
 }
+*/
 
 void DicomHandler::setDriver(const G4String & path, const G4String & driverFileName, const G4String & convertionFileName)
 {
@@ -654,6 +656,10 @@ void DicomHandler::configure(const G4String & path, const G4String & convertionF
     }
 
     fMergedSlices->CheckSlices(); // Checks the spacing is correct. Dumps to files
+
+    delete [] fValueDensity;
+    delete [] fValueCT;
+    delete fMergedSlices;
 }
 
 void DicomHandler::CheckFileFormat()

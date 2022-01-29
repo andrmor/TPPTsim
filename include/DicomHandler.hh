@@ -70,9 +70,9 @@ class DicomPhantomZSliceMerged;
 class DicomHandler
 {
 public:
-    static DicomHandler & getInstance();
+//    static DicomHandler & getInstance();
 
-private:
+//private:
     DicomHandler();
     ~DicomHandler();
 

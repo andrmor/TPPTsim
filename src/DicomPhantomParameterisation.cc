@@ -8,7 +8,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4VVisManager.hh"
 
-DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<std::pair<double,double>> coord2D, double zStart,
+DicomPhantomParameterisation::DicomPhantomParameterisation(const std::vector<std::pair<double, double> > & coord2D, double zStart,
                                                            const std::vector<G4Material*> & materials,
                                                            const std::map<G4String,G4VisAttributes*> & colourMap) :
     G4VPVParameterisation(), XY(coord2D), ZStart(zStart),

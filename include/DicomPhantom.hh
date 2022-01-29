@@ -43,10 +43,10 @@ protected:
 
     bool                     ContainerInvisible = true;
     std::vector<std::pair<std::string, float>> MatUpperDens;
-    std::map<G4String, G4VisAttributes*> ColourMap;
+    std::map<G4String, G4VisAttributes*> ColourMap;                 // in use during tracking!
     std::vector<std::string> SliceFiles;
     double                   zStart;
-    std::vector<std::pair<double,double>> BoxXY;
+    std::vector<std::pair<double,double>> BoxXY;                    // in use during tracking!
     int                      BoxesPerSlice;
 
     G4Material             * AirMat = nullptr;
@@ -61,8 +61,7 @@ protected:
 
     std::vector<size_t>      MaterialIDs;        // index of material of each voxel
 
-    std::vector<size_t>      ReducedMaterialIDs; // same but for voxels inside container
-    std::vector<G4Material*> ReducedMaterials;
+    std::vector<G4Material*> ReducedMaterials;                     // in use during tracking!
 
     std::map<int, double>    fDensityDiffs; // Density difference to distinguish material for each original material (by index)
 
@@ -91,6 +90,7 @@ private:
     void readMaterialFile(const std::string & fileName);
     void readColorMap(const std::string & fileName);
     void generateSliceFileNames();
+    void clearTmpAndOptimizeContainers();
 
     G4Material * buildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName); // build a new material if the density of the voxel is different to the other voxels
 
