@@ -21,7 +21,7 @@ class PhantomDICOM : public PhantomModeBase
 {
 public:
     PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo,
-                 int lateralCompression, double containerRadius, const std::vector<double> & posInContainer);
+                 int lateralCompression, double containerRadius, const std::vector<double> & posInWorld);
 
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
     std::string       getTypeName() const override {return "PhantomDICOM";}
@@ -36,17 +36,17 @@ protected:
     int                      SliceTo;
     int                      LateralCompression;
     double                   PhantRadius;
-    std::vector<double>      PosContainer;
+    std::vector<double>      PosInWorld;
 
     const std::string        ConvertionFileName = "CT2Density.dat";
     const double             densityDiff = -1.0;      // former was read from env variable "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
 
     bool                     ContainerInvisible = true;
     std::vector<std::pair<std::string, float>> MatUpperDens;
-    std::map<G4String, G4VisAttributes*> ColourMap;                 // in use during tracking!
+    std::map<G4String, G4VisAttributes*> ColourMap;   // --->PERSISTENT: in use during gui session!
     std::vector<std::string> SliceFiles;
     double                   zStart;
-    std::vector<std::pair<double,double>> BoxXY;                    // in use during tracking!
+    std::vector<std::pair<double,double>> BoxXY;      // --->PERSISTENT: in use during tracking!
     int                      BoxesPerSlice;
 
     G4Material             * AirMat = nullptr;
@@ -54,19 +54,19 @@ protected:
     G4LogicalVolume        * fContainer_logic;
     G4VPhysicalVolume      * fContainer_phys;
 
-    int                      fNoFiles; // number of DICOM files
+    int                      fNoFiles;            // number of DICOM files
 
-    std::vector<G4Material*> fOriginalMaterials;  // list of original materials
-    std::vector<G4Material*> fMaterials;    // list of new materials created to distinguish different density voxels that have the same original materials
+    std::vector<G4Material*> fOriginalMaterials;  // list of original materials, small
+    std::vector<G4Material*> fMaterials;          // list of new materials created to distinguish different density voxels that have the same original materials
 
-    std::vector<size_t>      MaterialIDs;        // index of material of each voxel
+    std::vector<size_t>      MaterialIDs;         // index of material of each voxel
 
-    std::vector<G4Material*> ReducedMaterials;                     // in use during tracking!
+    std::vector<G4Material*> ReducedMaterials;    // --->PERSISTENT: in use during tracking!
 
-    std::map<int, double>    fDensityDiffs; // Density difference to distinguish material for each original material (by index)
+    std::map<int, double>    fDensityDiffs;       // Density difference to distinguish material for each original material (by index)
 
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders; // list of z slice headers (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr;        // z slice header resulted from merging all z slice headers
+    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;      // list of z slice headers (one per DICOM files)
+    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr;   // z slice header resulted from merging all z slice headers
 
     int    fNVoxelX, fNVoxelY, fNVoxelZ;
     double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
@@ -91,8 +91,8 @@ private:
     void readColorMap(const std::string & fileName);
     void generateSliceFileNames();
     void clearTmpAndOptimizeContainers();
-
-    G4Material * buildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName); // build a new material if the density of the voxel is different to the other voxels
+    void defineDensityDifferences(); // bad name, seems to be double function
+    G4Material * buildMaterialWithNewDensity(const G4Material * origMate, float density, G4String newMateName); // build a new material if the density of the voxel is different to the other voxels
 
     // NOT IN USE
     //void ReadVoxelDensities(std::ifstream & fin); // read the DICOM files describing the phantom
