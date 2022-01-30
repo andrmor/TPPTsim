@@ -359,7 +359,9 @@ void PhantomDICOM::computePhantomVoxelization()
     fVoxelHalfDimY = fZSliceHeaderMerged->GetVoxelHalfY();
     fVoxelHalfDimZ = fZSliceHeaderMerged->GetVoxelHalfZ();
 
-    zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
+    //zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
+    if (fNVoxelZ == 1) zStart = 0;
+    else               zStart = -2.0*fVoxelHalfDimZ * ( floor(0.5*(fNVoxelZ - 1)) + 0.5 );
 }
 
 void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
@@ -402,7 +404,7 @@ void PhantomDICOM::constructPhantom()
             G4Material * mat = fOriginalMaterials[MaterialIDs[iVoxel]];
             if (mat == AirMat) continue;
 
-            const double z = zStart + 2.0 * iSlice * fVoxelHalfDimX;
+            const double z = zStart + 2.0 * iSlice * fVoxelHalfDimZ;
             Voxels.push_back({-y, x, z, mat});
         }
     }
