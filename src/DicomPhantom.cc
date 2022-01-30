@@ -31,15 +31,11 @@ PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, i
                            int lateralCompression, double containerRadius, const std::vector<double> & posInWorld) :
                            DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
                            LateralCompression(lateralCompression),
-                           PhantRadius(containerRadius), PosInWorld(posInWorld)
-{
-    ContainerInvisible = true;
-}
+                           PhantRadius(containerRadius), PosInWorld(posInWorld) {}
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
     // clear old g4dcm files in the phantom directory - if compression changes, they are invalid!
-    // we can consider saving compression factor in a file in the same directory not to force-rebuild existent files
     std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
     system(cmd.data());
 
@@ -54,13 +50,13 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
     buildMaterials();
     readPhantomData();
     mergeZSliceHeaders();
-    computePhantomVoxelization();
-    constructPhantomContainer(logicWorld);
-    constructPhantom();
+    prepareParameterizationParameters();
+    G4LogicalVolume * PhLogical = makeContainer(logicWorld);
+    constructPhantom(PhLogical);
 
     optimizeMemory();
 
-    return fContainer_logic;
+    return PhLogical;
 }
 
 void PhantomDICOM::optimizeMemory()
@@ -91,67 +87,52 @@ void PhantomDICOM::buildMaterials()
     double z, a;
     std::string name, symbol;
 
-    // Hydrogen
     z = 1; a = 1.008*g/mole;
     G4Element* elH = new G4Element("Hydrogen", "H", z, a);
 
-    // Carbon
     z = 6, a = 12.011*g/mole;
     G4Element* elC = new G4Element("Carbon", "C", z, a);
 
-    // Nitrogen
     z = 7; a = 14.007*g/mole;
     G4Element* elN = new G4Element("Nitrogen", "N", z, a);
 
-    // Oxygen
     z = 8; a = 16.00*g/mole;
     G4Element* elO = new G4Element("Oxygen", "O", z, a);
 
-    // Sodium
     z = 11; a = 22.98977*g/mole;
     G4Element* elNa = new G4Element("Sodium", "Na", z, a);
 
-    // Magnesium
     z = 12; a = 24.305*g/mole;
     G4Element* elMg = new G4Element("Magnesium", "Mg", z, a);
 
-    // Aluminium
     z = 13; a = 26.98154*g/mole;
     G4Element* elAl = new G4Element("Aluminium", "Al", z, a);
 
-    // Phosphorus
     z = 15; a = 30.97376*g/mole;
     G4Element* elP = new G4Element("Phosphorus", "P", z, a);
 
-    // Sulfur
     z = 16; a = 32.06*g/mole;
     G4Element* elS = new G4Element("Sulfur", "S", z, a);
 
-    // Chlorine
     z = 17; a = 35.45*g/mole;
     G4Element* elCl = new G4Element("Chlorine", "Cl", z, a);
 
-    // Argon
     z = 18; a = 39.95*g/mole;
     G4Element* elAr = new G4Element("Argon", "Ar", z, a);
 
-    // Potassium
     z = 19; a = 39.09833*g/mole;
     G4Element* elK = new G4Element("Potassium", "K", z, a);
 
-    // Calcium
     z = 20; a = 40.07844*g/mole;
     G4Element* elCa = new G4Element("Calcium", "Ca", z, a);
 
-    // Iron
     z = 26; a = 55.84522*g/mole;
     G4Element* elFe = new G4Element("Iron", "Fe", z, a);
 
-    // Zinc
     z = 30; a = 65.38222*g/mole;
     G4Element* elZn = new G4Element("Zinc", "Zn", z, a);
 
-    int numberofElements;
+    int    numberofElements;
     double density;
 
     // Air
@@ -295,49 +276,47 @@ void PhantomDICOM::buildMaterials()
     G4Material* iiron = new G4Material ("IIron", density, numberofElements);
     iiron->AddElement(elFe, 100.0*perCent);
 
-    fOriginalMaterials.push_back(AirMat);           // 0.00129 g/cm3
-    fOriginalMaterials.push_back(lung);           // 0.50 g/cm3
-    fOriginalMaterials.push_back(adiposeTissue);  // 0.95 g/cm3
-    fOriginalMaterials.push_back(muscle);         // 1.05 g/cm3
-    fOriginalMaterials.push_back(cartilage);      // 1.10 g/cm3
-    fOriginalMaterials.push_back(cartilBone);     // 1.35 g/cm3
-    fOriginalMaterials.push_back(boneCartil);     // 1.60 g/cm3
-    fOriginalMaterials.push_back(bone);           // 1.85 g/cm3
-    fOriginalMaterials.push_back(denserBone);     // 2.10 g/cm3
-    fOriginalMaterials.push_back(alBone);         // 2.40 g/cm3
-    fOriginalMaterials.push_back(aluminum);       // 2.70 g/cm3
-    fOriginalMaterials.push_back(denserAluminum); // 2.83 g/cm3
-    fOriginalMaterials.push_back(iiron);          // 7.87 g/cm3
+    Materials.push_back(AirMat);         // 0.00129 g/cm3
+    Materials.push_back(lung);           // 0.50 g/cm3
+    Materials.push_back(adiposeTissue);  // 0.95 g/cm3
+    Materials.push_back(muscle);         // 1.05 g/cm3
+    Materials.push_back(cartilage);      // 1.10 g/cm3
+    Materials.push_back(cartilBone);     // 1.35 g/cm3
+    Materials.push_back(boneCartil);     // 1.60 g/cm3
+    Materials.push_back(bone);           // 1.85 g/cm3
+    Materials.push_back(denserBone);     // 2.10 g/cm3
+    Materials.push_back(alBone);         // 2.40 g/cm3
+    Materials.push_back(aluminum);       // 2.70 g/cm3
+    Materials.push_back(denserAluminum); // 2.83 g/cm3
+    Materials.push_back(iiron);          // 7.87 g/cm3
 }
 
 void PhantomDICOM::readPhantomData()
 {
-    fNoFiles = SliceFiles.size();
     for (const auto & fname : SliceFiles)
         readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
 }
 
-void PhantomDICOM::readPhantomDataFile(const G4String & fname)
+void PhantomDICOM::readPhantomDataFile(const std::string & fname)
 {
-    out("Reading phantom data file", fname);
-    std::ifstream fin(fname.c_str(), std::ios_base::in);
+    std::ifstream fin(fname);
     if (!fin.is_open())
     {
         out("Cannot open phantom data file", fname);
         exit(10);
     }
-    DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader(fin);
+    out("Reading phantom data file", fname);
+    DicomPhantomZSliceHeader * sliceHeader = new DicomPhantomZSliceHeader(fin);
     fZSliceHeaders.push_back(sliceHeader);
 
     const size_t nVoxels = sliceHeader->GetNoVoxels();
-    if (fZSliceHeaders.size() == 1) MaterialIDs.resize(fNoFiles * nVoxels); // if it is the first slice, initiliaze MaterialIDs
+    if (fZSliceHeaders.size() == 1) MaterialIDs.resize(SliceFiles.size() * nVoxels); // if it is the first slice, initiliaze MaterialIDs
 
     size_t voxelCopyNo = (fZSliceHeaders.size() - 1) * nVoxels;
     size_t matID;
     for (size_t ii = 0; ii < nVoxels; ii++, voxelCopyNo++)
     {
         fin >> matID;
-        //out("--->", fOriginalMaterials[matID]->GetName());
         MaterialIDs[voxelCopyNo] = matID;
     }
 }
@@ -349,7 +328,7 @@ void PhantomDICOM::mergeZSliceHeaders()
         *fZSliceHeaderMerged += *fZSliceHeaders[ii];
 }
 
-void PhantomDICOM::computePhantomVoxelization()
+void PhantomDICOM::prepareParameterizationParameters()
 {
     fNVoxelX = fZSliceHeaderMerged->GetNoVoxelX();
     fNVoxelY = fZSliceHeaderMerged->GetNoVoxelY();
@@ -364,20 +343,22 @@ void PhantomDICOM::computePhantomVoxelization()
     else               zStart = -2.0*fVoxelHalfDimZ * ( floor(0.5*(fNVoxelZ - 1)) + 0.5 );
 }
 
-void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
+G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
 {
-    G4Tubs * solid   = new G4Tubs("PhContTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
-    fContainer_logic = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
+    G4Tubs          * solid          = new G4Tubs("PhTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
+    G4LogicalVolume * PhantomLogical = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
     const G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
 
-    fContainer_phys = new G4PVPlacement(nullptr, pos, fContainer_logic, "PhCont", logicWorld, false, 1);
+    new G4PVPlacement(nullptr, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
 
-    if (ContainerInvisible) fContainer_logic->SetVisAttributes(G4VisAttributes::Invisible);
-    else                    fContainer_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    if (ContainerInvisible) PhantomLogical->SetVisAttributes(G4VisAttributes::Invisible);
+    else                    PhantomLogical->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+
+    return PhantomLogical;
 }
 
-void PhantomDICOM::constructPhantom()
+void PhantomDICOM::constructPhantom(G4LogicalVolume * PhantomLogical)
 {
     const int voxelsPerSlice = fNVoxelX * fNVoxelY;
 
@@ -401,7 +382,7 @@ void PhantomDICOM::constructPhantom()
 
         if (x*x + y*y < radius2)
         {
-            G4Material * mat = fOriginalMaterials[MaterialIDs[iVoxel]];
+            G4Material * mat = Materials[MaterialIDs[iVoxel]];
             if (mat == AirMat) continue;
 
             const double z = zStart + 2.0 * iSlice * fVoxelHalfDimZ;
@@ -413,7 +394,7 @@ void PhantomDICOM::constructPhantom()
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, AirMat, "VoxelL",  0,0,0);
 
     DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels, ColourMap);
-    new G4PVParameterised("phantom", voxel_logic, fContainer_logic, kUndefined, Voxels.size(), param);
+    new G4PVParameterised("phantom", voxel_logic, PhantomLogical, kUndefined, Voxels.size(), param);
 }
 
 void PhantomDICOM::readMaterialFile(const std::string & fileName)

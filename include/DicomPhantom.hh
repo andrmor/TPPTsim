@@ -30,51 +30,43 @@ public:
 protected:
     void              doWriteToJson(json11::Json::object & json) const override;
 
-    std::string              DataDir;
-    std::string              SliceFileBase;
-    int                      SliceFrom;
-    int                      SliceTo;
-    int                      LateralCompression;
-    double                   PhantRadius;
-    std::vector<double>      PosInWorld;
+    std::string         DataDir;
+    std::string         SliceFileBase;
+    int                 SliceFrom;
+    int                 SliceTo;
+    int                 LateralCompression;
+    double              PhantRadius;
+    std::vector<double> PosInWorld;
 
-    const std::string        ConvertionFileName = "CT2Density.dat";
+    const std::string   ConvertionFileName = "CT2Density.dat";
+    const bool          ContainerInvisible = true;
 
-    bool                     ContainerInvisible = true;
     std::vector<std::pair<std::string, float>> MatUpperDens;
-    std::map<G4String, G4VisAttributes*> ColourMap;   // --->PERSISTENT: in use during gui session!
+    std::map<G4String, G4VisAttributes*>       ColourMap;     // --->PERSISTENT: in use during gui session!
+
     std::vector<std::string> SliceFiles;
     double                   zStart;
 
-    std::vector<Voxel>       Voxels;      // --->PERSISTENT: in use during tracking!
+    std::vector<Voxel>       Voxels;                          // --->PERSISTENT: in use during tracking!
 
-    G4Material             * AirMat = nullptr;
+    std::vector<G4Material*> Materials;
+    G4Material             * AirMat = nullptr;                // voxels of this material are not created
+    std::vector<size_t>      MaterialIDs;                     // index of the material for each voxel in the dicom
 
-    G4LogicalVolume        * fContainer_logic;
-    G4VPhysicalVolume      * fContainer_phys;
-
-    int                      fNoFiles;            // number of DICOM files
-
-    std::vector<G4Material*> fOriginalMaterials;  // list of original materials, small
-    std::vector<size_t>      MaterialIDs;         // index of material of each voxel
-
-
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;      // list of z slice headers (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr;   // z slice header resulted from merging all z slice headers
+    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;    // list of z slice headers (one per DICOM files)
+    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr; // z slice header resulted from merging all z slice headers
 
     int    fNVoxelX, fNVoxelY, fNVoxelZ;
     double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
-    double fMinX, fMinY, fMinZ; // minimum extension of voxels (position wall)
-    double fMaxX, fMaxY, fMaxZ; // maximum extension of voxels (position wall)
 
 private:
     void buildMaterials();
     void readPhantomData();
-    void readPhantomDataFile(const G4String & fname); // read one of the DICOM files describing the phantom (usually one per Z slice) and builds a corresponding DicomPhantomZSliceHeader
+    void readPhantomDataFile(const std::string & fname); // read one of the DICOM files describing the phantom (usually one per Z slice) and builds a corresponding DicomPhantomZSliceHeader
     void mergeZSliceHeaders();
-    void computePhantomVoxelization();
-    void constructPhantomContainer(G4LogicalVolume * logicWorld);
-    void constructPhantom();
+    void prepareParameterizationParameters();
+    G4LogicalVolume * makeContainer(G4LogicalVolume * logicWorld);
+    void constructPhantom(G4LogicalVolume * PhantomLogical);
     void optimizeMemory();
     void readMaterialFile(const std::string & fileName);
     void readColorMap(const std::string & fileName);

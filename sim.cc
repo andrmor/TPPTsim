@@ -68,9 +68,8 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam();
-        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 1, 155.0, {0,0,0});
+        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
 //        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 125, 210, 1, 155.0, {0,0,0});
-//        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 125, 127, 4, 155.0, {0,0,0});
         //SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
         //SM.PhantomMode      = new PhantomEspana();
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
@@ -111,7 +110,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
@@ -127,7 +126,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
         //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
-        SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
+        //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT", "bench");
 
     // --- END of user init ---
