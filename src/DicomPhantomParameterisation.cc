@@ -1,26 +1,28 @@
 #include "DicomPhantomParameterisation.hh"
 #include "out.hh"
 
-#include "globals.hh"
+//#include "globals.hh"
 #include "G4VisAttributes.hh"
 #include "G4Material.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VVisManager.hh"
 
-DicomPhantomParameterisation::DicomPhantomParameterisation(const std::vector<std::pair<double, double> > & coord2D, double zStart,
-                                                           const std::vector<G4Material*> & materials,
+DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<Voxel> & voxels,
                                                            const std::map<G4String,G4VisAttributes*> & colourMap) :
-    G4VPVParameterisation(), XY(coord2D), ZStart(zStart),
-    Materials(materials), ColourMap(colourMap)
+    G4VPVParameterisation(), Voxels(voxels), ColourMap(colourMap)
 {
-    BoxesPerSlice = XY.size();
     defaultVisAttributes = new G4VisAttributes(G4Colour(1.0, 0, 0));
+}
+
+DicomPhantomParameterisation::~DicomPhantomParameterisation()
+{
+    delete defaultVisAttributes;
 }
 
 G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * physVol, const G4VTouchable *)
 {
-    G4Material * mat = Materials[copyNo];
+    G4Material * mat = Voxels[copyNo].Mat;
 
     if (G4VVisManager::GetConcreteInstance() && physVol)
     {
@@ -37,11 +39,8 @@ G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G
 
 void DicomPhantomParameterisation::ComputeTransformation(const int copyNo, G4VPhysicalVolume * physVol) const
 {
-    double Z = ZStart + std::ceil(copyNo/BoxesPerSlice) * 2.0 * HalfVoxelZ;
-    int numInSlice = copyNo % BoxesPerSlice;
-    const std::pair<double, double> & XYpair = XY[numInSlice];
+    const Voxel & vox = Voxels[copyNo];
 
-    G4ThreeVector origin(XYpair.first, XYpair.second, Z);
-    physVol->SetTranslation(origin);
+    physVol->SetTranslation( {vox.X, vox.Y, vox.Z} );
     physVol->SetRotation(nullptr);
 }

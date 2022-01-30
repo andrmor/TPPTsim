@@ -4,7 +4,7 @@
 // includes code from P. Arce
 
 #include "PhantomMode.hh"
-//#include "G4IntersectionSolid.hh"
+#include "Voxel.hh"
 #include "globals.hh"
 #include "json11.hh"
 
@@ -39,15 +39,14 @@ protected:
     std::vector<double>      PosInWorld;
 
     const std::string        ConvertionFileName = "CT2Density.dat";
-    const double             densityDiff = -1.0;      // former was read from env variable "DICOM_CHANGE_MATERIAL_DENSITY" --> -1.0 inicates this mechanism is disabled
 
     bool                     ContainerInvisible = true;
     std::vector<std::pair<std::string, float>> MatUpperDens;
     std::map<G4String, G4VisAttributes*> ColourMap;   // --->PERSISTENT: in use during gui session!
     std::vector<std::string> SliceFiles;
     double                   zStart;
-    std::vector<std::pair<double,double>> BoxXY;      // --->PERSISTENT: in use during tracking!
-    int                      BoxesPerSlice;
+
+    std::vector<Voxel>       Voxels;      // --->PERSISTENT: in use during tracking!
 
     G4Material             * AirMat = nullptr;
 
@@ -57,13 +56,8 @@ protected:
     int                      fNoFiles;            // number of DICOM files
 
     std::vector<G4Material*> fOriginalMaterials;  // list of original materials, small
-    std::vector<G4Material*> fMaterials;          // list of new materials created to distinguish different density voxels that have the same original materials
-
     std::vector<size_t>      MaterialIDs;         // index of material of each voxel
 
-    std::vector<G4Material*> ReducedMaterials;    // --->PERSISTENT: in use during tracking!
-
-    std::map<int, double>    fDensityDiffs;       // Density difference to distinguish material for each original material (by index)
 
     std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;      // list of z slice headers (one per DICOM files)
     DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr;   // z slice header resulted from merging all z slice headers
@@ -73,12 +67,6 @@ protected:
     double fMinX, fMinY, fMinZ; // minimum extension of voxels (position wall)
     double fMaxX, fMaxY, fMaxZ; // maximum extension of voxels (position wall)
 
-    //std::map<int, G4Material*> thePhantomMaterialsOriginal; // map numberOfMaterial to G4Material. They are the list of materials as built from .geom file
-    //DicomPhantomZSliceMerged * fMergedSlices;
-    //std::set<G4LogicalVolume*> fScorers;
-    //G4IntersectionSolid * test;// =new G4IntersectionSolid("bx2CyleafTr", box2leaf, cyLeafTr);
-    //bool fConstructed;
-
 private:
     void buildMaterials();
     void readPhantomData();
@@ -87,24 +75,11 @@ private:
     void computePhantomVoxelization();
     void constructPhantomContainer(G4LogicalVolume * logicWorld);
     void constructPhantom();
+    void optimizeMemory();
     void readMaterialFile(const std::string & fileName);
     void readColorMap(const std::string & fileName);
     void generateSliceFileNames();
-    void clearTmpAndOptimizeContainers();
-    void defineDensityDifferences(); // bad name, seems to be double function
-    G4Material * buildMaterialWithNewDensity(const G4Material * origMate, float density, G4String newMateName); // build a new material if the density of the voxel is different to the other voxels
 
-    // NOT IN USE
-    //void ReadVoxelDensities(std::ifstream & fin); // read the DICOM files describing the phantom
 };
-
-/*
-struct matInfo
-{
-    double fSumdens;
-    int    fNvoxels;
-    int    fId;
-};
-*/
 
 #endif

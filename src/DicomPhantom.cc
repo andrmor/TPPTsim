@@ -58,22 +58,13 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
     constructPhantomContainer(logicWorld);
     constructPhantom();
 
-    clearTmpAndOptimizeContainers();
+    optimizeMemory();
 
     return fContainer_logic;
 }
 
-void PhantomDICOM::clearTmpAndOptimizeContainers()
+void PhantomDICOM::optimizeMemory()
 {
-    BoxXY.shrink_to_fit(); // need dureng tracking!
-    out("BoxXY", BoxXY.capacity());
-
-    ReducedMaterials.shrink_to_fit(); // need during tracking!
-    out("ReducedMaterials", ReducedMaterials.capacity());
-
-    fMaterials.clear(); fMaterials.shrink_to_fit();
-    out("fMaterials", fMaterials.capacity());
-
     MaterialIDs.clear(); MaterialIDs.shrink_to_fit();
     out("MaterialIDs", MaterialIDs.capacity());
 
@@ -321,8 +312,6 @@ void PhantomDICOM::buildMaterials()
 
 void PhantomDICOM::readPhantomData()
 {
-    defineDensityDifferences();
-
     fNoFiles = SliceFiles.size();
     for (const auto & fname : SliceFiles)
         readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
@@ -337,7 +326,6 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
         out("Cannot open phantom data file", fname);
         exit(10);
     }
-
     DicomPhantomZSliceHeader* sliceHeader = new DicomPhantomZSliceHeader(fin);
     fZSliceHeaders.push_back(sliceHeader);
 
@@ -345,92 +333,12 @@ void PhantomDICOM::readPhantomDataFile(const G4String & fname)
     if (fZSliceHeaders.size() == 1) MaterialIDs.resize(fNoFiles * nVoxels); // if it is the first slice, initiliaze MaterialIDs
 
     size_t voxelCopyNo = (fZSliceHeaders.size() - 1) * nVoxels;
-    size_t matID; // number of voxels from previously read slices
+    size_t matID;
     for (size_t ii = 0; ii < nVoxels; ii++, voxelCopyNo++)
     {
         fin >> matID;
         //out("--->", fOriginalMaterials[matID]->GetName());
         MaterialIDs[voxelCopyNo] = matID;
-    }
-
-
-  // HS, 2021/07/07, NOT TESTED yet
-  //----- Read material densities and build new materials if two voxels have
-  //  the same material but its density is in a different density interval
-  // (size of density intervals is defined by densityDiff)
-    double density;
-
-    voxelCopyNo = (fZSliceHeaders.size() - 1) * nVoxels;
-    for (size_t ii = 0; ii < nVoxels; ii++, voxelCopyNo++)
-    {
-        fin >> density;
-        //out("===>", fOriginalMaterials[MaterialIDs[voxelCopyNo]]->GetName(), density);
-        matID = MaterialIDs[voxelCopyNo]; //-- Get material from list of original materials
-        G4Material * mateOrig = fOriginalMaterials[matID];
-
-    //-- Get density bin: middle point of the bin in which the current density is included
-    G4String newMateName = mateOrig->GetName();
-    //G4cout << mateOrig->GetName() << G4endl;
-    G4float densityBin = 0.;
-    if (densityDiff != -1.0)
-    {
-        densityBin = G4float(fDensityDiffs[matID]) * (G4int(density/fDensityDiffs[matID])+0.5);
-        //-- Build the new material name
-        newMateName += G4UIcommand::ConvertToString(densityBin);
-    }
-
-    //-- Look if a material with this name is already created
-    //  (because a previous voxel was already in this density bin)
-    unsigned int im;
-    for (im = 0; im < fMaterials.size(); ++im)
-    {
-        if( fMaterials[im]->GetName() == newMateName )
-            break;
-    }
-
-    //-- If material is already created use index of this material
-    if (im != fMaterials.size())
-    {
-        MaterialIDs[voxelCopyNo] = im;
-    }
-    else // create the material
-    {
-        if (densityDiff != -1.0)
-        {
-            fMaterials.push_back( buildMaterialWithNewDensity(mateOrig, densityBin, newMateName) );
-            MaterialIDs[voxelCopyNo] = fMaterials.size()-1;
-        }
-        else
-        {
-            out(" im ", im, " < ", fMaterials.size(), " name ", newMateName);
-            out("Wrong index in material");
-            exit(10);
-        }
-    }
-  }
-}
-
-void PhantomDICOM::defineDensityDifferences()
-{
-    //Define density differences (maximum density difference to create a new material)
-
-    //double densityDiff = -1.0;
-    //char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
-    //if (part) densityDiff = G4UIcommand::ConvertToDouble(part);
-
-    if (densityDiff != -1.0)
-    {
-        for (size_t ii = 0; ii < fOriginalMaterials.size(); ii++)
-            fDensityDiffs[ii] = densityDiff; //currently all materials with the same difference
-    }
-    else
-    {
-        if (fMaterials.empty())
-        {
-            // do it only for the first slice
-            for (size_t ii = 0; ii < fOriginalMaterials.size(); ++ii)
-                fMaterials.push_back(fOriginalMaterials[ii]);
-        }
     }
 }
 
@@ -450,6 +358,8 @@ void PhantomDICOM::computePhantomVoxelization()
     fVoxelHalfDimX = fZSliceHeaderMerged->GetVoxelHalfX();
     fVoxelHalfDimY = fZSliceHeaderMerged->GetVoxelHalfY();
     fVoxelHalfDimZ = fZSliceHeaderMerged->GetVoxelHalfZ();
+
+    zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
 }
 
 void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
@@ -457,10 +367,7 @@ void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
     G4Tubs * solid   = new G4Tubs("PhContTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
     fContainer_logic = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
-    //Start position relatively to the container, will be passed to the parameterization
-    zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
-
-    G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
+    const G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
 
     fContainer_phys = new G4PVPlacement(nullptr, pos, fContainer_logic, "PhCont", logicWorld, false, 1);
 
@@ -470,69 +377,41 @@ void PhantomDICOM::constructPhantomContainer(G4LogicalVolume * logicWorld)
 
 void PhantomDICOM::constructPhantom()
 {
-    //Compute the "phantom parameterization" coordinates
-    //in order to get a circular cross section, only for one phantom slice (equal to the others)
+    const int voxelsPerSlice = fNVoxelX * fNVoxelY;
 
-    const int voxelsSlice = fNVoxelX * fNVoxelY;
-    int xxx, yyy;
-
-    // Reduce the voxel size to "put it" inside the cylinder
-    const double radius = (PhantRadius - 2 * fVoxelHalfDimX) / (fVoxelHalfDimX * 2); // convert from millimeters to "pixels"
+    const double radius = PhantRadius - 2.0 * fVoxelHalfDimX;
     const double radius2 = radius * radius;
-    double XC = fNVoxelX / 2.0;
-    double YC = fNVoxelY / 2.0;
+    double XC = 0.5 * fNVoxelX;
+    double YC = 0.5 * fNVoxelY;
 
-    int hShift = 0;
-    int vShift = 0;
+    const int totNumVoxels = fNVoxelX * fNVoxelY * fNVoxelZ;
 
-    for (int inc = 0; inc < voxelsSlice; inc++)
+    for (int iVoxel = 0; iVoxel < totNumVoxels; iVoxel++)
     {
-        xxx = inc / fNVoxelX;
-        yyy = inc % fNVoxelY;
+        const int iSlice = iVoxel / voxelsPerSlice;
+        const int iVoxelIndexInSlice = iVoxel - iSlice * voxelsPerSlice;
 
-        const double x = xxx - XC - vShift;
-        const double y = yyy - YC + hShift;
+        const int ix = iVoxelIndexInSlice / fNVoxelX;
+        const int iy = iVoxelIndexInSlice % fNVoxelX;
 
-        if ( x*x + y*y < radius2 )
+        const double x = (ix - XC) * 2.0 * fVoxelHalfDimX;
+        const double y = (iy - YC) * 2.0 * fVoxelHalfDimY;
+
+        if (x*x + y*y < radius2)
         {
-            //BoxXY.push_back( {-(hShift + yyy - YC) * fVoxelHalfDimY * 2.0, (-vShift + xxx - XC) * fVoxelHalfDimX * 2.0} );
-            BoxXY.push_back( {-y * fVoxelHalfDimY * 2.0, x * fVoxelHalfDimX * 2.0} );
-        }
-    }
+            G4Material * mat = fOriginalMaterials[MaterialIDs[iVoxel]];
+            if (mat == AirMat) continue;
 
-    // Reduce the number of material indices to fit into the cylinder container
-    const int nVoxSlice = BoxXY.size(); // Number of voxels per slice, after "size reduction"
-    out("Number of voxels per slice:", nVoxSlice);
-
-    //ReducedMaterialIDs.resize(nVoxSlice * fNoFiles); // no need?
-    ReducedMaterials.resize(nVoxSlice * fNoFiles);
-    int redVoxCpNo = 0;
-
-    const int totalOrigVoxels = fNVoxelX * fNVoxelY * fNVoxelZ;
-
-    for (int voxelCopyNo = 0; voxelCopyNo < totalOrigVoxels; voxelCopyNo++)
-    {
-        const int numSlice = (int)voxelCopyNo/(int)voxelsSlice;
-
-        xxx = (voxelCopyNo - (numSlice * voxelsSlice)) / fNVoxelX;
-        yyy = (voxelCopyNo - (numSlice * voxelsSlice)) % fNVoxelX;
-
-        if ( pow((xxx - XC - vShift),2) + pow((yyy - YC + hShift),2) < pow(radius,2) )
-        {
-            //ReducedMaterialIDs[redVoxCpNo] = MaterialIDs[voxelCopyNo];
-            ReducedMaterials[redVoxCpNo] = fMaterials[ MaterialIDs[voxelCopyNo] ];
-            redVoxCpNo++;
+            const double z = zStart + 2.0 * iSlice * fVoxelHalfDimX;
+            Voxels.push_back({-y, x, z, mat});
         }
     }
 
     G4Box           * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
-    G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, fMaterials[0], "VoxelLogical",  0,0,0);
-    // material is not relevant, it will be changed by the ComputeMaterial method of the parameterisation
-    voxel_logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, AirMat, "VoxelL",  0,0,0);
 
-    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(BoxXY, zStart, ReducedMaterials, ColourMap);
-    param->setVoxelHalfSizeZ(fVoxelHalfDimZ);
-    new G4PVParameterised("phantom", voxel_logic, fContainer_logic, kUndefined, nVoxSlice*fNoFiles, param);
+    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels, ColourMap);
+    new G4PVParameterised("phantom", voxel_logic, fContainer_logic, kUndefined, Voxels.size(), param);
 }
 
 void PhantomDICOM::readMaterialFile(const std::string & fileName)
@@ -610,140 +489,3 @@ void PhantomDICOM::generateSliceFileNames()
         SliceFiles.push_back(name);
     }
 }
-
-G4Material* PhantomDICOM::buildMaterialWithNewDensity(const G4Material* origMate, float density, G4String newMateName)
-{
-    const size_t nelem = origMate->GetNumberOfElements();
-    G4Material * mate = new G4Material(newMateName, density*g/cm3, nelem, origMate->GetState(), origMate->GetTemperature());
-
-    const G4double * vec = origMate->GetFractionVector();
-    for (size_t ii = 0; ii < nelem; ii++)
-    {
-        double frac = vec[ii];
-        G4Element* elem = const_cast<G4Element*>(origMate->GetElement(ii));
-        mate->AddElement(elem, frac);
-    }
-
-    return mate;
-}
-
-// ----------------------- NOT IN USE -------------------------
-
-/*
-void PhantomDICOM::ReadVoxelDensities( std::ifstream& fin )
-{
-  G4String stemp;
-  std::map<G4int, std::pair<G4double,G4double> > densiMinMax;
-  std::map<G4int, std::pair<G4double,G4double> >::iterator mpite;
-  for( G4int ii = 0; ii < G4int(thePhantomMaterialsOriginal.size()); ++ii )
-  {
-    densiMinMax[ii] = std::pair<G4double,G4double>(DBL_MAX,-DBL_MAX);
-  }
-
-  char* part = std::getenv( "DICOM_CHANGE_MATERIAL_DENSITY" );
-  G4double densityDiff = -1.;
-  if( part ) densityDiff = G4UIcommand::ConvertToDouble(part);
-
-
-  std::map<G4int,G4double> densityDiffs;
-  for( G4int ii = 0; ii < G4int(thePhantomMaterialsOriginal.size()); ++ii )
-  {
-    densityDiffs[ii] = densityDiff; //currently all materials with same step
-  }
-
-  //--- Calculate the average material density for each material/density bin
-  std::map< std::pair<G4Material*,G4int>, matInfo* > newMateDens;
-
-  //---- Read the material densities
-  G4double dens;
-  for( G4int iz = 0; iz < fNVoxelZ; ++iz ) {
-    for( G4int iy = 0; iy < fNVoxelY; ++iy ) {
-      for( G4int ix = 0; ix < fNVoxelX; ++ix ) {
-        fin >> dens;
-        G4int copyNo = ix + (iy)*fNVoxelX + (iz)*fNVoxelX*fNVoxelY;
-
-        if( densityDiff != -1. ) continue;
-
-        //--- store the minimum and maximum density for each material
-        mpite = densiMinMax.find( G4int(fMateIDs[copyNo]) );
-        if( dens < (*mpite).second.first ) (*mpite).second.first = dens;
-        if( dens > (*mpite).second.second ) (*mpite).second.second = dens;
-        //--- Get material from original list of material in file
-        G4int mateID = G4int(fMateIDs[copyNo]);
-        std::map<G4int,G4Material*>::const_iterator imite =
-         thePhantomMaterialsOriginal.find(mateID);
-
-        //--- Check if density is equal to the original material density
-        if(std::fabs(dens - (*imite).second->GetDensity()/CLHEP::g*CLHEP::cm3 )
-           < 1.e-9 ) continue;
-
-        //--- Build material name with thePhantomMaterialsOriginal name+density
-        G4int densityBin = (G4int(dens/densityDiffs[mateID]));
-
-        G4String mateName = (*imite).second->GetName()
-                          + G4UIcommand::ConvertToString(densityBin);
-        //--- Look if it is the first voxel with this material/densityBin
-        std::pair<G4Material*,G4int> matdens((*imite).second, densityBin );
-
-        auto mppite = newMateDens.find( matdens );
-        if( mppite != newMateDens.cend() ){
-          matInfo* mi = (*mppite).second;
-          mi->fSumdens += dens;
-          mi->fNvoxels++;
-          fMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->fId;
-        } else {
-          matInfo* mi = new matInfo;
-          mi->fSumdens = dens;
-          mi->fNvoxels = 1;
-          mi->fId = G4int(newMateDens.size()+1);
-          newMateDens[matdens] = mi;
-          fMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->fId;
-        }
-      }
-    }
-  }
-
-  if( densityDiff != -1. ) {
-    for( mpite = densiMinMax.begin(); mpite != densiMinMax.end(); ++mpite )
-    {
- #ifdef G4VERBOSE
-      G4cout << "PhantomModeDICOM::ReadVoxelDensities"
-             << " ORIG MATERIALS DENSITY "
-             << (*mpite).first << " MIN " << (*mpite).second.first << " MAX "
-             << (*mpite).second.second << G4endl;
- #endif
-    }
-  }
-
-  //----- Build the list of phantom materials that go to Parameterisation
-  //--- Add original materials
-  for( auto mimite = thePhantomMaterialsOriginal.cbegin();
-       mimite != thePhantomMaterialsOriginal.cend(); ++mimite )
-  {
-    fMaterials.push_back( (*mimite).second );
-  }
-
-
-  // HS, 2021/07/07, NOT TESTED yet
-  //---- Build and add new materials
-  for( auto mppite= newMateDens.cbegin(); mppite!=newMateDens.cend(); ++mppite )
-  {
-    G4double averdens = (*mppite).second->fSumdens/(*mppite).second->fNvoxels;
-    G4double saverdens = G4int(1000.001*averdens)/1000.;
-#ifdef G4VERBOSE
-    G4cout << "PhantomModeDICOM::ReadVoxelDensities AVER DENS "
-           << averdens << " -> "
-           << saverdens << " -> " << G4int(1000*averdens) << " "
-           << G4int(1000*averdens)/1000
-           << " " <<  G4int(1000*averdens)/1000. << G4endl;
-#endif
-
-
-    G4String mateName = ((*mppite).first).first->GetName() + "_"
-       + G4UIcommand::ConvertToString(saverdens);
-
-    fMaterials.push_back( BuildMaterialWithChangingDensity(
-     (*mppite).first.first, G4float(averdens), mateName ) );
-  }
-}
-*/
