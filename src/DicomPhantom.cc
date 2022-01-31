@@ -35,10 +35,6 @@ PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, i
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
-    // clear old g4dcm files in the phantom directory - if compression changes, they are invalid!
-    std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
-    system(cmd.data());
-
     readMaterialFile(DataDir + '/' + "Materials.dat");
     readColorMap(DataDir + '/' + "ColorMap.dat");
 
@@ -62,7 +58,6 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 void PhantomDICOM::optimizeMemory()
 {
     MaterialIDs.clear(); MaterialIDs.shrink_to_fit();
-    out("MaterialIDs", MaterialIDs.capacity());
 
     for (auto & sh : SliceHeaders) delete sh;
     SliceHeaders.clear();
@@ -294,7 +289,7 @@ void PhantomDICOM::buildMaterials()
 void PhantomDICOM::readPhantomData()
 {
     for (const auto & fname : SliceFiles)
-        readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
+        readPhantomDataFile(DataDir + '/' + fname + "_" + std::to_string(LateralCompression) + ".g4dcm");
 }
 
 void PhantomDICOM::readPhantomDataFile(const std::string & fname)
@@ -305,7 +300,7 @@ void PhantomDICOM::readPhantomDataFile(const std::string & fname)
         out("Cannot open phantom data file", fname);
         exit(10);
     }
-    out("Reading phantom data file", fname);
+    //out("Reading phantom data file", fname);
     DicomPhantomZSliceHeader * sliceHeader = new DicomPhantomZSliceHeader(fin);
     SliceHeaders.push_back(sliceHeader);
 
@@ -404,7 +399,7 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
         exit(10);
     }
 
-    out("Reading materials and the corresponding upper densities:");
+    out("-->Reading materials and the corresponding upper densities");
     std::string name;
     float density;
     for (std::string line; std::getline(inStream, line); )
@@ -419,7 +414,7 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
             out("Unexpected format in data file with materials:", fileName);
             exit(10);
         }
-        out(name, density);
+        //out(name, density);
         MatUpperDens.push_back({name, density});
     }
 }
@@ -433,12 +428,12 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
         exit(10);
     }
 
-    out("Reading color map");
+    out("-->Reading color map");
     G4String name;
     double red, green, blue, opacity;
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue;   //allow empty lines
         if (line[0] == '#') continue; //comment
 
@@ -449,7 +444,7 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
             out("Unexpected format in color map data file:", fileName);
             exit(10);
         }
-        out(name, red, green, blue, opacity);
+        //out(name, red, green, blue, opacity);
         G4Colour colour(red, green, blue, opacity);
         G4VisAttributes * visAtt = new G4VisAttributes(colour);
         visAtt->SetVisibility(opacity != 0);

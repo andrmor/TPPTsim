@@ -66,7 +66,7 @@ DicomHandler::DicomHandler() : fMergedSlices(new DicomPhantomZSliceMerged()){}
 
 DicomHandler::~DicomHandler(){}
 
-int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
+int DicomHandler::ReadFile(FILE* dicom, std::string filename2)
 {
     G4cout << " ReadFile " << filename2 << G4endl;
 
@@ -209,7 +209,8 @@ int DicomHandler::ReadFile(FILE* dicom, const char* filename2)
       GetInformation(tagDictionary, data);
     }
     
-    G4String fnameG4DCM = G4String(filename2) + ".g4dcm";
+    //G4String fnameG4DCM = G4String(filename2) + ".g4dcm";
+    G4String fnameG4DCM = filename2 + "_" + std::to_string(fCompression) + ".g4dcm";
 
     // Perform functions originally written straight to file
     DicomPhantomZSliceHeader* zslice = new DicomPhantomZSliceHeader(fnameG4DCM, driverPath);
@@ -593,9 +594,16 @@ void DicomHandler::processFiles(const G4String & path, const G4String & converti
 {
     driverPath = path;
     fCt2DensityFile = driverPath + '/' + convertionFileName;
-
     fCompression = lateralCompression;
     fNFiles = sliceFiles.size();
+
+    bool ok = checkG4FilesExist(lateralCompression, sliceFiles);
+    if (ok)
+    {
+        out("---->All files present, skip building");
+        return;
+    }
+    out("---->Some required files not found, converting dcm to g4dcm");
 
     for (const auto & r : materialUpperDens) fMaterialIndices[r.second] = r.first;
 
@@ -618,6 +626,18 @@ void DicomHandler::processFiles(const G4String & path, const G4String & converti
     delete [] fValueDensity; fValueDensity = nullptr;
     delete [] fValueCT;      fValueCT      = nullptr;
     delete    fMergedSlices; fMergedSlices = nullptr;
+}
+
+bool DicomHandler::checkG4FilesExist(int lateralCompression, const std::vector<std::string> & sliceFiles)
+{
+    out("-->Locating g4dcm files");
+    for (const std::string & name : sliceFiles)
+    {
+        const std::string fileName = driverPath + '/' + name + '_' + std::to_string(lateralCompression) + ".g4dcm";
+        std::ifstream f(fileName);
+        if (!f.good()) return false;
+    }
+    return true;
 }
 
 int DicomHandler::read_defined_nested(FILE * nested,G4int SQ_Length)
