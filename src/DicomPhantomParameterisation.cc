@@ -7,6 +7,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VVisManager.hh"
+#include "G4SystemOfUnits.hh"
 
 DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<Voxel> & voxels,
                                                            const std::map<G4String,G4VisAttributes*> & colourMap) :
@@ -26,12 +27,16 @@ G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G
 
     if (G4VVisManager::GetConcreteInstance() && physVol)
     {
+        /*
         const G4String & matName = mat->GetName();
         auto it = ColourMap.find(matName);
         if (it != ColourMap.end())
             physVol->GetLogicalVolume()->SetVisAttributes(it->second);
         else
             physVol->GetLogicalVolume()->SetVisAttributes(defaultVisAttributes);
+        */
+        const double val = mat->GetDensity()/g*cm3 / 3;//7.83;
+        physVol->GetLogicalVolume()->SetVisAttributes(G4Color{val,val,val,1});
     }
 
     return mat;
