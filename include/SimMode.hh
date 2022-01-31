@@ -61,6 +61,35 @@ public:
 
 // ---
 
+class DoseExtractorMode : public SimModeBase
+{
+public:
+    DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, std::string fileName);
+
+    void run() override;
+    std::string getTypeName() const override {return "DoseExtractorMode";}
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    void fill(double energy, const G4ThreeVector & pos, double density);
+
+protected:
+    int                   NumEvents;
+    std::array<double, 3> BinSize; // mm
+    std::array<int,    3> NumBins;
+    std::array<double, 3> Origin;  // center coordinates of the frame
+
+    double VoxelVolume;
+
+    std::vector<std::vector<std::vector<double>>> Dose;
+
+    bool getVoxel(const G4ThreeVector & pos, std::array<int, 3> & index);
+
+    void saveArray();
+};
+
+// ---
+
 class SimModeShowEvent : public SimModeGui
 {
 public:
