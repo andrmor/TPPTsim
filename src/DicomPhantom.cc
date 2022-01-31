@@ -64,10 +64,10 @@ void PhantomDICOM::optimizeMemory()
     MaterialIDs.clear(); MaterialIDs.shrink_to_fit();
     out("MaterialIDs", MaterialIDs.capacity());
 
-    for (auto & sh : fZSliceHeaders) delete sh;
-    fZSliceHeaders.clear();
+    for (auto & sh : SliceHeaders) delete sh;
+    SliceHeaders.clear();
 
-    delete fZSliceHeaderMerged; fZSliceHeaderMerged = nullptr;
+    delete SliceHeaderMerged; SliceHeaderMerged = nullptr;
 }
 
 void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
@@ -307,12 +307,12 @@ void PhantomDICOM::readPhantomDataFile(const std::string & fname)
     }
     out("Reading phantom data file", fname);
     DicomPhantomZSliceHeader * sliceHeader = new DicomPhantomZSliceHeader(fin);
-    fZSliceHeaders.push_back(sliceHeader);
+    SliceHeaders.push_back(sliceHeader);
 
     const size_t nVoxels = sliceHeader->GetNoVoxels();
-    if (fZSliceHeaders.size() == 1) MaterialIDs.resize(SliceFiles.size() * nVoxels); // if it is the first slice, initiliaze MaterialIDs
+    if (SliceHeaders.size() == 1) MaterialIDs.resize(SliceFiles.size() * nVoxels); // if it is the first slice, initiliaze MaterialIDs
 
-    size_t voxelCopyNo = (fZSliceHeaders.size() - 1) * nVoxels;
+    size_t voxelCopyNo = (SliceHeaders.size() - 1) * nVoxels;
     size_t matID;
     for (size_t ii = 0; ii < nVoxels; ii++, voxelCopyNo++)
     {
@@ -323,29 +323,27 @@ void PhantomDICOM::readPhantomDataFile(const std::string & fname)
 
 void PhantomDICOM::mergeZSliceHeaders()
 {
-    fZSliceHeaderMerged = new DicomPhantomZSliceHeader( *fZSliceHeaders[0] );
-    for (size_t ii = 1; ii < fZSliceHeaders.size(); ii++)
-        *fZSliceHeaderMerged += *fZSliceHeaders[ii];
+    SliceHeaderMerged = new DicomPhantomZSliceHeader( *SliceHeaders[0] );
+    for (size_t ii = 1; ii < SliceHeaders.size(); ii++)
+        *SliceHeaderMerged += *SliceHeaders[ii];
 }
 
 void PhantomDICOM::prepareParameterizationParameters()
 {
-    fNVoxelX = fZSliceHeaderMerged->GetNoVoxelX();
-    fNVoxelY = fZSliceHeaderMerged->GetNoVoxelY();
-    fNVoxelZ = fZSliceHeaderMerged->GetNoVoxelZ();
+    NumVoxX = SliceHeaderMerged->GetNoVoxelX();
+    NumVoxY = SliceHeaderMerged->GetNoVoxelY();
+    NumVoxZ = SliceHeaderMerged->GetNoVoxelZ();
 
-    fVoxelHalfDimX = fZSliceHeaderMerged->GetVoxelHalfX();
-    fVoxelHalfDimY = fZSliceHeaderMerged->GetVoxelHalfY();
-    fVoxelHalfDimZ = fZSliceHeaderMerged->GetVoxelHalfZ();
+    VoxHalfSizeX = SliceHeaderMerged->GetVoxelHalfX();
+    VoxHalfSizeY = SliceHeaderMerged->GetVoxelHalfY();
+    VoxHalfSizeZ = SliceHeaderMerged->GetVoxelHalfZ();
 
-    //zStart = -fNVoxelZ * fVoxelHalfDimZ + fVoxelHalfDimZ;
-    if (fNVoxelZ == 1) zStart = 0;
-    else               zStart = -2.0*fVoxelHalfDimZ * ( floor(0.5*(fNVoxelZ - 1)) + 0.5 );
+    zStart = (NumVoxZ == 1 ? 0 : -NumVoxZ * VoxHalfSizeZ + VoxHalfSizeZ);
 }
 
 G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
 {
-    G4Tubs          * solid          = new G4Tubs("PhTube", 0, PhantRadius * mm, fNVoxelZ * fVoxelHalfDimZ * mm, 0, 360 * deg);
+    G4Tubs          * solid          = new G4Tubs("PhTube", 0, PhantRadius * mm, NumVoxZ * VoxHalfSizeZ * mm, 0, 360 * deg);
     G4LogicalVolume * PhantomLogical = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
     const G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
@@ -360,37 +358,37 @@ G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
 
 void PhantomDICOM::constructPhantom(G4LogicalVolume * PhantomLogical)
 {
-    const int voxelsPerSlice = fNVoxelX * fNVoxelY;
+    const int voxelsPerSlice = NumVoxX * NumVoxY;
 
-    const double radius = PhantRadius - 2.0 * fVoxelHalfDimX;
+    const double radius = PhantRadius - 2.0 * VoxHalfSizeX;
     const double radius2 = radius * radius;
-    double XC = 0.5 * fNVoxelX;
-    double YC = 0.5 * fNVoxelY;
+    double XC = 0.5 * NumVoxX;
+    double YC = 0.5 * NumVoxY;
 
-    const int totNumVoxels = fNVoxelX * fNVoxelY * fNVoxelZ;
+    const int totNumVoxels = NumVoxX * NumVoxY * NumVoxZ;
 
     for (int iVoxel = 0; iVoxel < totNumVoxels; iVoxel++)
     {
         const int iSlice = iVoxel / voxelsPerSlice;
         const int iVoxelIndexInSlice = iVoxel - iSlice * voxelsPerSlice;
 
-        const int ix = iVoxelIndexInSlice / fNVoxelX;
-        const int iy = iVoxelIndexInSlice % fNVoxelX;
+        const int ix = iVoxelIndexInSlice / NumVoxX;
+        const int iy = iVoxelIndexInSlice % NumVoxX;
 
-        const double x = (ix - XC) * 2.0 * fVoxelHalfDimX;
-        const double y = (iy - YC) * 2.0 * fVoxelHalfDimY;
+        const double x = (ix - XC) * 2.0 * VoxHalfSizeX;
+        const double y = (iy - YC) * 2.0 * VoxHalfSizeY;
 
         if (x*x + y*y < radius2)
         {
             G4Material * mat = Materials[MaterialIDs[iVoxel]];
             if (mat == AirMat) continue;
 
-            const double z = zStart + 2.0 * iSlice * fVoxelHalfDimZ;
+            const double z = zStart + 2.0 * iSlice * VoxHalfSizeZ;
             Voxels.push_back({-y, x, z, mat});
         }
     }
 
-    G4Box           * voxel_solid = new G4Box("Voxel", fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ);
+    G4Box           * voxel_solid = new G4Box("Voxel", VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ);
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, AirMat, "VoxelL",  0,0,0);
 
     DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels, ColourMap);

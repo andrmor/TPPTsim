@@ -53,11 +53,11 @@ protected:
     G4Material             * AirMat = nullptr;                // voxels of this material are not created
     std::vector<size_t>      MaterialIDs;                     // index of the material for each voxel in the dicom
 
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;    // list of z slice headers (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged = nullptr; // z slice header resulted from merging all z slice headers
+    std::vector<DicomPhantomZSliceHeader*> SliceHeaders;      // list of z slice headers (one per DICOM file)
+    DicomPhantomZSliceHeader * SliceHeaderMerged = nullptr;   // z slice header resulted from merging all z slice headers
 
-    int    fNVoxelX, fNVoxelY, fNVoxelZ;
-    double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
+    int    NumVoxX, NumVoxY, NumVoxZ;
+    double VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ;
 
 private:
     void buildMaterials();
