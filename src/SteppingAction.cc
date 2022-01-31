@@ -53,6 +53,23 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 
 // ---
 
+void SteppingAction_Dose::UserSteppingAction(const G4Step * step)
+{
+    const double depo = step->GetTotalEnergyDeposit(); // in MeV
+    if (depo == 0) return;
+
+    const G4StepPoint * postP = step->GetPostStepPoint();
+    if (!postP->GetMaterial()) return; // particle escaped
+    const G4StepPoint * preP  = step->GetPreStepPoint();
+
+    SessionManager & SM = SessionManager::getInstance();
+    DoseExtractorMode * Mode = static_cast<DoseExtractorMode*>(SM.SimMode);
+
+    Mode->fill(depo, 0.5*(preP->GetPosition() + postP->GetPosition()), postP->GetMaterial()->GetDensity());
+}
+
+// ---
+
 void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
 {
     const G4StepPoint * postP  = step->GetPostStepPoint();

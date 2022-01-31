@@ -68,6 +68,103 @@ void SimModeGui::run()
 
 // ---
 
+DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, std::string fileName) :
+    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName = fileName;
+    SM.bBinOutput = false;
+
+    Dose.resize(NumBins[0]);
+    for (std::vector<std::vector<double>> & ary : Dose)
+    {
+        ary.resize(NumBins[1]);
+        for (std::vector<double> & arz : ary)
+            arz = std::vector<double>(NumBins[2], 0);
+    }
+
+    VoxelVolume = 1.0;
+    for (int i = 0; i < 3; i++) VoxelVolume *= BinSize[i]; // mm3
+}
+
+void DoseExtractorMode::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+    saveArray();
+}
+
+G4UserSteppingAction * DoseExtractorMode::getSteppingAction()
+{
+    return new SteppingAction_Dose();
+}
+
+void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos, double density)
+{
+    const double densityKgPerMM3 = density/kg*mm3;
+    if (densityKgPerMM3 < 1e-10) return; // vacuum
+
+    std::array<int,3> index; // on stack, fast
+    const bool ok = getVoxel(pos, index);
+    if (!ok) return;
+
+    const double deltaDose = (energy/joule) / ( densityKgPerMM3 * VoxelVolume );
+    Dose[index[0]][index[1]][index[2]] += deltaDose;
+}
+
+bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        index[i] = floor( (pos[i] - Origin[i]) / BinSize[i] );
+        if ( index[i] < 0 || index[i] >= NumBins[i]) return false;
+    }
+    return true;
+}
+
+void DoseExtractorMode::saveArray()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    json11::Json::object json;
+    //BinSize
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(BinSize[i]);
+        json["BinSize"] = jar;
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(NumBins[i]);
+        json["NumBins"] = jar;
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Origin[i]);
+        json["Origin"] = jar;
+    }
+    json11::Json aa(json);
+    std::string str = '#' + aa.dump();
+    *SM.outStream << str << '\n';
+
+    for (std::vector<std::vector<double>> & ary : Dose)
+    {
+        for (std::vector<double> & arz : ary)
+        {
+            for (double d : arz)
+                *SM.outStream << d << ' ';
+            *SM.outStream << '\n';
+        }
+    }
+}
+
+// ---
+
 SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;

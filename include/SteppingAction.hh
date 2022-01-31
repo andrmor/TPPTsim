@@ -13,6 +13,14 @@ public:
 
 // ---
 
+class SteppingAction_Dose : public G4UserSteppingAction
+{
+public:
+    void UserSteppingAction(const G4Step * step) override;
+};
+
+// ---
+
 class SteppingAction_Tracing : public G4UserSteppingAction
 {
 public:
