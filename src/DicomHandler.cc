@@ -612,7 +612,8 @@ void DicomHandler::processFiles(const G4String & path, const G4String & converti
         std::fclose(dicom);
     }
 
-    fMergedSlices->CheckSlices(); // Checks the spacing is correct. Dumps to files
+    fMergedSlices->CheckSlices(); // Checks the spacing is correct.
+    fMergedSlices->SaveSlices();  // Dumps to g4dcm files
 
     delete [] fValueDensity; fValueDensity = nullptr;
     delete [] fValueCT;      fValueCT      = nullptr;

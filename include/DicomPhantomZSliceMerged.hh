@@ -45,39 +45,20 @@
 
 class DicomPhantomZSliceMerged
 {
-
  public:
-    // Constructor and Destructors
-    DicomPhantomZSliceMerged();
     ~DicomPhantomZSliceMerged();
 
 public:
-    // Public functions
-    void AddZSlice(DicomPhantomZSliceHeader* val) {
-        fSlices[val->GetSliceLocation()] = val;
-    }
+    void AddZSlice(DicomPhantomZSliceHeader* val);
 
     void CheckSlices();
+    void SaveSlices();
 
-    inline void DumpExcessMemory();
-
-private:
-    // Private functions
+    void DumpExcessMemory();
 
 private:
-    // Private variables
     std::map<G4double,DicomPhantomZSliceHeader*> fSlices;
-    static DicomPhantomZSliceMerged* fInstance;
 
 };
-
-inline void DicomPhantomZSliceMerged::DumpExcessMemory()
-{
-    for(std::map<G4double,DicomPhantomZSliceHeader*>::iterator ite = fSlices.begin();
-        ite != fSlices.end(); ++ite) {
-        ite->second->DumpExcessMemory();
-    }
-}
-
 
 #endif
