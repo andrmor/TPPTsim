@@ -9,9 +9,8 @@
 #include "G4VVisManager.hh"
 #include "G4SystemOfUnits.hh"
 
-DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<Voxel> & voxels,
-                                                           const std::map<G4String,G4VisAttributes*> & colourMap) :
-    G4VPVParameterisation(), Voxels(voxels), ColourMap(colourMap)
+DicomPhantomParameterisation::DicomPhantomParameterisation(std::vector<Voxel> & voxels) :
+    G4VPVParameterisation(), Voxels(voxels)
 {
     defaultVisAttributes = new G4VisAttributes(G4Colour(1.0, 0, 0));
 }
@@ -27,16 +26,23 @@ G4Material * DicomPhantomParameterisation::ComputeMaterial(const G4int copyNo, G
 
     if (G4VVisManager::GetConcreteInstance() && physVol)
     {
-        /*
-        const G4String & matName = mat->GetName();
-        auto it = ColourMap.find(matName);
-        if (it != ColourMap.end())
-            physVol->GetLogicalVolume()->SetVisAttributes(it->second);
+        if (bUseFalseColors)
+        {
+            const G4String & matName = mat->GetName();
+            auto it = ColourMap.find(matName);
+            if (it != ColourMap.end())
+                physVol->GetLogicalVolume()->SetVisAttributes(it->second);
+            else
+                physVol->GetLogicalVolume()->SetVisAttributes(defaultVisAttributes);
+        }
         else
-            physVol->GetLogicalVolume()->SetVisAttributes(defaultVisAttributes);
-        */
-        const double val = mat->GetDensity()/g*cm3 / 3;//7.83;
-        physVol->GetLogicalVolume()->SetVisAttributes(G4Color{val,val,val,1});
+        {
+            //const double val = mat->GetDensity()/g*cm3 / 2.1;
+            double val = mat->GetDensity()/g*cm3;
+            //val = val*val / 4.0;
+            val = val*val*val / 8.0;
+            physVol->GetLogicalVolume()->SetVisAttributes(G4Color{val,val,val,1});
+        }
     }
 
     return mat;
@@ -48,4 +54,15 @@ void DicomPhantomParameterisation::ComputeTransformation(const int copyNo, G4VPh
 
     physVol->SetTranslation( {vox.X, vox.Y, vox.Z} );
     physVol->SetRotation(nullptr);
+}
+
+void DicomPhantomParameterisation::enableFalseColors(const std::map<G4String, G4VisAttributes*> & colourMap)
+{
+    bUseFalseColors = true;
+    ColourMap = colourMap;
+}
+
+void DicomPhantomParameterisation::enableDensityColors()
+{
+    bUseFalseColors = false;
 }

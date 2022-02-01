@@ -1,8 +1,6 @@
 #ifndef DicomPhantom_h
 #define DicomPhantom_h
 
-// includes code from P. Arce
-
 #include "PhantomMode.hh"
 #include "Voxel.hh"
 #include "globals.hh"
@@ -40,13 +38,13 @@ protected:
     std::vector<double> PosInWorld;
 
     const std::string   ConvertionFileName = "CT2Density.dat";
-    const bool          ContainerInvisible = true;
+    bool                ContainerInvisible;
+    bool                UseFalseColors;
 
     std::vector<std::pair<std::string, float>> MatUpperDens;
     std::map<G4String, G4VisAttributes*>       ColourMap;     // --->PERSISTENT: in use during gui session!
 
     std::vector<std::string> SliceFiles;
-    double                   zStart;
 
     std::vector<Voxel>       Voxels;                          // --->PERSISTENT: in use during tracking!
 
@@ -59,6 +57,7 @@ protected:
 
     int    NumVoxX, NumVoxY, NumVoxZ;
     double VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ;
+    double zStart;
 
 private:
     void buildMaterials();

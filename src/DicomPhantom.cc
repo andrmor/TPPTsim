@@ -31,12 +31,16 @@ PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, i
                            int lateralCompression, double containerRadius, const std::vector<double> & posInWorld) :
                            DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
                            LateralCompression(lateralCompression),
-                           PhantRadius(containerRadius), PosInWorld(posInWorld) {}
+                           PhantRadius(containerRadius), PosInWorld(posInWorld)
+{
+    ContainerInvisible = true;
+    UseFalseColors     = false;
+}
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
     readMaterialFile(DataDir + '/' + "Materials.dat");
-    readColorMap(DataDir + '/' + "ColorMap.dat");
+    if (UseFalseColors) readColorMap(DataDir + '/' + "ColorMap.dat");
 
     generateSliceFileNames();
 
@@ -95,6 +99,8 @@ void PhantomDICOM::readFromJson(const json11::Json & json)
 
 void PhantomDICOM::buildMaterials()
 {
+    // materials defined by P. Arce
+
     double z, a;
     std::string name, symbol;
 
@@ -402,7 +408,10 @@ void PhantomDICOM::constructPhantom(G4LogicalVolume * PhantomLogical)
     G4Box           * voxel_solid = new G4Box("Voxel", VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ);
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, AirMat, "VoxelL",  0,0,0);
 
-    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels, ColourMap);
+    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels);
+    if (UseFalseColors) param->enableFalseColors(ColourMap);
+    else                param->enableDensityColors();
+
     new G4PVParameterised("phantom", voxel_logic, PhantomLogical, kUndefined, Voxels.size(), param);
 }
 
@@ -471,6 +480,12 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
 void PhantomDICOM::generateSliceFileNames()
 {
     SliceFiles.clear();
+
+    if (SliceFrom >= SliceTo)
+    {
+        out("SliceTo should be larger than SliceFrom");
+        exit(10);
+    }
 
     for (int iSlice = SliceFrom; iSlice < SliceTo; iSlice++)
     {

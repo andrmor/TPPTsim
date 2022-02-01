@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
         //SM.PhantomMode      = new PhantomParam();
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
-        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 125, 210, 2, 155.0, {0,0,0});
+        SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
         //SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
         //SM.PhantomMode      = new PhantomEspana();
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
@@ -110,9 +110,9 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
-        SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
+        //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeScintPosTest();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
