@@ -37,7 +37,6 @@ protected:
     double              PhantRadius;
     std::vector<double> PosInWorld;
 
-    const std::string   ConvertionFileName = "CT2Density.dat";
     bool                ContainerInvisible;
     bool                UseFalseColors;
 

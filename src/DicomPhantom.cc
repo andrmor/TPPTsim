@@ -39,13 +39,13 @@ PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, i
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
-    readMaterialFile(DataDir + '/' + "Materials.dat");
-    if (UseFalseColors) readColorMap(DataDir + '/' + "ColorMap.dat");
+    readMaterialFile("Materials.dat");
+    if (UseFalseColors) readColorMap("ColorMap.dat");
 
     generateSliceFileNames();
 
     DicomHandler dcmHandler;
-    dcmHandler.processFiles(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
+    dcmHandler.processFiles(DataDir, "CT2Density.dat", LateralCompression, MatUpperDens, SliceFiles);
 
     buildMaterials();
     readPhantomData();
