@@ -63,17 +63,13 @@ DicomPhantomZSliceHeader::DicomPhantomZSliceHeader( std::ifstream& fin )
     G4String mateindex;
     G4String matename;
     fin >> nmate;
-#ifdef G4VERBOSE
-    G4cout << " DicomPhantomZSliceHeader reading number of materials " 
-           << nmate << G4endl;
-#endif
+
+//    G4cout << " DicomPhantomZSliceHeader reading number of materials " << nmate << G4endl;
+
 
     for( G4int im = 0; im < nmate; im++ ){
         fin >> mateindex >> matename;
-#ifdef G4VERBOSE
-        //G4cout << " DicomPhantomZSliceHeader reading material " 
-        // << im << " : "<< mateindex << "  " << matename << G4endl;
-#endif
+        //G4cout << " DicomPhantomZSliceHeader reading material " << im << " : "<< mateindex << "  " << matename << G4endl;
 
         if( ! CheckMaterialExists( matename ) ) {
             G4Exception("DicomPhantomZSliceHeader::DicomPhantomZSliceHeader",
@@ -86,21 +82,18 @@ DicomPhantomZSliceHeader::DicomPhantomZSliceHeader( std::ifstream& fin )
 
     //----- Read number of voxels
     fin >> fNoVoxelX >> fNoVoxelY >> fNoVoxelZ;
-#ifdef G4VERBOSE
-    G4cout << " Number of voxels " << fNoVoxelX << " " << fNoVoxelY 
-           << " " << fNoVoxelZ << G4endl;
-#endif
+//    G4cout << " Number of voxels " << fNoVoxelX << " " << fNoVoxelY << " " << fNoVoxelZ << G4endl;
 
     //----- Read minimal and maximal extensions (= walls of phantom)
     fin >> fMinX >> fMaxX;
     fin >> fMinY >> fMaxY;
     fin >> fMinZ >> fMaxZ;
 
-    #ifdef G4VERBOSE
+/*
         G4cout << " Extension in X " << fMinX << " " << fMaxX << G4endl
         << " Extension in Y " << fMinY << " " << fMaxY << G4endl
         << " Extension in Z " << fMinZ << " " << fMaxZ << G4endl;
-    #endif
+*/
 
     fSliceLocation = 0.5*(fMinZ + fMaxZ);
 
@@ -227,9 +220,7 @@ void DicomPhantomZSliceHeader::AddMateID(const std::vector<std::vector<G4int> > 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo..
 void DicomPhantomZSliceHeader::DumpToFile()
 {
-
-    G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to "
-         << fFilename << "..." << G4endl;
+//   G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to " << fFilename << "..." << G4endl;
   //sleep(5);
   
   //  May seen counter-intuitive (dumping to file you are reading from), but

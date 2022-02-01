@@ -84,7 +84,7 @@ private:
     const G4int LINEBUFFSIZE = 5020;
     const G4int FILENAMESIZE = 512;
     
-    int   ReadFile(FILE *, const char *);
+    int   ReadFile(FILE *, std::string);
     int   ReadData(FILE *);
     void  ReadCalibration();
     void  GetInformation(G4int &, char *);
@@ -95,6 +95,7 @@ private:
     int   read_defined_nested(FILE *, G4int);
     void  read_undefined_nested(FILE *);
     void  read_undefined_item(FILE *);
+    bool  checkG4FilesExist(int lateralCompression, const std::vector<std::string> & sliceFiles);
 
     short fCompression = 0;
     G4int fNFiles = 0;

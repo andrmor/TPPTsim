@@ -66,14 +66,16 @@ class DoseExtractorMode : public SimModeBase
 public:
     DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, std::string fileName);
 
-    void run() override;
-    std::string getTypeName() const override {return "DoseExtractorMode";}
-
-    G4UserSteppingAction * getSteppingAction() override;
-
     void fill(double energy, const G4ThreeVector & pos, double density);
 
+    void run() override;
+    std::string getTypeName() const override {return "DoseExtractorMode";}
+    G4UserSteppingAction * getSteppingAction() override;
+    void readFromJson(const json11::Json & json) override;
+
 protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
     int                   NumEvents;
     std::array<double, 3> BinSize; // mm
     std::array<int,    3> NumBins;
@@ -86,6 +88,7 @@ protected:
     bool getVoxel(const G4ThreeVector & pos, std::array<int, 3> & index);
 
     void saveArray();
+    void writeBinningToJson(json11::Json::object & json) const;
 };
 
 // ---

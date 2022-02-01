@@ -31,21 +31,21 @@ PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, i
                            int lateralCompression, double containerRadius, const std::vector<double> & posInWorld) :
                            DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
                            LateralCompression(lateralCompression),
-                           PhantRadius(containerRadius), PosInWorld(posInWorld) {}
+                           PhantRadius(containerRadius), PosInWorld(posInWorld)
+{
+    ContainerInvisible = true;
+    UseFalseColors     = false;
+}
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 {
-    // clear old g4dcm files in the phantom directory - if compression changes, they are invalid!
-    std::string cmd = "rm -f " + DataDir + "/*.g4dcm*";
-    system(cmd.data());
-
-    readMaterialFile(DataDir + '/' + "Materials.dat");
-    readColorMap(DataDir + '/' + "ColorMap.dat");
+    readMaterialFile("Materials.dat");
+    if (UseFalseColors) readColorMap("ColorMap.dat");
 
     generateSliceFileNames();
 
     DicomHandler dcmHandler;
-    dcmHandler.processFiles(DataDir, ConvertionFileName, LateralCompression, MatUpperDens, SliceFiles);
+    dcmHandler.processFiles(DataDir, "CT2Density.dat", LateralCompression, MatUpperDens, SliceFiles);
 
     buildMaterials();
     readPhantomData();
@@ -62,7 +62,6 @@ G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
 void PhantomDICOM::optimizeMemory()
 {
     MaterialIDs.clear(); MaterialIDs.shrink_to_fit();
-    out("MaterialIDs", MaterialIDs.capacity());
 
     for (auto & sh : SliceHeaders) delete sh;
     SliceHeaders.clear();
@@ -72,18 +71,36 @@ void PhantomDICOM::optimizeMemory()
 
 void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
 {
+    json["DataDir"] = DataDir;
+    json["SliceFileBase"] = SliceFileBase;
+    json["SliceFrom"] = SliceFrom;
+    json["SliceTo"] = SliceTo;
+    json["LateralCompression"] = LateralCompression;
     json["PhantRadius"] = PhantRadius;
-    // TODO: Hugo!
+
+    json11::Json::array jar;
+    for (int i = 0; i < 3; i++) jar.push_back(PosInWorld[i]);
+    json["PosInWorld"] = jar;
 }
 
 void PhantomDICOM::readFromJson(const json11::Json & json)
 {
+    jstools::readString(json, "DataDir", DataDir);
+    jstools::readString(json, "SliceFileBase", SliceFileBase);
+    jstools::readInt(json, "SliceFrom", SliceFrom);
+    jstools::readInt(json, "SliceTo", SliceTo);
+    jstools::readInt(json, "LateralCompression", LateralCompression);
     jstools::readDouble(json, "PhantRadius", PhantRadius);
-    // TODO: Hugo!
+
+    json11::Json::array jar;
+    jstools::readArray(json, "PosInWorld", jar);
+    for (int i = 0; i < 3; i++) PosInWorld[i] = jar[i].number_value();
 }
 
 void PhantomDICOM::buildMaterials()
 {
+    // materials defined by P. Arce
+
     double z, a;
     std::string name, symbol;
 
@@ -294,7 +311,7 @@ void PhantomDICOM::buildMaterials()
 void PhantomDICOM::readPhantomData()
 {
     for (const auto & fname : SliceFiles)
-        readPhantomDataFile(DataDir + '/' + fname + ".g4dcm");
+        readPhantomDataFile(DataDir + '/' + fname + "_" + std::to_string(LateralCompression) + ".g4dcm");
 }
 
 void PhantomDICOM::readPhantomDataFile(const std::string & fname)
@@ -305,7 +322,7 @@ void PhantomDICOM::readPhantomDataFile(const std::string & fname)
         out("Cannot open phantom data file", fname);
         exit(10);
     }
-    out("Reading phantom data file", fname);
+    //out("Reading phantom data file", fname);
     DicomPhantomZSliceHeader * sliceHeader = new DicomPhantomZSliceHeader(fin);
     SliceHeaders.push_back(sliceHeader);
 
@@ -391,7 +408,10 @@ void PhantomDICOM::constructPhantom(G4LogicalVolume * PhantomLogical)
     G4Box           * voxel_solid = new G4Box("Voxel", VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ);
     G4LogicalVolume * voxel_logic = new G4LogicalVolume(voxel_solid, AirMat, "VoxelL",  0,0,0);
 
-    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels, ColourMap);
+    DicomPhantomParameterisation * param = new DicomPhantomParameterisation(Voxels);
+    if (UseFalseColors) param->enableFalseColors(ColourMap);
+    else                param->enableDensityColors();
+
     new G4PVParameterised("phantom", voxel_logic, PhantomLogical, kUndefined, Voxels.size(), param);
 }
 
@@ -404,7 +424,7 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
         exit(10);
     }
 
-    out("Reading materials and the corresponding upper densities:");
+    out("-->Reading materials and the corresponding upper densities");
     std::string name;
     float density;
     for (std::string line; std::getline(inStream, line); )
@@ -419,7 +439,7 @@ void PhantomDICOM::readMaterialFile(const std::string & fileName)
             out("Unexpected format in data file with materials:", fileName);
             exit(10);
         }
-        out(name, density);
+        //out(name, density);
         MatUpperDens.push_back({name, density});
     }
 }
@@ -433,12 +453,12 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
         exit(10);
     }
 
-    out("Reading color map");
+    out("-->Reading color map");
     G4String name;
     double red, green, blue, opacity;
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue;   //allow empty lines
         if (line[0] == '#') continue; //comment
 
@@ -449,7 +469,7 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
             out("Unexpected format in color map data file:", fileName);
             exit(10);
         }
-        out(name, red, green, blue, opacity);
+        //out(name, red, green, blue, opacity);
         G4Colour colour(red, green, blue, opacity);
         G4VisAttributes * visAtt = new G4VisAttributes(colour);
         visAtt->SetVisibility(opacity != 0);
@@ -460,6 +480,12 @@ void PhantomDICOM::readColorMap(const std::string & fileName)
 void PhantomDICOM::generateSliceFileNames()
 {
     SliceFiles.clear();
+
+    if (SliceFrom >= SliceTo)
+    {
+        out("SliceTo should be larger than SliceFrom");
+        exit(10);
+    }
 
     for (int iSlice = SliceFrom; iSlice < SliceTo; iSlice++)
     {

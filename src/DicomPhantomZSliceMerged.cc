@@ -41,34 +41,27 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-DicomPhantomZSliceMerged::DicomPhantomZSliceMerged()
-{
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 DicomPhantomZSliceMerged::~DicomPhantomZSliceMerged()
 {
     fSlices.clear();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void DicomPhantomZSliceMerged::AddZSlice(DicomPhantomZSliceHeader * val)
+{
+    fSlices[val->GetSliceLocation()] = val;
+}
 
 void DicomPhantomZSliceMerged::CheckSlices()
 {
-
-  G4cout << "\nDicomPhantomZSliceMerged::Checking "
-         << fSlices.size() << " fSlices..." << G4endl;
+    G4cout << "\nDicomPhantomZSliceMerged::Checking "
+           << fSlices.size() << " fSlices..." << G4endl;
   
   G4bool uniformSliceThickness = true;
   
-  if(fSlices.size() > 1) {
-    if(fSlices.size() == 2) {
+  if(fSlices.size() > 1)
+  {
+    if(fSlices.size() == 2)
+    {
       DicomPhantomZSliceHeader* one = fSlices.begin()->second;
       DicomPhantomZSliceHeader* two = fSlices.end()->second;
       
@@ -84,7 +77,9 @@ void DicomPhantomZSliceMerged::CheckSlices()
           two->SetMaxZ(two->GetSliceLocation()+real_distance);
         }
       }
-    } else {
+    }
+    else
+    {
       auto ite0 = fSlices.begin();
       auto ite1 = fSlices.begin();
       auto ite2 = fSlices.begin();
@@ -102,7 +97,8 @@ void DicomPhantomZSliceMerged::CheckSlices()
                                       prev->GetSliceLocation())/2.;
         G4double real_distance = real_max_distance + real_min_distance;
         G4double stated_distance = slice->GetMaxZ()-slice->GetMinZ();
-        if(real_distance != stated_distance) {
+        if(real_distance != stated_distance)
+        {
           uintmax_t sliceNum = std::distance(fSlices.begin(),ite1);
           G4cout << "\tDicomPhantomZSliceMerged::CheckSlices - \
                     Slice Distance Error in slice [" << sliceNum 
@@ -112,13 +108,15 @@ void DicomPhantomZSliceMerged::CheckSlices()
           slice->SetMinZ(slice->GetSliceLocation()-real_min_distance);
           slice->SetMaxZ(slice->GetSliceLocation()+real_max_distance);
           
-          if(ite0 == fSlices.begin()) {
+          if(ite0 == fSlices.begin())
+          {
             prev->SetMaxZ(slice->GetMinZ());
             // Using below would make all slice same thickness
             //prev->SetMinZ(prev->GetSliceLocation()-real_min_distance);
-            if(uniformSliceThickness) {
-              prev->SetMinZ(prev->GetSliceLocation()-real_min_distance); }
-            
+            if(uniformSliceThickness)
+            {
+              prev->SetMinZ(prev->GetSliceLocation()-real_min_distance);
+            }
           }
           if(static_cast<unsigned int>(std::distance(fSlices.begin(),ite2)+1)==
              fSlices.size()) {
@@ -133,10 +131,19 @@ void DicomPhantomZSliceMerged::CheckSlices()
     }
   }
   G4cout << G4endl;
-  
-  for(auto ite = fSlices.cbegin(); ite != fSlices.cend(); ++ite) {
-    ite->second->DumpToFile();
-  }
-
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DicomPhantomZSliceMerged::SaveSlices()
+{
+    for(auto ite = fSlices.cbegin(); ite != fSlices.cend(); ++ite) {
+        ite->second->DumpToFile();
+    }
+}
+
+void DicomPhantomZSliceMerged::DumpExcessMemory()
+{
+    for(std::map<G4double,DicomPhantomZSliceHeader*>::iterator ite = fSlices.begin();
+        ite != fSlices.end(); ++ite) {
+        ite->second->DumpExcessMemory();
+    }
+}
