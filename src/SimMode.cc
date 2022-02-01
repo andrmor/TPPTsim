@@ -24,6 +24,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
     if      (Type == "SimModeGui")            sm = new SimModeGui();
     else if (Type == "SimModeShowEvent")      sm = new SimModeShowEvent(0);
+    else if (Type == "DoseExtractorMode")     sm = new DoseExtractorMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
     else if (Type == "SimModeScintPosTest")   sm = new SimModeScintPosTest();
     else if (Type == "SimModeSingleEvents")   sm = new SimModeSingleEvents(0);
     else if (Type == "SimModeMultipleEvents") sm = new SimModeMultipleEvents(0, "dummy.txt", false);
@@ -102,6 +103,63 @@ G4UserSteppingAction * DoseExtractorMode::getSteppingAction()
     return new SteppingAction_Dose();
 }
 
+void DoseExtractorMode::readFromJson(const json11::Json & json)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    jstools::readInt(json, "NumEvents", NumEvents);
+    jstools::readString(json, "FileName", SM.FileName);
+
+    //BinSize
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "BinSize", jar);
+        for (int i = 0; i < 3; i++) BinSize[i] = jar[i].number_value();
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "NumBins", jar);
+        for (int i = 0; i < 3; i++) NumBins[i] = jar[i].int_value();
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "Origin", jar);
+        for (int i = 0; i < 3; i++) Origin[i] = jar[i].number_value();
+    }
+}
+
+void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
+{
+    //BinSize
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(BinSize[i]);
+        json["BinSize"] = jar;
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(NumBins[i]);
+        json["NumBins"] = jar;
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Origin[i]);
+        json["Origin"] = jar;
+    }
+}
+
+void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
+{
+    SessionManager & SM = SessionManager::getInstance();
+    json["NumEvents"] = NumEvents;
+    json["FileName"] = SM.FileName;
+
+    writeBinningToJson(json);
+}
+
 void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos, double density)
 {
     const double densityKgPerMM3 = density/kg*mm3;
@@ -130,24 +188,7 @@ void DoseExtractorMode::saveArray()
     SessionManager & SM = SessionManager::getInstance();
 
     json11::Json::object json;
-    //BinSize
-    {
-        json11::Json::array jar;
-        for (int i = 0; i < 3; i++) jar.push_back(BinSize[i]);
-        json["BinSize"] = jar;
-    }
-    // NumBins
-    {
-        json11::Json::array jar;
-        for (int i = 0; i < 3; i++) jar.push_back(NumBins[i]);
-        json["NumBins"] = jar;
-    }
-    // Origin
-    {
-        json11::Json::array jar;
-        for (int i = 0; i < 3; i++) jar.push_back(Origin[i]);
-        json["Origin"] = jar;
-    }
+    writeBinningToJson(json);
     json11::Json aa(json);
     std::string str = '#' + aa.dump();
     *SM.outStream << str << '\n';

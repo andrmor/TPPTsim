@@ -67,14 +67,30 @@ void PhantomDICOM::optimizeMemory()
 
 void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
 {
+    json["DataDir"] = DataDir;
+    json["SliceFileBase"] = SliceFileBase;
+    json["SliceFrom"] = SliceFrom;
+    json["SliceTo"] = SliceTo;
+    json["LateralCompression"] = LateralCompression;
     json["PhantRadius"] = PhantRadius;
-    // TODO: Hugo!
+
+    json11::Json::array jar;
+    for (int i = 0; i < 3; i++) jar.push_back(PosInWorld[i]);
+    json["PosInWorld"] = jar;
 }
 
 void PhantomDICOM::readFromJson(const json11::Json & json)
 {
+    jstools::readString(json, "DataDir", DataDir);
+    jstools::readString(json, "SliceFileBase", SliceFileBase);
+    jstools::readInt(json, "SliceFrom", SliceFrom);
+    jstools::readInt(json, "SliceTo", SliceTo);
+    jstools::readInt(json, "LateralCompression", LateralCompression);
     jstools::readDouble(json, "PhantRadius", PhantRadius);
-    // TODO: Hugo!
+
+    json11::Json::array jar;
+    jstools::readArray(json, "PosInWorld", jar);
+    for (int i = 0; i < 3; i++) PosInWorld[i] = jar[i].number_value();
 }
 
 void PhantomDICOM::buildMaterials()
