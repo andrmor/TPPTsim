@@ -147,6 +147,21 @@ G4LogicalVolume * PhantomCustomBox::definePhantom(G4LogicalVolume * logicWorld)
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
         break;
+    case Bone :
+        mat = man->FindOrBuildMaterial("G4_BONE_COMPACT_ICRU");
+        break;
+    case Brain :
+        mat = man->FindOrBuildMaterial("G4_BRAIN_ICRP");
+        break;
+    case Blood :
+        mat = man->FindOrBuildMaterial("G4_BLOOD_ICRP");
+        break;
+    case Muscle :
+        mat = man->FindOrBuildMaterial("G4_MUSCLE_SKELETAL_ICRP");
+        break;
+    case Tissue :
+        mat = man->FindOrBuildMaterial("G4_TISSUE_SOFT_ICRP");
+        break;
     default:;
     }
     if (!mat)

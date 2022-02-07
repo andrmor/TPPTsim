@@ -50,7 +50,7 @@ public:
 class PhantomCustomBox : public PhantomModeBase
 {
 public:
-    enum EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater};
+    enum EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater, Bone, Brain, Blood, Muscle, Tissue};
 
     PhantomCustomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
     PhantomCustomBox(){}

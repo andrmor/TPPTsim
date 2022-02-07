@@ -116,7 +116,7 @@ protected:
     G4ThreeVector UnitPerp;
     double        Angle = 0;
 
-    virtual void doWriteToJson(json11::Json::object & json) const {}
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {}
     //void readFromJson(const json11::Json & json);
 };
 class UniformProfile : public ProfileBase

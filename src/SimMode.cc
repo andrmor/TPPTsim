@@ -785,3 +785,102 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
     json["FileName"]  = SM.FileName;
     json["bBinary"]   = SM.bBinOutput;
 }
+
+// ---
+
+PesAnalyzerMode::PesAnalyzerMode(int numEvents, const std::string & fileName) :
+    NumEvents(numEvents)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    SM.FileName = fileName;
+    bNeedOutput = true;
+}
+
+void PesAnalyzerMode::onNewPrimary()
+{
+    numPrim++;
+
+    if (bPositron)
+    {
+        std::string products;
+        for (const G4String & p : Target.second)
+        {
+            if (p == "gamma") continue;
+            products += p + " ";
+        }
+
+        std::string key = Target.first ;
+
+        if (Decays.size() == 1)
+        {
+            std::string secondaries;
+            for (const G4String & p : Decays.front().second)
+            {
+                if (p == "gamma") continue;
+                secondaries += p + " ";
+            }
+            key += " -> (" + products + ")";
+        }
+        else
+        {
+            //out("=> ",Target.first, " -> (" + products + ")");
+            key += "->(" + products + ")";
+            for (const auto & pair : Decays)
+            {
+                std::string secondaries;
+                for (const G4String & p : pair.second)
+                {
+                    if (p == "gamma") continue;
+                    secondaries += p + " ";
+                }
+                //out("  " + pair.first, " -> (" + secondaries + ")");
+                key += " + " + pair.first + "->(" + secondaries + ")";
+            }
+        }
+
+        auto it = Statistics.find(key);
+        if (it == Statistics.end()) Statistics[key] = 1;
+        else Statistics[key]++;
+
+
+    }
+
+    Target = {"None", {}};
+    Decays.clear();
+    bPositron = false;
+}
+
+void PesAnalyzerMode::registerTarget(const G4String & target, std::vector<G4String> products)
+{
+    std::sort(products.begin(), products.end());
+    Target = {target, products};
+}
+
+void PesAnalyzerMode::onDecay(const G4String & isotope, std::vector<G4String> products)
+{
+    std::sort(products.begin(), products.end());
+    Decays.push_back({isotope, products});
+
+    for (const G4String & p : products)
+        if (p == "e+") bPositron = true;
+}
+
+void PesAnalyzerMode::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    SM.runManager->BeamOn(NumEvents);
+    onNewPrimary(); // to trigger update for the last primary
+
+    for (auto it : Statistics)
+    {
+        out(it.first, it.second);
+    }
+    out("Num primaries:", --numPrim);
+}
+
+G4UserSteppingAction * PesAnalyzerMode::getSteppingAction()
+{
+    return new SteppingAction_PesAnalyzer();
+}

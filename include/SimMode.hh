@@ -300,4 +300,35 @@ protected:
     int         CurrentEvent = 0;
 };
 
+// ---
+
+class PesAnalyzerMode : public SimModeBase
+{
+public:
+    PesAnalyzerMode(int numEvents, const std::string & fileName);
+
+    void onNewPrimary();
+    void registerTarget(const G4String & target, std::vector<G4String> products);
+    void onDecay(const G4String & isotope, std::vector<G4String> products);
+
+    void run() override;
+    std::string getTypeName() const override {return "PesAnalyzerMode";}
+    //void readFromJson(const json11::Json & json) override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+protected:
+    //void doWriteToJson(json11::Json::object & json) const override;
+
+    int         NumEvents    = 1;
+
+    bool bPositron = false;
+    std::pair<G4String, std::vector<G4String>> Target;               // { TargetIsotopeForPrimary,  {Products}  }
+    std::vector<std::pair<G4String, std::vector<G4String>>> Decays;  // {  { DecayingIsotope, {Product} }   }
+
+    std::map<std::string, int> Statistics;
+    int numPrim = 0;
+
+};
+
 #endif // SimulationMode_h
