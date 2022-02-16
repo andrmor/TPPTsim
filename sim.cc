@@ -80,7 +80,7 @@ int main(int argc, char** argv)
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
         SM.DetectorComposition.add(DetComp::Base);
-        //SM.DetectorComposition.add(DetComp::ClosedStructure);
+        SM.DetectorComposition.add(DetComp::ClosedStructure);
         SM.DetectorComposition.add(DetComp::SIPM);
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
@@ -98,7 +98,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new ConstantTime(0), {0, -150.0, 0}, {0,1.0,0}, 1000);
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Proton(157.43*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 100); // PE-E3
-        SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
+        //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
+        SM.SourceMode       = new PencilBeam(new Geantino, new UniformTime(0, 238.0*s), {-250, 5, 5}, {1,0,0}, 1);
         //SM.SourceMode       = new PencilBeam(new Proton(55.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
         //SM.SourceMode       = new PencilBeam(new Proton(106.82*MeV), new UniformTime(0, 254.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PE-E1
         //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
@@ -112,11 +113,11 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/Pes-Gel-E4-1e7.dat", false);
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeScintPosTest();
-        //SM.SimMode          = new SimModeTracing();
+        SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
         //SM.SimMode          = new SimModeAnnihilTest(SM.SourceMode->CountEvents(), 0, "Annihil.txt", false);
         //SM.SimMode          = new SimModeAnnihilTest(1000, 0, "Annihil.txt", false);

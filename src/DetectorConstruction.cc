@@ -32,7 +32,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     G4NistManager * man = G4NistManager::Instance();
     SessionManager & SM = SessionManager::getInstance();
-    int ncomponents;
 
     // Materials
     G4Material * matVacuum = man->FindOrBuildMaterial("G4_Galactic");
@@ -51,7 +50,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4Material * matCerium = man->FindOrBuildMaterial("G4_Ce"); //<1% Cerium - https://authors.library.caltech.edu/8519/1/CHEieeetns05.pdf
 
-    G4Material * matLYSOCe = new G4Material("LYSOCe", 7.31*g/cm3, ncomponents = 2);
+    G4Material * matLYSOCe = new G4Material("LYSOCe", 7.31*g/cm3, 2);
     matLYSOCe -> AddMaterial(matLYSO, 99.0 * perCent);
     matLYSOCe -> AddMaterial(matCerium, 1.0 * perCent);
 
@@ -300,7 +299,6 @@ void DetectorConstruction::addSIPM()
     //Material: PCB
     std::vector<G4int> natoms;
     std::vector<G4String> elements;
-    int ncomponents;
 
     elements.push_back("C"); natoms.push_back(21);
     elements.push_back("H") ; natoms.push_back(25);
@@ -318,7 +316,7 @@ void DetectorConstruction::addSIPM()
     G4Material * matIron = man->FindOrBuildMaterial("G4_Fe");
     G4Material * matTin = man->FindOrBuildMaterial("G4_Sn");
 
-    G4Material * matPCB = new G4Material("PCB", 4.57*g/cm3, ncomponents = 5);
+    G4Material * matPCB = new G4Material("PCB", 4.57*g/cm3, 5);
     matPCB->AddMaterial(matEpoxy, 30.0*perCent);
     matPCB->AddMaterial(matFiberGlass, 30.0*perCent);
     matPCB->AddMaterial(matCopper, 30.0*perCent);
@@ -329,7 +327,7 @@ void DetectorConstruction::addSIPM()
     G4Material * matSilicon = man->FindOrBuildMaterial("G4_Si");
 
     //Material: SiPM
-    G4Material * matSIPM = new G4Material("SIPM", 4.20*g/cm3, ncomponents = 2);
+    G4Material * matSIPM = new G4Material("SIPM", 4.20*g/cm3, 2);
     matSIPM->AddMaterial(matPCB, 91.07*perCent);
     matSIPM->AddMaterial(matSilicon, 8.93*perCent);
 
@@ -367,7 +365,6 @@ void DetectorConstruction::addPCB()
     //Material: PCB
     std::vector<G4int> natoms;
     std::vector<G4String> elements;
-    int ncomponents;
 
     elements.push_back("C"); natoms.push_back(21);
     elements.push_back("H") ; natoms.push_back(25);
@@ -385,7 +382,7 @@ void DetectorConstruction::addPCB()
     G4Material * matIron = man->FindOrBuildMaterial("G4_Fe");
     G4Material * matTin = man->FindOrBuildMaterial("G4_Sn");
 
-    G4Material * matPCB = new G4Material("PCB", 4.57*g/cm3, ncomponents = 5);
+    G4Material * matPCB = new G4Material("PCB", 4.57*g/cm3, 5);
     matPCB->AddMaterial(matEpoxy, 30.0*perCent);
     matPCB->AddMaterial(matFiberGlass, 30.0*perCent);
     matPCB->AddMaterial(matCopper, 30.0*perCent);
