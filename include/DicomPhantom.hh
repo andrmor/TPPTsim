@@ -1,176 +1,76 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-/// \file medical/DICOM/include/DicomDetectorConstruction.hh
-/// \brief Definition of the DicomDetectorConstruction class
-//
-
 #ifndef DicomPhantom_h
 #define DicomPhantom_h
 
 #include "PhantomMode.hh"
-#include "G4VUserDetectorConstruction.hh"
-#include "DicomPhantomZSliceHeader.hh"
-#include "G4ThreeVector.hh"
-#include "G4IntersectionSolid.hh"
+#include "Voxel.hh"
+#include "globals.hh"
 #include "json11.hh"
 
 #include <vector>
-#include <set>
 #include <map>
 
 class G4Material;
-class G4Box;
-class G4Tubs;
 class G4LogicalVolume;
-class DicomPhantomZSliceMerged;
+class DicomPhantomZSliceHeader;
+class G4VPhysicalVolume;
+class G4VisAttributes;
 
-//*******************************************************
-/// Dicom detector construction
-///
-///      - Start the building of the geometry
-///      - Initialisation of materials
-///      - Creation of the world
-///      - Reading of the DICOM data
-///
-/// History: 30.11.07  First version
-/// \author  P. Arce
-//*******************************************************
-
-struct matInfo
-{
-    G4double fSumdens;
-    G4int fNvoxels;
-    G4int fId;
-};
-
-class PhantomModeDICOM : public PhantomModeBase
+class PhantomDICOM : public PhantomModeBase
 {
 public:
-    PhantomModeDICOM(G4double phantRadius, const std::vector<double> & posContainer, G4String dataFile, bool delFiles);
+    // lateral compression other than 1 strongly compromoises accuracy -> intended only for visualization
+    PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo,
+                 int lateralCompression, double containerRadius, const std::vector<double> & posInWorld);
 
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
-    std::string       getTypeName() const override {return "PhantomModeDICOM";}
+    std::string       getTypeName() const override {return "PhantomDICOM";}
     void              readFromJson(const json11::Json & json) override;
 
 protected:
     void              doWriteToJson(json11::Json::object & json) const override;
 
+    std::string         DataDir;
+    std::string         SliceFileBase;
+    int                 SliceFrom;
+    int                 SliceTo;
+    int                 LateralCompression;
+    double              PhantRadius;
+    std::vector<double> PosInWorld;
 
-    void ConstructPhantom();
-    void InitialisationOfMaterials();
+    bool                ContainerInvisible;
+    bool                UseFalseColors;
 
-    void ReadPhantomData();
+    std::vector<std::pair<std::string, float>> MatUpperDens;
+    std::map<G4String, G4VisAttributes*>       ColourMap;     // --->PERSISTENT: in use during gui session!
 
-    // read the DICOM files describing the phantom
-    void ReadVoxelDensities(std::ifstream & fin);
+    std::vector<std::string> SliceFiles;
 
-    void ReadPhantomDataFile(const G4String & fname);
-    // read one of the DICOM files describing the phantom
-    // (usually one per Z slice).
-    //  Build a DicomPhantomZSliceHeader for each file
+    std::vector<Voxel>       Voxels;                          // --->PERSISTENT: in use during tracking!
 
-    void MergeZSliceHeaders();
-    // merge the slice headers of all the files
+    std::vector<G4Material*> Materials;
+    G4Material             * AirMat = nullptr;                // voxels of this material are not created
+    std::vector<size_t>      MaterialIDs;                     // index of the material for each voxel in the dicom
 
-    G4Material * BuildMaterialWithChangingDensity(const G4Material * origMate, G4float density, G4String newMateName);
-    // build a new material if the density of the voxel is different
-    // to the other voxels
+    std::vector<DicomPhantomZSliceHeader*> SliceHeaders;      // list of z slice headers (one per DICOM file)
+    DicomPhantomZSliceHeader * SliceHeaderMerged = nullptr;   // z slice header resulted from merging all z slice headers
 
-    void ConstructPhantomContainer(G4LogicalVolume * logicWorld);
+    int    NumVoxX, NumVoxY, NumVoxZ;
+    double VoxHalfSizeX, VoxHalfSizeY, VoxHalfSizeZ;
+    double zStart;
 
-protected:
-    G4double            PhantRadius;
-    std::vector<double> PosContainer;
-    G4String            DicomPath;
-    G4String            DataFile;
-    bool                DelFiles;
-    double              zStart;
+private:
+    void buildMaterials();
+    void readPhantomData();                                   // materialIDs is filled for all voxels of all slices
+    void readPhantomDataFile(const std::string & fname);      // read g4dcm file, constructs SliceHeader and read voxels
+    void mergeZSliceHeaders();
+    void prepareParameterizationParameters();
+    G4LogicalVolume * makeContainer(G4LogicalVolume * logicWorld);
+    void constructPhantom(G4LogicalVolume * PhantomLogical);
+    void optimizeMemory();
+    void readMaterialFile(const std::string & fileName);
+    void readColorMap(const std::string & fileName);
+    void generateSliceFileNames();
 
-    std::vector<std::pair<double,double>> BoxXY;
-
-    int                 BoxesPerSlice;
-    size_t            * reducedIDs;
-
-    //std::vector<unsigned long> myMateIDs;
-    //size_t            * testIDs;
-
-    G4Material        * fAir = nullptr;
-
-    // World ...
-    //G4Tubs            * fWorld_solid;
-    //G4LogicalVolume   * fWorld_logic;
-    //G4VPhysicalVolume * fWorld_phys;
-
-    G4Tubs            * fContainer_solid;   // AM: not needed here
-    G4LogicalVolume   * fContainer_logic;   // AM: not needed here
-    G4VPhysicalVolume * fContainer_phys;
-
-    G4int               fNoFiles; // number of DICOM files
-
-    std::vector<G4Material*> fOriginalMaterials;  // list of original materials
-    std::vector<G4Material*> fMaterials;
-    // list of new materials created to distinguish different density
-    //  voxels that have the same original materials
-
-    size_t * fMateIDs; // index of material of each voxel
-    //unsigned int* fMateIDs; // index of material of each voxel
-
-    std::map<G4int,G4double> fDensityDiffs;
-    // Density difference to distinguish material for each original
-    // material (by index)
-
-    std::vector<DicomPhantomZSliceHeader*> fZSliceHeaders;
-    // list of z slice header (one per DICOM files)
-    DicomPhantomZSliceHeader * fZSliceHeaderMerged;
-    // z slice header resulted from merging all z slice headers
-
-    G4int fNVoxelX, fNVoxelY, fNVoxelZ;
-    G4double fVoxelHalfDimX, fVoxelHalfDimY, fVoxelHalfDimZ;
-    G4double fMinX,fMinY,fMinZ; // minimum extension of voxels (position wall)
-    G4double fMaxX,fMaxY,fMaxZ; // maximum extension of voxels (position wall)
-
-    std::map<G4int,G4Material*> thePhantomMaterialsOriginal;
-    // map numberOfMaterial to G4Material. They are the list of materials as
-    // built from .geom file
-
-    DicomPhantomZSliceMerged * fMergedSlices;
-
-    std::set<G4LogicalVolume*> fScorers;
-    G4IntersectionSolid * test;// =new G4IntersectionSolid("bx2CyleafTr", box2leaf, cyLeafTr);
-    G4bool fConstructed;
 };
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-/*
-inline G4int PhantomModeDICOM::GetTotalVoxels() const
-{
-    return fNVoxelX * fNVoxelY * fNVoxelZ;
-}
-*/
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

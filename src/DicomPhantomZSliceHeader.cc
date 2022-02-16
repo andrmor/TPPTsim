@@ -63,17 +63,13 @@ DicomPhantomZSliceHeader::DicomPhantomZSliceHeader( std::ifstream& fin )
     G4String mateindex;
     G4String matename;
     fin >> nmate;
-#ifdef G4VERBOSE
-    G4cout << " DicomPhantomZSliceHeader reading number of materials " 
-           << nmate << G4endl;
-#endif
+
+//    G4cout << " DicomPhantomZSliceHeader reading number of materials " << nmate << G4endl;
+
 
     for( G4int im = 0; im < nmate; im++ ){
         fin >> mateindex >> matename;
-#ifdef G4VERBOSE
-        //G4cout << " DicomPhantomZSliceHeader reading material " 
-        // << im << " : "<< mateindex << "  " << matename << G4endl;
-#endif
+        //G4cout << " DicomPhantomZSliceHeader reading material " << im << " : "<< mateindex << "  " << matename << G4endl;
 
         if( ! CheckMaterialExists( matename ) ) {
             G4Exception("DicomPhantomZSliceHeader::DicomPhantomZSliceHeader",
@@ -86,21 +82,18 @@ DicomPhantomZSliceHeader::DicomPhantomZSliceHeader( std::ifstream& fin )
 
     //----- Read number of voxels
     fin >> fNoVoxelX >> fNoVoxelY >> fNoVoxelZ;
-#ifdef G4VERBOSE
-    G4cout << " Number of voxels " << fNoVoxelX << " " << fNoVoxelY 
-           << " " << fNoVoxelZ << G4endl;
-#endif
+//    G4cout << " Number of voxels " << fNoVoxelX << " " << fNoVoxelY << " " << fNoVoxelZ << G4endl;
 
     //----- Read minimal and maximal extensions (= walls of phantom)
     fin >> fMinX >> fMaxX;
     fin >> fMinY >> fMaxY;
     fin >> fMinZ >> fMaxZ;
 
-    #ifdef G4VERBOSE
+/*
         G4cout << " Extension in X " << fMinX << " " << fMaxX << G4endl
         << " Extension in Y " << fMinY << " " << fMaxY << G4endl
         << " Extension in Z " << fMinZ << " " << fMaxZ << G4endl;
-    #endif
+*/
 
     fSliceLocation = 0.5*(fMinZ + fMaxZ);
 
@@ -205,12 +198,29 @@ DicomPhantomZSliceHeader DicomPhantomZSliceHeader::operator+(
     return temp;
 }
 
+void DicomPhantomZSliceHeader::AddRow() { fValues.push_back(std::vector<G4double>(0));
+                                          fMateIDs.push_back(std::vector<G4int>(0)); }
+
+void DicomPhantomZSliceHeader::AddValue(G4double val) { (fValues.size() > 0) ?
+                fValues.back().push_back(val) :
+                fValues.push_back(std::vector<G4double>(1,val)); }
+
+void DicomPhantomZSliceHeader::AddValue(const std::vector<std::vector<G4double> > & val) {
+    for(unsigned int i = 0; i < val.size(); ++i) { fValues.push_back(val.at(i)); }
+}
+
+void DicomPhantomZSliceHeader::AddMateID(G4int val) { (fMateIDs.size() > 0) ?
+                fMateIDs.back().push_back(val) :
+                fMateIDs.push_back(std::vector<G4int>(1,val)); }
+
+void DicomPhantomZSliceHeader::AddMateID(const std::vector<std::vector<G4int> > & val) {
+    for(unsigned int i = 0; i < val.size(); ++i) { fMateIDs.push_back(val.at(i)); }
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo..
 void DicomPhantomZSliceHeader::DumpToFile()
 {
-
-  G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to " 
-         << fFilename << "..." << G4endl;
+//   G4cout << "DicomPhantomZSliceHeader::Dumping Z Slice data to " << fFilename << "..." << G4endl;
   //sleep(5);
   
   //  May seen counter-intuitive (dumping to file you are reading from), but
@@ -336,4 +346,20 @@ void DicomPhantomZSliceHeader::ReadDataFromFile()
   
   in.close();
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void DicomPhantomZSliceHeader::DumpExcessMemory()
+{
+    if (fFilename.length() != 0)
+    {
+        fValues.clear(); fValues.shrink_to_fit();
+        fMateIDs.clear(); fMateIDs.shrink_to_fit();
+    }
+}
+
+// This function flips all the data
+// Otherwise, the image is upside-down
+void DicomPhantomZSliceHeader::FlipData()
+{
+    std::reverse(fValues.begin(), fValues.end());
+    std::reverse(fMateIDs.begin(), fMateIDs.end());
+}

@@ -10,6 +10,7 @@
 
 class G4UserSteppingAction;
 class G4UserStackingAction;
+class G4UserTrackingAction;
 class G4VSensitiveDetector;
 class Hist1D;
 
@@ -34,6 +35,7 @@ public:
     virtual void run() {}
     virtual G4UserSteppingAction * getSteppingAction() {return nullptr;}
     virtual G4UserStackingAction * getStackingAction() {return nullptr;}
+    virtual G4UserTrackingAction * getTrackingAction() {return nullptr;}
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
     virtual void onEventStarted() {}
@@ -55,6 +57,38 @@ public:
 
     void run() override;
     std::string getTypeName() const override {return "SimModeGui";}
+};
+
+// ---
+
+class DoseExtractorMode : public SimModeBase
+{
+public:
+    DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, std::string fileName);
+
+    void fill(double energy, const G4ThreeVector & pos, double density);
+
+    void run() override;
+    std::string getTypeName() const override {return "DoseExtractorMode";}
+    G4UserSteppingAction * getSteppingAction() override;
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    int                   NumEvents;
+    std::array<double, 3> BinSize; // mm
+    std::array<int,    3> NumBins;
+    std::array<double, 3> Origin;  // center coordinates of the frame
+
+    double VoxelVolume;
+
+    std::vector<std::vector<std::vector<double>>> Dose;
+
+    bool getVoxel(const G4ThreeVector & pos, std::array<int, 3> & index);
+
+    void saveArray();
+    void writeBinningToJson(json11::Json::object & json) const;
 };
 
 // ---
@@ -264,6 +298,37 @@ protected:
     int         NumEvents    = 1;
     std::string FileName     = "dummy.txt";
     int         CurrentEvent = 0;
+};
+
+// ---
+
+class PesAnalyzerMode : public SimModeBase
+{
+public:
+    PesAnalyzerMode(int numEvents, const std::string & fileName);
+
+    void onNewPrimary();
+    void registerTarget(const G4String & target, std::vector<G4String> products);
+    void onDecay(const G4String & isotope, std::vector<G4String> products);
+
+    void run() override;
+    std::string getTypeName() const override {return "PesAnalyzerMode";}
+    //void readFromJson(const json11::Json & json) override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+protected:
+    //void doWriteToJson(json11::Json::object & json) const override;
+
+    int         NumEvents    = 1;
+
+    bool bPositron = false;
+    std::pair<G4String, std::vector<G4String>> Target;               // { TargetIsotopeForPrimary,  {Products}  }
+    std::vector<std::pair<G4String, std::vector<G4String>>> Decays;  // {  { DecayingIsotope, {Product} }   }
+
+    std::map<std::string, int> Statistics;
+    int numPrim = 0;
+
 };
 
 #endif // SimulationMode_h

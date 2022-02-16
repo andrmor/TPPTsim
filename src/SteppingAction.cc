@@ -53,6 +53,23 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 
 // ---
 
+void SteppingAction_Dose::UserSteppingAction(const G4Step * step)
+{
+    const double depo = step->GetTotalEnergyDeposit(); // in MeV
+    if (depo == 0) return;
+
+    const G4StepPoint * postP = step->GetPostStepPoint();
+    if (!postP->GetMaterial()) return; // particle escaped
+    const G4StepPoint * preP  = step->GetPreStepPoint();
+
+    SessionManager & SM = SessionManager::getInstance();
+    DoseExtractorMode * Mode = static_cast<DoseExtractorMode*>(SM.SimMode);
+
+    Mode->fill(depo, 0.5*(preP->GetPosition() + postP->GetPosition()), postP->GetMaterial()->GetDensity());
+}
+
+// ---
+
 void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
 {
     const G4StepPoint * postP  = step->GetPostStepPoint();
@@ -94,7 +111,7 @@ void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
         logVolName  = postP->GetPhysicalVolume()->GetLogicalVolume()->GetName();
         copyNum = postP->GetPhysicalVolume()->GetCopyNo();
         matName = postP->GetMaterial()->GetName();
-        out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ", physVolName, "/", logVolName, "(",copyNum, ")", matName);
+        out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ", physVolName, "/", logVolName, "(#",copyNum, ")", matName, '(', postP->GetMaterial()->GetDensity()/g*cm3, "g/cm3");
         //out(proc->GetProcessType());
     }
     else
@@ -187,4 +204,56 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
 
     SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
     Mode->addEnergy(iScint, depo);
+}
+
+// ---
+
+#include "G4HadronicProcess.hh"
+#include "G4RadioactiveDecayBase.hh"
+void SteppingAction_PesAnalyzer::UserSteppingAction(const G4Step * step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    PesAnalyzerMode * Mode = static_cast<PesAnalyzerMode*>(SM.SimMode);
+
+    if (step->GetTrack()->GetParentID() == 0 && step->GetTrack()->GetCurrentStepNumber() == 1)
+    {
+        Mode->onNewPrimary();
+        return;
+    }
+
+    const G4StepPoint* endPoint = step->GetPostStepPoint();
+    const G4StepStatus stepStatus = endPoint->GetStepStatus();
+    if (stepStatus == fGeomBoundary || stepStatus == fWorldBoundary) return;
+
+    G4VProcess * process = const_cast<G4VProcess*>(endPoint->GetProcessDefinedStep());
+
+    G4RadioactiveDecayBase * decay = dynamic_cast<G4RadioactiveDecayBase*>(process);
+    if (decay)
+    {
+        const std::vector<const G4Track *> * vec = step->GetSecondaryInCurrentStep();
+        if (vec->empty()) return; // decay to stable isotope
+        std::vector<G4String> products;
+        for (const G4Track * t : *vec)
+        {
+            const G4String & name = t->GetParticleDefinition()->GetParticleName();
+            products.push_back(name);
+        }
+        Mode->onDecay(step->GetTrack()->GetParticleDefinition()->GetParticleName(), products);
+        return;
+    }
+
+    G4HadronicProcess * hproc = dynamic_cast<G4HadronicProcess*>(process);
+    if (!hproc) return;
+
+    const G4Isotope * target = hproc->GetTargetIsotope();
+    if (target && step->GetTrack()->GetParentID() == 0)
+    {
+        const std::vector<const G4Track *> * vec = step->GetSecondaryInCurrentStep();
+        if (vec->empty()) return; // empty
+        std::vector<G4String> products;
+        for (const G4Track * t : *vec)
+            products.push_back(t->GetParticleDefinition()->GetParticleName());
+        Mode->registerTarget(target->GetName(), products);
+        return;
+    }
 }

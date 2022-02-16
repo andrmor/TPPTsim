@@ -33,7 +33,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     else if (Type == "PhantomCustomBox") ph = new PhantomCustomBox();
     else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")     ph = new PhantomParam();
-    else if (Type == "PhantomModeDICOM") ph = new PhantomModeDICOM(100.0, {0,0,50.0}, "DummyFileName.dat", true);
+    else if (Type == "PhantomDICOM")     ph = new PhantomDICOM("", "", 0,0, 1, 100.0, {0,0,50.0});
     else if (Type == "PhantomEspana")    ph = new PhantomEspana();
     else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
     else if (Type == "PhantomBauerCa")   ph = new PhantomBauerCa();
@@ -146,6 +146,21 @@ G4LogicalVolume * PhantomCustomBox::definePhantom(G4LogicalVolume * logicWorld)
             elements.push_back("O"); weightFrac.push_back(87.6);
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
+        break;
+    case Bone :
+        mat = man->FindOrBuildMaterial("G4_BONE_COMPACT_ICRU");
+        break;
+    case Brain :
+        mat = man->FindOrBuildMaterial("G4_BRAIN_ICRP");
+        break;
+    case Blood :
+        mat = man->FindOrBuildMaterial("G4_BLOOD_ICRP");
+        break;
+    case Muscle :
+        mat = man->FindOrBuildMaterial("G4_MUSCLE_SKELETAL_ICRP");
+        break;
+    case Tissue :
+        mat = man->FindOrBuildMaterial("G4_TISSUE_SOFT_ICRP");
         break;
     default:;
     }

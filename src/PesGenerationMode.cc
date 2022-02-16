@@ -152,6 +152,12 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
     out("\n");
 }
 
+#include "TrackingAction.hh"
+G4UserTrackingAction * PesGenerationMode::getTrackingAction()
+{
+    return new PesGeneratorTrackingAction();
+}
+
 G4UserStackingAction * PesGenerationMode::getStackingAction()
 {
     return new PesGeneratorStackingAction();
@@ -374,11 +380,12 @@ void PesGenerationMode::onEventStarted()
 
 bool PesGenerationMode::modelTrigger(const G4Track * track)
 {
-    const int StepNumber = track->GetCurrentStepNumber();
-    //out("PES call", StepNumber);
+    //const int StepNumber = track->GetCurrentStepNumber();
+    //out("PES call", StepNumber, bNewTrackStarted); // cannot use the step number: proton can be created outside the phantom region which is invisible for this call
 
-    if (StepNumber == 1)
+    if (bNewTrackStarted)
     {
+        bNewTrackStarted = false;
         LastEnergy      = track->GetKineticEnergy();
         LastTrackLength = track->GetTrackLength();
         LastPosition    = track->GetPosition();

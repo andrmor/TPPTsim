@@ -82,6 +82,9 @@ void SessionManager::startSession()
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
 
+    G4UserTrackingAction * TrackAct = SimMode->getTrackingAction();
+    if (TrackAct) runManager->SetUserAction(TrackAct);
+
     G4UserSteppingAction * StepAct = SimMode->getSteppingAction();
     if (StepAct) runManager->SetUserAction(StepAct);
 
@@ -272,7 +275,7 @@ void SessionManager::configureOutput()
         out("Cannot open file to store output data!");
         outFlush();
         exit(1);
-        delete outStream; outStream = nullptr;
+        //delete outStream; outStream = nullptr;
     }
     else out("\nSaving output to file", fullFileName);
 }

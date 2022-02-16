@@ -24,6 +24,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
     if      (Type == "SimModeGui")            sm = new SimModeGui();
     else if (Type == "SimModeShowEvent")      sm = new SimModeShowEvent(0);
+    else if (Type == "DoseExtractorMode")     sm = new DoseExtractorMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
     else if (Type == "SimModeScintPosTest")   sm = new SimModeScintPosTest();
     else if (Type == "SimModeSingleEvents")   sm = new SimModeSingleEvents(0);
     else if (Type == "SimModeMultipleEvents") sm = new SimModeMultipleEvents(0, "dummy.txt", false);
@@ -64,6 +65,143 @@ void SimModeGui::run()
 {
     SessionManager& SM = SessionManager::getInstance();
     SM.startGUI();
+}
+
+// ---
+
+DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, std::string fileName) :
+    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin)
+{
+    bNeedGui    = false;
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName = fileName;
+    SM.bBinOutput = false;
+
+    Dose.resize(NumBins[0]);
+    for (std::vector<std::vector<double>> & ary : Dose)
+    {
+        ary.resize(NumBins[1]);
+        for (std::vector<double> & arz : ary)
+            arz = std::vector<double>(NumBins[2], 0);
+    }
+
+    VoxelVolume = 1.0;
+    for (int i = 0; i < 3; i++) VoxelVolume *= BinSize[i]; // mm3
+}
+
+void DoseExtractorMode::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+    saveArray();
+}
+
+G4UserSteppingAction * DoseExtractorMode::getSteppingAction()
+{
+    return new SteppingAction_Dose();
+}
+
+void DoseExtractorMode::readFromJson(const json11::Json & json)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    jstools::readInt(json, "NumEvents", NumEvents);
+    jstools::readString(json, "FileName", SM.FileName);
+
+    //BinSize
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "BinSize", jar);
+        for (int i = 0; i < 3; i++) BinSize[i] = jar[i].number_value();
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "NumBins", jar);
+        for (int i = 0; i < 3; i++) NumBins[i] = jar[i].int_value();
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "Origin", jar);
+        for (int i = 0; i < 3; i++) Origin[i] = jar[i].number_value();
+    }
+}
+
+void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
+{
+    //BinSize
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(BinSize[i]);
+        json["BinSize"] = jar;
+    }
+    // NumBins
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(NumBins[i]);
+        json["NumBins"] = jar;
+    }
+    // Origin
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(Origin[i]);
+        json["Origin"] = jar;
+    }
+}
+
+void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
+{
+    SessionManager & SM = SessionManager::getInstance();
+    json["NumEvents"] = NumEvents;
+    json["FileName"] = SM.FileName;
+
+    writeBinningToJson(json);
+}
+
+void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos, double density)
+{
+    const double densityKgPerMM3 = density/kg*mm3;
+    if (densityKgPerMM3 < 1e-10) return; // vacuum
+
+    std::array<int,3> index; // on stack, fast
+    const bool ok = getVoxel(pos, index);
+    if (!ok) return;
+
+    const double deltaDose = (energy/joule) / ( densityKgPerMM3 * VoxelVolume );
+    Dose[index[0]][index[1]][index[2]] += deltaDose;
+}
+
+bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        index[i] = floor( (pos[i] - Origin[i]) / BinSize[i] );
+        if ( index[i] < 0 || index[i] >= NumBins[i]) return false;
+    }
+    return true;
+}
+
+void DoseExtractorMode::saveArray()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    json11::Json::object json;
+    writeBinningToJson(json);
+    json11::Json aa(json);
+    std::string str = '#' + aa.dump();
+    *SM.outStream << str << '\n';
+
+    for (std::vector<std::vector<double>> & ary : Dose)
+    {
+        for (std::vector<double> & arz : ary)
+        {
+            for (double d : arz)
+                *SM.outStream << d << ' ';
+            *SM.outStream << '\n';
+        }
+    }
 }
 
 // ---
@@ -646,4 +784,103 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
     json["NumEvents"] = NumEvents;
     json["FileName"]  = SM.FileName;
     json["bBinary"]   = SM.bBinOutput;
+}
+
+// ---
+
+PesAnalyzerMode::PesAnalyzerMode(int numEvents, const std::string & fileName) :
+    NumEvents(numEvents)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    SM.FileName = fileName;
+    bNeedOutput = true;
+}
+
+void PesAnalyzerMode::onNewPrimary()
+{
+    numPrim++;
+
+    if (bPositron)
+    {
+        std::string products;
+        for (const G4String & p : Target.second)
+        {
+            if (p == "gamma") continue;
+            products += p + " ";
+        }
+
+        std::string key = Target.first ;
+
+        if (Decays.size() == 1)
+        {
+            std::string secondaries;
+            for (const G4String & p : Decays.front().second)
+            {
+                if (p == "gamma") continue;
+                secondaries += p + " ";
+            }
+            key += " -> (" + products + ")";
+        }
+        else
+        {
+            //out("=> ",Target.first, " -> (" + products + ")");
+            key += "->(" + products + ")";
+            for (const auto & pair : Decays)
+            {
+                std::string secondaries;
+                for (const G4String & p : pair.second)
+                {
+                    if (p == "gamma") continue;
+                    secondaries += p + " ";
+                }
+                //out("  " + pair.first, " -> (" + secondaries + ")");
+                key += " + " + pair.first + "->(" + secondaries + ")";
+            }
+        }
+
+        auto it = Statistics.find(key);
+        if (it == Statistics.end()) Statistics[key] = 1;
+        else Statistics[key]++;
+
+
+    }
+
+    Target = {"None", {}};
+    Decays.clear();
+    bPositron = false;
+}
+
+void PesAnalyzerMode::registerTarget(const G4String & target, std::vector<G4String> products)
+{
+    std::sort(products.begin(), products.end());
+    Target = {target, products};
+}
+
+void PesAnalyzerMode::onDecay(const G4String & isotope, std::vector<G4String> products)
+{
+    std::sort(products.begin(), products.end());
+    Decays.push_back({isotope, products});
+
+    for (const G4String & p : products)
+        if (p == "e+") bPositron = true;
+}
+
+void PesAnalyzerMode::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    SM.runManager->BeamOn(NumEvents);
+    onNewPrimary(); // to trigger update for the last primary
+
+    for (auto it : Statistics)
+    {
+        out(it.first, it.second);
+    }
+    out("Num primaries:", --numPrim);
+}
+
+G4UserSteppingAction * PesAnalyzerMode::getSteppingAction()
+{
+    return new SteppingAction_PesAnalyzer();
 }

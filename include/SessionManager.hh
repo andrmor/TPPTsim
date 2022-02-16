@@ -61,7 +61,7 @@ class SessionManager
         bool detectorContains(const std::string & component);
         void saveScintillatorTable(const std::string & fileName);
         int  isDirExist(const std::string & dirName);
-        int  isFileExist(const std::string & fileName);
+        static int isFileExist(const std::string & fileName);
 
         void saveConfig(const std::string & fileName) const;
         void loadConfig(const std::string & fileName);
