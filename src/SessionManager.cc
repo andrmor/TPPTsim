@@ -137,11 +137,12 @@ void SessionManager::scanMaterials()
         G4Colour brown(0.45,0.25,0.0);
         G4Colour grey(0.5,0.5,0.5);
 
-        if      (mat->GetName() == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
-        else if (mat->GetName() == "G4_Cu") lv->SetVisAttributes(new G4VisAttributes(brown));
-        else if (mat->GetName() == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
-        else if (mat->GetName() == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
-        else if (mat->GetName() == "ABS") lv->SetVisAttributes(new G4VisAttributes(grey));
+        const G4String & name = mat->GetName();
+        if      (name == "G4_Al") lv->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 0, 1.0)));
+        else if (name == "G4_Cu") lv->SetVisAttributes(new G4VisAttributes(brown));
+        else if (name == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
+        else if (name == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
+        else if (name == "ABS") lv->SetVisAttributes(new G4VisAttributes(grey));
     }
 
     out("<--Material scan completed");
