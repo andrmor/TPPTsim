@@ -75,7 +75,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
         //SM.PhantomMode      = new PhantomBauerGel();
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PMMA);
-        SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::Brain);
+        //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::Brain);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
         SM.DetectorComposition.add(DetComp::SIPM);
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
-        //SM.DetectorComposition.add(DetComp::CoolingAssemblies);
+        SM.DetectorComposition.add(DetComp::CoolingAssemblies);
 
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
@@ -98,8 +98,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new ConstantTime(0), {0, -150.0, 0}, {0,1.0,0}, 1000);
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Proton(157.43*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 100); // PE-E3
-        //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
-        SM.SourceMode       = new PencilBeam(new Proton(55.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
+        SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
+        //SM.SourceMode       = new PencilBeam(new Proton(55.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
         //SM.SourceMode       = new PencilBeam(new Proton(106.82*MeV), new UniformTime(0, 254.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PE-E1
         //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
         //SM.SourceMode       = new PencilBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT", "bench");
-        SM.SimMode          = new PesAnalyzerMode(100000, "aaaaa.txt");
+        //SM.SimMode          = new PesAnalyzerMode(100000, "aaaaa.txt");
 
     // --- END of user init ---
     }
