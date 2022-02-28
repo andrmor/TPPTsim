@@ -480,3 +480,44 @@ G4LogicalVolume * PhantomBauerCa::definePhantom(G4LogicalVolume *logicWorld)
 
     return logicPMMA;
 }
+
+G4LogicalVolume * PhantomRT::definePhantom(G4LogicalVolume * logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    G4NistManager * man = G4NistManager::Instance();
+
+    std::vector<G4int> natoms;
+    std::vector<G4String> elements;
+    elements.push_back("C"); natoms.push_back(5);
+    elements.push_back("H"); natoms.push_back(8);
+    elements.push_back("O"); natoms.push_back(2);
+    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+
+    G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
+    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
+    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    logicPmma->SetVisAttributes(G4VisAttributes::Invisible);
+
+    G4Material * matW = man->FindOrBuildMaterial("G4_WATER");
+
+    G4VSolid          * solidWB = new G4Tubs("WB", 0, 2.0*mm, 30.0*mm, 0, 360.0*deg);
+    G4LogicalVolume   * logicWB = new G4LogicalVolume(solidWB, matW, "WBl");
+    logicWB->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+    new G4PVPlacement(new CLHEP::HepRotation(0,  10.0*deg, 0), {20.0,  7.2, 0}, logicWB, "WBp", logicPmma, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(0, -10.0*deg, 0), {20.0, -7.2, 0}, logicWB, "WBp", logicPmma, false, 0);
+
+    G4VSolid          * solidWS = new G4Tubs("WS", 0, 2.0*mm, 4.7*mm, 0, 360.0*deg);
+    G4LogicalVolume   * logicWS = new G4LogicalVolume(solidWS, matW, "WSl");
+    logicWS->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+    new G4PVPlacement(new CLHEP::HepRotation(0,  90.0*deg, 0), {20.0, 0, 0}, logicWS, "WSp", logicPmma, false, 0);
+
+    /*
+    G4VSolid          * st = new G4Box("t", 20.0*mm, 3.0*mm, 33.0*mm);
+    G4LogicalVolume   * lt = new G4LogicalVolume(st, matW, "tl");
+    lt->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    new G4PVPlacement(nullptr, {0, 20.0, 0}, lt, "ltp", logicWorld, false, 0);
+    */
+
+    return logicPmma;
+}
