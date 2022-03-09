@@ -30,7 +30,15 @@ private:
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;
 
-    G4Material * EncapsMat = nullptr;
+    G4Material * EncapsMat       = nullptr;
+    G4Material * BaseMat         = nullptr;
+    G4Material * BasePlateMat    = nullptr;
+    G4Material * CaseMat         = nullptr;
+    G4Material * SIPMMat         = nullptr;
+    G4Material * PCBMat          = nullptr;
+    G4Material * CopperStructMat = nullptr;
+    G4Material * CopperPipeMat   = nullptr;
+    G4Material * WaterPipeMat    = nullptr;
 
     G4LogicalVolume * logicWorld = nullptr;
     G4LogicalVolume * logicScint = nullptr;

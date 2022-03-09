@@ -124,9 +124,9 @@ class SessionManager
         double ScintPitchX     = ScintSizeX + TeflonThick;
         double ScintPitchY     = ScintSizeY + TeflonThick;
 
-        double EncapsSizeX     = 25.8 * mm;
+        double EncapsSizeX     = NumScintX * ScintSizeX + 9.0 * TeflonThick;
         double EncapsSizeY     = EncapsSizeX;
-        double EncapsSizeZ     = ScintSizeZ;
+        double EncapsSizeZ     = ScintSizeZ + 2.0 * TeflonThick;
 
         int    NumSegments     = 12;
         int    NumRows         = 4;
