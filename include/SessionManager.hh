@@ -126,7 +126,7 @@ class SessionManager
 
         double EncapsSizeX     = NumScintX * ScintSizeX + 9.0 * TeflonThick;
         double EncapsSizeY     = EncapsSizeX;
-        double EncapsSizeZ     = ScintSizeZ + 2.0 * TeflonThick;
+        double EncapsSizeZ     = ScintSizeZ + TeflonThick;
 
         int    NumSegments     = 12;
         int    NumRows         = 4;
@@ -139,24 +139,24 @@ class SessionManager
 
      // Geometry - Base and Base Plate
         double BaseRMin        = 162.5 * mm;
-        double BaseRMax        = 300.0   * mm;
-        double SystHeight      = EncapsSizeY * 4.0 + RowGap * 3.0; //105.0 mm
+        double BaseRMax        = 300.0 * mm;
+        double SystHeight      = 105.0 * mm;
         double BaseHeight      = 6.35  * mm;
         double BaseSegment     = 120.0 * deg;
 
-        double BPlateRMin      = 170.2 * mm;
+        double BPlateRMin      = 170.2   * mm;
         double BPlateRMax      = 290.793 * mm;
-        double BPlateHeight    = 0.7938 * mm;
-        double BPlateSegment   = 116.0 * deg;
+        double BPlateHeight    = 0.7938  * mm;
+        double BPlateSegment   = 116.0   * deg;
 
         double GlobalZ0        = 0;
-        double IsoCenterGDML   = 0.5 * (BaseHeight + SystHeight) + 3.9688*mm;
+        double IsoCenterGDML   = 0.5 * (BaseHeight + SystHeight) + 3.9688 * mm;
 
      // Geometry - Closed Structure
-        double InnerWallThick  = 1.0 * mm;
-        double OuterWallThick  = 1.0 * mm;
+        double InnerWallThick  = 1.0   * mm;
+        double OuterWallThick  = 1.0   * mm;
         double WallsSegment    = 120.0 * deg;
-        double SideWallSegment = 1.0 * deg;
+        double SideWallSegment = 1.0   * deg;
 
      // Geometry - SiPMs
      // https://www.hamamatsu.com/resources/pdf/ssd/s14160_s14161_series_kapd1064e.pdf, page 4
@@ -167,13 +167,13 @@ class SessionManager
      // Geometry - PCB
      // PCB1 - closer to SiPMs
         double SIPMPCB1Gap     = 0.010 * mm;
-        double PCB1SizeX       = 28.2 * mm;
-        double PCB1SizeY       = 52.2 * mm;
-        double PCB1SizeZ       = 3.18 * mm;
+        double PCB1SizeX       = 28.2  * mm;
+        double PCB1SizeY       = 52.2  * mm;
+        double PCB1SizeZ       = 3.18  * mm;
 
      // PCB2
         double PCB2SizeX       = 25.2 * mm ;
-        double PCB2SizeY       = 1.2 * mm;
+        double PCB2SizeY       = 1.2  * mm;
         double PCB2SizeZ       = 36.0 * mm;
         double MiddlePCBGap    = (40.96 * mm - PCB2SizeZ) / 2.0 * mm;
         double PCB2Z1          = GlobalZ0 + 36.9 * mm;
@@ -206,27 +206,27 @@ class SessionManager
         double Column3SixeX1   = 4.85  * mm;
         double Column3SizeX2   = 4.25  * mm;
         double Column3SizeY    = SystHeight;
-        double Column3SizeZ    = 3.82  * mm;
+        double Column3SizeZ    = 4.73*mm;
 
      // Copper pieces that connect Column3 to the horizontal copper connectors
-        double Piece1SizeX1    = 6.29 * mm;
+        double Piece1SizeX1    = 6.28 * mm;
         double Piece1SizeX2    = 4.85 * mm;
         double Piece1SizeY     = 6.6  * mm;
-        double Piece1SizeZ     = 9.0  * mm;
-        double Piece1Z1        = GlobalZ0 + 37.4 * mm;
-        double Piece1Z2        = GlobalZ0 - 37.4 * mm;
+        double Piece1SizeZ     = 8.0  * mm;
+        double Piece1Z1        = GlobalZ0 + 38.2 * mm;
+        double Piece1Z2        = GlobalZ0 - 38.2 * mm;
 
         double Piece2SizeX1    = Piece1SizeX1;
         double Piece2SizeX2    = Piece1SizeX2;
         double Piece2SizeY     = 5.9  * mm;
         double Piece2SizeZ     = Piece1SizeZ;
-        double Piece2Z1        = GlobalZ0 + 14.15 * mm;
-        double Piece2Z2        = GlobalZ0 - 14.15 * mm;
+        double Piece2Z1        = GlobalZ0 + 14.95 * mm;
+        double Piece2Z2        = GlobalZ0 - 14.95 * mm;
 
         double Piece3SizeX1    = 6.4  * mm;
-        double Piece3SizeX2    = 6.29 * mm;
+        double Piece3SizeX2    = 6.28 * mm;
         double Piece3SizeY     = Piece1SizeY;
-        double Piece3SizeZ     = 1.0  * mm;
+        double Piece3SizeZ     = 1.4  * mm;
         double Piece3Z1        = Piece1Z1;
         double Piece3Z2        = Piece1Z2;
 
@@ -243,10 +243,10 @@ class SessionManager
         double InConnectSizeY  = 5.9  * mm;
         double ConnectorSizeZ  = 21.6 * mm;
 
-        double ConnectorZ1     = GlobalZ0 + 37.4 * mm;
-        double ConnectorZ2     = GlobalZ0 - 37.4 * mm;
-        double ConnectorZ3     = GlobalZ0 + 14.15 * mm;
-        double ConnectorZ4     = GlobalZ0 - 14.15 * mm;
+        double ConnectorZ1     = GlobalZ0 + 38.2  * mm;
+        double ConnectorZ2     = GlobalZ0 - 38.2  * mm;
+        double ConnectorZ3     = GlobalZ0 + 14.95 * mm;
+        double ConnectorZ4     = GlobalZ0 - 14.95 * mm;
 
      // External columns (Column4)
         double ExtColumnSizeX  = 6.4 * mm;
@@ -257,7 +257,10 @@ class SessionManager
         double HolderSizeX     = 6.4  * mm;
         double HolderSizeY     = HolderSizeX;
         double HolderSizeZ     = 16.7 * mm;
-        double HolderPitch     = 49.3 * mm;
+
+        double HolderZ1        = GlobalZ0 + 49.3 * mm;
+        double HolderZ2        = GlobalZ0 - 0.8  * mm;
+        double HolderZ3        = GlobalZ0 - 49.3 * mm;
 
      // Geometry - Cooling Assemblies
      // Copper pipe holder (copper box)

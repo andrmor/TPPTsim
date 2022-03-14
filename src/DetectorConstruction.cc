@@ -209,7 +209,7 @@ void DetectorConstruction::addScintillators()
     int iScint    = 0;
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + SM.ScintSizeZ);
+        double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ) - SM.TeflonThick;
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X = Radius * sin(Angle);
         double Y = Radius * cos(Angle);
@@ -249,7 +249,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
         {
             double X = -0.5 * (SM.NumScintX - 1) * SM.ScintPitchX  +  SM.ScintPitchX * ix;
             double Y = -0.5 * (SM.NumScintY - 1) * SM.ScintPitchY  +  SM.ScintPitchY * iy;
-            G4ThreeVector ScintPos(X, Y, 0);
+            G4ThreeVector ScintPos(X, Y, -0.5*SM.TeflonThick);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
             ScintRecord rec;
@@ -350,7 +350,7 @@ void DetectorConstruction::addSIPM()
 
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + SM.SIPMSizeZ);
+        double Radius = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + SM.SIPMSizeZ) - SM.TeflonThick;
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X = Radius * sin(Angle);
         double Y = Radius * cos(Angle);
@@ -386,9 +386,9 @@ void DetectorConstruction::addPCB()
 
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius1 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + SM.PCB1SizeZ);
-        double Radius2 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + SM.PCB2SizeZ + SM.MiddlePCBGap);
-        double Radius3 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + 2 * SM.PCB2SizeZ + 2 * SM.MiddlePCBGap + SM.PCB3SizeZ);
+        double Radius1 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + SM.PCB1SizeZ) - SM.TeflonThick;
+        double Radius2 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + SM.PCB2SizeZ + SM.MiddlePCBGap) - SM.TeflonThick;
+        double Radius3 = 0.5 * (SM.InnerDiam + 2 * SM.EncapsSizeZ + 2 * SM.SIPMSizeZ + 2 * SM.SIPMPCB1Gap + 2 * SM.PCB1SizeZ + 2 * SM.PCB2SizeZ + 2 * SM.MiddlePCBGap + SM.PCB3SizeZ) - SM.TeflonThick;
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X1 = Radius1 * sin(Angle);
         double Y1 = Radius1 * cos(Angle);
@@ -595,14 +595,12 @@ void DetectorConstruction::addCopperStructure()
         G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
         G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
 
-        for (int iZ = 0; iZ < 3; iZ++)
-        {
-            double RowPitch = SM.HolderPitch;
-            double Z = -0.5 * (3 - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
-
-            new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicHolder, "Holder_PV", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicHolder, "Holder_PV", logicWorld, false, 0);
-        }
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.HolderZ1), logicHolder, "Holder_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.HolderZ1), logicHolder, "Holder_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.HolderZ2), logicHolder, "Holder_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.HolderZ2), logicHolder, "Holder_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, SM.HolderZ3), logicHolder, "Holder_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, SM.HolderZ3), logicHolder, "Holder_PV", logicWorld, false, 0);
     }
 }
 
