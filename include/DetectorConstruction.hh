@@ -15,9 +15,10 @@ public:
     G4VPhysicalVolume * Construct();
 
 private:
+    void defineMaterials();
     G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber);
     void addGDML();
-    void addFSM(G4Material *material);
+    void addFSM();
     void addScintillators();
     void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
     void addBase();
@@ -30,6 +31,7 @@ private:
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;
 
+    G4Material * WorldMat        = nullptr;
     G4Material * EncapsMat       = nullptr;
     G4Material * BaseMat         = nullptr;
     G4Material * BasePlateMat    = nullptr;
@@ -42,6 +44,7 @@ private:
 
     G4LogicalVolume * logicWorld = nullptr;
     G4LogicalVolume * logicScint = nullptr;
+
 };
 
 #endif //DetectorConstruction_H

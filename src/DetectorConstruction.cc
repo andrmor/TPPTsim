@@ -30,14 +30,42 @@
 #include <QDebug>
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+    SessionManager & SM = SessionManager::getInstance();
+
+    defineMaterials();
+
+    G4Box * solidWorld   = new G4Box("World", 750.0*mm, 750.0*mm, 750.0*mm);
+    logicWorld   = new G4LogicalVolume(solidWorld, WorldMat, "World_LV");
+    SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
+    logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
+    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
+
+    if (SM.detectorContains(DetComp::GDML)) addGDML();
+
+    G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
+    if (phantom) SM.createPhantomRegion(phantom);
+
+    if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
+    if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM();
+    if (SM.detectorContains(DetComp::Base))              addBase();
+    if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
+    if (SM.detectorContains(DetComp::SIPM))              addSIPM();
+    if (SM.detectorContains(DetComp::PCB))               addPCB();
+    if (SM.detectorContains(DetComp::CopperStructure))   addCopperStructure();
+    if (SM.detectorContains(DetComp::CoolingAssemblies)) addCoolingAssemblies();
+
+    return SM.physWorld;
+}
+
+void DetectorConstruction::defineMaterials()
+{
     G4NistManager * man = G4NistManager::Instance();
     SessionManager & SM = SessionManager::getInstance();
 
-    // Materials
-    //Vaccum
     G4Material * matVacuum = man->FindOrBuildMaterial("G4_Galactic");
 
-    //Teflon
+    G4Material * matAir    = man->FindOrBuildMaterial("G4_AIR");
+
     G4Material * matTeflon = man->FindOrBuildMaterial("G4_TEFLON");
 
     //LYSO:Ce - https://www.crystals.saint-gobain.com/sites/imdf.crystals.com/files/documents/lyso-material-data-sheet.pdf
@@ -112,6 +140,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     elements.push_back("O"); natoms.push_back(1);
     G4Material * matWater = man->ConstructNewMaterial("Water", elements, natoms, 1.0*g/cm3);
 
+    // Assigning materials to the detector components
+    WorldMat        = matAir;
     SM.ScintMat     = matLYSOCe;
     EncapsMat       = matTeflon;
     BaseMat         = matABS;
@@ -122,29 +152,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     CopperStructMat = matCopper;
     CopperPipeMat   = matCopper;
     WaterPipeMat    = matWater;
-
-    // Geometry
-    G4Box * solidWorld   = new G4Box("World", 750.0*mm, 750.0*mm, 750.0*mm);
-    logicWorld   = new G4LogicalVolume(solidWorld, matVacuum, "World_LV");
-    SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
-    logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
-    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
-
-    if (SM.detectorContains(DetComp::GDML)) addGDML();
-
-    G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
-    if (phantom) SM.createPhantomRegion(phantom);
-
-    if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
-    if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM(matVacuum);
-    if (SM.detectorContains(DetComp::Base))              addBase();
-    if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
-    if (SM.detectorContains(DetComp::SIPM))              addSIPM();
-    if (SM.detectorContains(DetComp::PCB))               addPCB();
-    if (SM.detectorContains(DetComp::CopperStructure))   addCopperStructure();
-    if (SM.detectorContains(DetComp::CoolingAssemblies)) addCoolingAssemblies();
-
-    return SM.physWorld;
 }
 
 void DetectorConstruction::addGDML()
@@ -167,7 +174,7 @@ void DetectorConstruction::addGDML()
     }
 }
 
-void DetectorConstruction::addFSM(G4Material * material)
+void DetectorConstruction::addFSM()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -176,7 +183,7 @@ void DetectorConstruction::addFSM(G4Material * material)
     double Height      = 5.0 * SM.EncapsSizeX; // Margarida, please calculate the minimum size
 
     G4VSolid          * solidFSM = new G4Tubs("FSM_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
-    G4LogicalVolume   * logicFSM = new G4LogicalVolume(solidFSM, material, "FSM");
+    G4LogicalVolume   * logicFSM = new G4LogicalVolume(solidFSM, WorldMat, "FSM");
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicFSM, "FSM_PV", logicWorld, false, 0);
     logicFSM->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 

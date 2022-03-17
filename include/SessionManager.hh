@@ -124,7 +124,7 @@ class SessionManager
         double ScintPitchX     = ScintSizeX + TeflonThick;
         double ScintPitchY     = ScintSizeY + TeflonThick;
 
-        double EncapsSizeX     = NumScintX * ScintSizeX + 9.0 * TeflonThick;
+        double EncapsSizeX     = ScintSizeX * NumScintX  + TeflonThick * (NumScintX - 1 + 2); // between and on outsides
         double EncapsSizeY     = EncapsSizeX;
         double EncapsSizeZ     = ScintSizeZ + TeflonThick;
 
