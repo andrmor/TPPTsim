@@ -5,6 +5,7 @@
 #include "json11.hh"
 
 #include <vector>
+#include <string>
 
 class ParticleBase;
 class TimeGeneratorBase;
@@ -92,6 +93,40 @@ protected:
 
     G4ThreeVector StartPoint = {0,0,0};
     G4ThreeVector EndPoint   = {0,0,0};
+};
+
+// ---
+
+class CylindricalSource : public SourceModeBase
+{
+public:
+    CylindricalSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
+                      double radius, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint,
+                      const std::string & fileName = "");
+    CylindricalSource(const json11::Json & json);
+    ~CylindricalSource();
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+    std::string getTypeName() const override {return "CylindricalSource";}
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
+
+    double Radius = 1.0;
+    G4ThreeVector StartPoint = {0,0,0};
+    G4ThreeVector EndPoint   = {0,0,0};
+    std::string FileName;
+
+    G4ThreeVector Axis;
+    G4ThreeVector UnitNormal1;
+    G4ThreeVector UnitNormal2;
+
+    std::ofstream * Stream    = nullptr;
+
+private:
+    void init();
 };
 
 // ---

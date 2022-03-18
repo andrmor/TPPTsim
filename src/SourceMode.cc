@@ -307,7 +307,8 @@ void MaterialLimitedSource::init()
     if (!FileName.empty())
     {
         Stream = new std::ofstream();
-        Stream->open(FileName);
+        SessionManager & SM = SessionManager::getInstance();
+        Stream->open(SM.WorkingDirectory + '/' + FileName);
         if (!Stream->is_open() || Stream->fail() || Stream->bad())
         {
             out("Cannot open file to store emission positions!");
@@ -349,7 +350,7 @@ void MaterialLimitedSource::GeneratePrimaries(G4Event *anEvent)
             {
                 ParticleGun->SetParticlePosition(pos);
                 if (Stream)
-                    *Stream << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
+                    *Stream << pos[0] << " " << pos[1] << " " << pos[2] << '\n';
                 break;
             }
 
@@ -572,10 +573,7 @@ LineSource::LineSource(const json11::Json & json) :
 
 void LineSource::GeneratePrimaries(G4Event * anEvent)
 {
-    double rand = G4UniformRand();
-    G4ThreeVector pos;
-    for (int i=0; i<3; i++)
-        pos[i] = StartPoint[i] + (EndPoint[i] - StartPoint[i]) * rand;
+    const G4ThreeVector pos = StartPoint + (EndPoint - StartPoint) * G4UniformRand();
     //out(pos);
     ParticleGun->SetParticlePosition(pos);
     SourceModeBase::GeneratePrimaries(anEvent);
@@ -594,6 +592,101 @@ void LineSource::doWriteToJson(json11::Json::object & json) const
 
 void LineSource::doReadFromJson(const json11::Json &json)
 {
+    jstools::readDouble(json, "StartPointX", StartPoint[0]);
+    jstools::readDouble(json, "StartPointY", StartPoint[1]);
+    jstools::readDouble(json, "StartPointZ", StartPoint[2]);
+
+    jstools::readDouble(json, "EndPointX", EndPoint[0]);
+    jstools::readDouble(json, "EndPointY", EndPoint[1]);
+    jstools::readDouble(json, "EndPointZ", EndPoint[2]);
+}
+
+// ---
+
+CylindricalSource::CylindricalSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, double radius, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint, const std::string & fileName) :
+    SourceModeBase(particle, timeGenerator), Radius(radius), StartPoint(startPoint), EndPoint(endPoint), FileName(fileName)
+{
+    init();
+}
+
+CylindricalSource::CylindricalSource(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+
+    init();
+}
+
+CylindricalSource::~CylindricalSource()
+{
+    if (Stream)
+    {
+        Stream->close();
+        delete Stream;
+    }
+}
+
+void CylindricalSource::init()
+{
+    Axis = EndPoint - StartPoint;
+    UnitNormal1 = Axis.unit().orthogonal();
+    UnitNormal2 = UnitNormal1;
+    UnitNormal2.rotate(0.5 * M_PI, Axis);
+
+    if (!FileName.empty())
+    {
+        Stream = new std::ofstream();
+        SessionManager & SM = SessionManager::getInstance();
+        Stream->open(SM.WorkingDirectory + '/' + FileName);
+        if (!Stream->is_open() || Stream->fail() || Stream->bad())
+        {
+            out("Cannot open file to store emission positions!");
+            delete Stream; Stream = nullptr;
+        }
+        else out("\nSaving source emission positions to file", FileName);
+    }
+}
+
+void CylindricalSource::GeneratePrimaries(G4Event * anEvent)
+{
+    G4ThreeVector pos = StartPoint + Axis * G4UniformRand();
+
+    double x,y;
+    do
+    {
+        x = -1.0 + 2.0 * G4UniformRand();
+        y = -1.0 + 2.0 * G4UniformRand();
+    }
+    while (x*x + y*y > 1.0);
+
+    pos += UnitNormal1 * x * Radius  +  UnitNormal2 * y * Radius;
+
+    if (Stream) *Stream << pos[0] << " " << pos[1] << " " << pos[2] << '\n';
+
+    ParticleGun->SetParticlePosition(pos);
+    SourceModeBase::GeneratePrimaries(anEvent);
+}
+
+void CylindricalSource::doWriteToJson(json11::Json::object & json) const
+{
+    json["Radius"] = Radius;
+    json["FileName"] = FileName;
+
+    json["StartPointX"] = StartPoint.x();
+    json["StartPointY"] = StartPoint.y();
+    json["StartPointZ"] = StartPoint.z();
+
+    json["EndPointX"] = EndPoint.x();
+    json["EndPointY"] = EndPoint.y();
+    json["EndPointZ"] = EndPoint.z();
+}
+
+void CylindricalSource::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "Radius", Radius);
+    jstools::readString(json, "FileName", FileName);
+
     jstools::readDouble(json, "StartPointX", StartPoint[0]);
     jstools::readDouble(json, "StartPointY", StartPoint[1]);
     jstools::readDouble(json, "StartPointZ", StartPoint[2]);
