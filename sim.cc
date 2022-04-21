@@ -98,7 +98,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
-        SM.SourceMode       = new PencilBeam(new Geantino, new UniformTime(0, 238.0*s), {0,5,5}, {1,0,0}, 1);
+        //SM.SourceMode       = new PencilBeam(new Geantino, new UniformTime(0, 238.0*s), {0,5,5}, {1,0,0}, 1);
         //SM.SourceMode       = new PencilBeam(new Proton(55.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
         //SM.SourceMode       = new PencilBeam(new Proton(157.43*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 100);   // PE-E3
         //SM.SourceMode       = new PencilBeam(new Proton(106.82*MeV), new UniformTime(0, 254.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PE-E1
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeScintPosTest();
-        SM.SimMode          = new SimModeTracing();
+        //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
         //SM.SimMode          = new SimModeAnnihilTest(SM.SourceMode->CountEvents(), 0, "Annihil.txt", false);
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");

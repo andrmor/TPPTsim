@@ -6,6 +6,7 @@
 #include "SimMode.hh"
 #include "PhantomMode.hh"
 #include "out.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
@@ -18,16 +19,15 @@
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
-
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Navigator.hh"
 #include "G4SDManager.hh"
-
 #include "G4GDMLParser.hh"
 
 #define _USE_MATH_DEFINES
+
 #include <math.h>
-#include <QDebug>
+
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
     SessionManager & SM = SessionManager::getInstance();

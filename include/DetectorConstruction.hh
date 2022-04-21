@@ -16,17 +16,18 @@ public:
 
 private:
     void defineMaterials();
-    G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber);
     void addGDML();
     void addFSM();
     void addScintillators();
-    void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
     void addBase();
     void addClosedStructure();
     void addSIPM();
     void addPCB();
     void addCopperStructure();
     void addCoolingAssemblies();
+
+    G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber);
+    void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
 
     G4VSolid * solidEncaps = nullptr;
     G4VSolid * solidScint  = nullptr;
