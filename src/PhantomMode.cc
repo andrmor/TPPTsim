@@ -256,13 +256,14 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
     elements.push_back("C"); natoms.push_back(5);
     elements.push_back("H"); natoms.push_back(8);
     elements.push_back("O"); natoms.push_back(2);
-    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
+    G4Material * matBulk = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3); //man->FindOrBuildMaterial("G4_Galactic");
 
-    G4Material * matWater = man->FindOrBuildMaterial("G4_WATER");
+    G4Material * matEmitter = man->FindOrBuildMaterial("G4_WATER"); //"G4_AIR"
 
     G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 0.5*Diameter*mm, 0.5*Height*mm, 0, 360.0*deg);
-    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
+    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matBulk, "Phantom");
+    //new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 
     const int numSectors = HoleDiameters.size();
@@ -281,7 +282,7 @@ G4LogicalVolume * PhantomDerenzo::definePhantom(G4LogicalVolume *logicWorld)
             y = RadialOffset + iRowCounter * 2.0*holeDiameter * cos(M_PI / 6.0);
 
             G4VSolid        * solidHole = new G4Tubs("sh", 0, 0.5*holeDiameter*mm, 0.5*Height*mm - 1.0*mm, 0, 360.0*deg);
-            G4LogicalVolume * logicHole = new G4LogicalVolume(solidHole, matWater, "Hole" + std::to_string(iSec));
+            G4LogicalVolume * logicHole = new G4LogicalVolume(solidHole, matEmitter, "Hole" + std::to_string(iSec));
             logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 
             for (int iHole = 0; iHole <= iRowCounter; iHole++)

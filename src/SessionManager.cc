@@ -107,7 +107,12 @@ void SessionManager::startSession()
     saveConfig(WorkingDirectory + "/SimConfig.json");
 }
 
-SessionManager::~SessionManager() {}
+SessionManager::~SessionManager()
+{
+    delete PhantomMode;
+    delete SourceMode;
+    delete SimMode;
+}
 
 void SessionManager::configureGUI()
 {
