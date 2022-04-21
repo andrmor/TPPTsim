@@ -40,7 +40,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 100;
+        SM.Seed               = 300;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
@@ -58,13 +58,13 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
-        SM.Verbose          = true;
-        SM.Debug            = true;
+        SM.Verbose          = false;
+        SM.Debug            = false;
         SM.ShowEventNumber  = true;
         SM.EvNumberInterval = 10000;
 
         // Phantom
-        //SM.PhantomMode      = new PhantomNone;
+        SM.PhantomMode      = new PhantomNone;
         SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
         //SM.PhantomMode      = new PhantomParam();
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0});
-        SM.SourceMode       = new Na22point(0,100*s, {0, 0, 0});
+        SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
         //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
-        //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput.bin", true);
+        //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput1e7a.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
