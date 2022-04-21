@@ -771,3 +771,61 @@ void GaussProfile::readFromJson(const json11::Json &json)
     jstools::readDouble(json, "SigmaX", SigmaX);
     jstools::readDouble(json, "SigmaY", SigmaY);
 }
+
+// ---
+
+Na22point::Na22point(double timeFrom, double timeTo, const G4ThreeVector & origin) :
+    SourceModeBase(new Gamma(1.275*MeV), new UniformTime(timeFrom, timeTo)),
+    TimeFrom(timeFrom), TimeTo(timeTo), Origin(origin)
+{
+    ParticleGun->SetParticlePosition(Origin);
+}
+
+Na22point::Na22point(const json11::Json & json) : SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+
+    ParticleGun->SetParticlePosition(Origin);
+}
+
+void Na22point::GeneratePrimaries(G4Event * anEvent)
+{
+    SourceModeBase::GeneratePrimaries(anEvent);   // this will generate gamma with 1.275 MeV
+
+    if (G4UniformRand() < 0.096) return; // no beta+
+
+    // generating gamma pair
+    double tmpEnergy = ParticleGun->GetParticleEnergy();
+    ParticleGun->SetParticleEnergy(0.511*MeV);
+
+    Direction = generateDirectionIsotropic();
+    ParticleGun->SetParticleMomentumDirection(Direction);
+    ParticleGun->GeneratePrimaryVertex(anEvent);
+
+    ParticleGun->SetParticleMomentumDirection(-Direction);
+    ParticleGun->GeneratePrimaryVertex(anEvent);
+
+    //restoring properties
+    ParticleGun->SetParticleEnergy(tmpEnergy);
+}
+
+void Na22point::doWriteToJson(json11::Json::object & json) const
+{
+    json["TimeFrom"] = TimeFrom;
+    json["TimeTo"]   = TimeTo;
+
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
+}
+
+void Na22point::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "TimeFrom", TimeFrom);
+    jstools::readDouble(json, "TimeTo",   TimeTo);
+
+    jstools::readDouble(json, "OriginX", Origin[0]);
+    jstools::readDouble(json, "OriginY", Origin[1]);
+    jstools::readDouble(json, "OriginZ", Origin[2]);
+}

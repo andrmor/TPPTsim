@@ -58,8 +58,8 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
-        SM.Verbose          = true;
-        SM.Debug            = true;
+        SM.Verbose          = false;
+        SM.Debug            = false;
         SM.ShowEventNumber  = true;
         SM.EvNumberInterval = 10000;
 

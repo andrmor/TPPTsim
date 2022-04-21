@@ -276,6 +276,27 @@ protected:
 
 // ---
 
+class Na22point : public SourceModeBase
+{
+public:
+    Na22point(double timeFrom, double timeTo, const G4ThreeVector & origin);
+    Na22point(const json11::Json & json);
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+    std::string getTypeName() const override {return "Na22point";}
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
+
+    double TimeFrom;
+    double TimeTo;
+    G4ThreeVector Origin;
+};
+
+// ---
+
 class BlurredPointSource : public PointSource
 {
 public:
