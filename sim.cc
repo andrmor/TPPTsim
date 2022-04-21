@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/SimForNuno/Norm";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -64,9 +64,9 @@ int main(int argc, char** argv)
         SM.EvNumberInterval = 10000;
 
         // Phantom
-        SM.PhantomMode      = new PhantomNone;
-        //SM.PhantomMode      = new PhantomPMMA;
-        //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 20.0, 10.0, 45.0);
+        //SM.PhantomMode      = new PhantomNone;
+        SM.PhantomMode      = new PhantomPMMA;
+        //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
         //SM.PhantomMode      = new PhantomParam();
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
         // Source
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
-        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {0, 0, 0});
+        SM.SourceMode       = new PointSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
@@ -109,11 +109,11 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
-        //SM.SourceMode       = new MaterialLimitedSource(new O15, new UniformTime(0, 500.0*s), {0, 20.0, 0}, {40.0, 6.0, 66.0}, "G4_WATER", "source.txt");
-        SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
+        //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0}, {200.0, 200.0, 200.0}, "G4_AIR");//, "derenzoLarge.txt");
+        //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeScintPosTest();
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
         //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
-        SM.SimMode          = new SimModeMultipleEvents(3e7, "SimOutput.bin", true);
+        //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput6.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file
