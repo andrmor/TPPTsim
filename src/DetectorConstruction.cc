@@ -244,7 +244,7 @@ void DetectorConstruction::addScintillators()
     SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
 }
 
-G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber)
+G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber, int iAssembly)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -270,6 +270,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
 
             rec.Angle = Angle;
             rec.HeadNumber = headNumber;
+            rec.AssemblyNumber = iAssembly;
 
             SM.ScintRecords.push_back(rec);
         }
@@ -279,7 +280,7 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
 
 void DetectorConstruction::positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber)
 {
-    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle, headNumber), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
+    new G4PVPlacement(rot, pos, createAssembly(iScint, rot, pos, angle, headNumber, iAssembly), "Encaps"+std::to_string(iAssembly), logicWorld, true, iAssembly);
 }
 
 void DetectorConstruction::addBase()

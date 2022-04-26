@@ -11,5 +11,6 @@ void ScintRecord::write(std::ofstream & stream)
     stream << FacePos[0] << " " << FacePos[1] << " " << FacePos[2] << " "
            << Norm[0] << " " << Norm[1] << " " << Norm[2] << " "
            << HeadNumber << " "
-           << Angle << std::endl;
+           << Angle << " "
+           << AssemblyNumber << "\n";
 }

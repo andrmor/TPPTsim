@@ -40,7 +40,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 300;
+        SM.Seed               = 100;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
         // Phantom
         SM.PhantomMode      = new PhantomNone;
-        SM.PhantomMode      = new PhantomPMMA;
+        //SM.PhantomMode      = new PhantomPMMA;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
         //SM.PhantomMode      = new PhantomParam();
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeShowEvent(119);
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeScintPosTest();
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
         //SM.SimMode          = new SimModeSingleEvents(10000);
         //SM.SimMode          = new SimModeMultipleEvents(1000, "SimOutput.txt", false);
-        //SM.SimMode          = new SimModeMultipleEvents(1e7, "SimOutput1e7a.bin", true);
+        SM.SimMode          = new SimModeMultipleEvents(1e5, "SimOutputTest.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.getNumberNatRadEvents(timeFrom, timeTo), "SimOutput.bin", true);
         //SM.SimMode          = new SimModeFirstStage(1e3, "FirstStage.bin", true);
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "SimOutput.txt", false); // if using FromFileSource to use all events in the file

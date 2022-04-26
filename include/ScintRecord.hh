@@ -10,6 +10,7 @@ struct ScintRecord
 
     int    HeadNumber;
     double Angle;
+    int    AssemblyNumber;
 
     void write(std::ofstream & stream);
 };
