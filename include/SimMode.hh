@@ -159,7 +159,7 @@ class SimModeMultipleEvents : public SimModeBase
 {
 public:
     SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary,
-                          size_t maxCapacity = 10000, bool doCluster  = true, double maxTimeDif  = 0.1*ns);
+                          size_t maxCapacity = 10000, bool doCluster  = true, double maxTimeDif  = 0.01*ns);
 
     void run() override;
     G4VSensitiveDetector * getScintDetector() override;
