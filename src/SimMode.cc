@@ -884,3 +884,158 @@ G4UserSteppingAction * PesAnalyzerMode::getSteppingAction()
 {
     return new SteppingAction_PesAnalyzer();
 }
+
+// ---
+
+DepoStatMode::DepoStatMode(int numEvents, const std::string & fileName) :
+    SimModeBase(), NumEvents(numEvents)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    SM.FileName = fileName;
+    bNeedOutput = true;
+
+    //SM.EvNumberInterval = 1;
+}
+
+void DepoStatMode::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+
+    processEventData(); // for the last event!
+
+    // results
+    out("\n\n------------------");
+    int remains = NumEvents;
+    out("No interaction:", 100.0*numNothing/NumEvents, "%");
+        remains -= numNothing;
+    out("Single scintillator: ", 100.0*numSingle/NumEvents, "%");
+    out("  --> Within 5% / 10% of 511 keV:", 100.0*numSingle_5percent/NumEvents, "% /",100.0*numSingle_10percent/NumEvents,"%");
+        remains -= numSingle;
+    out("Two scintillators: ", 100.0*numTwo/NumEvents, "%", "  Same assembly:", 100.0*numTwo_SameAssembly/NumEvents, "%");
+        remains -= numTwo;
+    out("  Two within the same assembly:");
+    out("  --> First  within 5% / 10% of 511 keV:", 100.0*numTwo_Same_first_5percent/NumEvents, "% /",100.0*numTwo_Same_first_10percent/NumEvents,"%");
+    out("  --> Second within 5% / 10% of 511 keV:", 100.0*numTwo_Same_second_5percent/NumEvents, "% /",100.0*numTwo_Same_second_10percent/NumEvents,"%",
+        "average distance between scints:", averageScintDistSecond5/numTwo_Same_second_5percent, "and", averageScintDistSecond10/numTwo_Same_second_10percent, "mm");
+    out("  --> Sum within 5% / 10% of 511 keV:", 100.0*numTwo_Same_sum_5percent/NumEvents, "% /",100.0*numTwo_Same_sum_10percent/NumEvents,"%",
+        "average distance between scints:", averageScintDistSum5/numTwo_Same_sum_5percent, "and", averageScintDistSum10/numTwo_Same_sum_10percent, "mm");
+    out("     --> For 5%,  fraction when first deposition is smaller:", (double)two_FirstSmaller5 /numTwo_Same_sum_5percent,  "Average first/second ratio:",two_AvRatioFirstSecond5/numTwo_Same_sum_5percent);
+    out("     --> For 10%, fraction when first deposition is smaller:", (double)two_FirstSmaller10/numTwo_Same_sum_10percent, "Average first/second ratio:",two_AvRatioFirstSecond5/numTwo_Same_sum_10percent);
+    out("  Two within different assemblies:");
+    out("  --> First  within 5% / 10% of 511 keV:", 100.0*numTwo_Dif_first_5percent/NumEvents, "% /",100.0*numTwo_Dif_first_10percent/NumEvents,"%");
+    out("  --> Second within 5% / 10% of 511 keV:", 100.0*numTwo_Dif_second_5percent/NumEvents, "% /",100.0*numTwo_Dif_second_10percent/NumEvents,"%");
+
+    //"  Within 5% / 10% of 511 keV:", 100.0*numSingle_5percent/NumEvents, "% /",100.0*numSingle_10percent/NumEvents,"%");
+
+
+    out("Unclassified:", 100.0*remains/NumEvents, "%");
+}
+
+void DepoStatMode::onEventStarted()
+{
+    processEventData(); //previous event!
+
+    EventRecord.clear();
+}
+
+G4UserSteppingAction * DepoStatMode::getSteppingAction()
+{
+    return new SteppingAction_DepoStatMode();
+}
+
+void DepoStatMode::addRecord(int iScint, double depo, double time)
+{
+    //out("-->Scint:", iScint, " MeV:", depo, "  ns:", time);
+
+    for (DepoStatRec & r : EventRecord)
+    {
+        if (iScint == r.iScint)
+        {
+            r.energy += depo;
+            if (time < r.time) r.time = time;
+            return;
+        }
+    }
+    EventRecord.emplace_back(DepoStatRec{iScint, depo, time});
+}
+
+void DepoStatMode::processEventData()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    //for (const DepoStatRec & r : EventRecord)
+    //    out("Scint:", r.iScint, " MeV:", r.energy, "  ns:", r.time);
+
+    if      (EventRecord.empty())     numNothing++;
+    else if (EventRecord.size() == 1)
+    {
+        numSingle++;
+        const double depo = EventRecord.front().energy;
+        if (depo > 0.511*0.95 && depo < 0.511*1.05) numSingle_5percent++;
+        if (depo > 0.511*0.90 && depo < 0.511*1.10) numSingle_10percent++;
+    }
+    else if (EventRecord.size() == 2)
+    {
+        numTwo++;
+
+        const DepoStatRec & rFirst  = EventRecord.front();
+        const DepoStatRec & rSecond = EventRecord.back();
+
+        bool bSameAssembly = ( SM.ScintRecords[rFirst.iScint].AssemblyNumber == SM.ScintRecords[rSecond.iScint].AssemblyNumber );
+        if (bSameAssembly)
+        {
+            numTwo_SameAssembly++;
+            const double depo1 = rFirst.energy;
+            if (depo1 > 0.511*0.95 && depo1 < 0.511*1.05) numTwo_Same_first_5percent++;
+            if (depo1 > 0.511*0.90 && depo1 < 0.511*1.10) numTwo_Same_first_10percent++;
+
+            const double depo2 = rSecond.energy;
+            if (depo2 > 0.511*0.95 && depo2 < 0.511*1.05)
+            {
+                numTwo_Same_second_5percent++;
+                G4ThreeVector d = SM.ScintRecords[rFirst.iScint].FacePos - SM.ScintRecords[rSecond.iScint].FacePos;
+                averageScintDistSecond5 += d.getR();
+            }
+            if (depo2 > 0.511*0.90 && depo2 < 0.511*1.10)
+            {
+                numTwo_Same_second_10percent++;
+                G4ThreeVector d = SM.ScintRecords[rFirst.iScint].FacePos - SM.ScintRecords[rSecond.iScint].FacePos;
+                averageScintDistSecond10 += d.getR();
+            }
+
+            const double sumdepo = depo1 + depo2;
+            if (sumdepo > 0.511*0.95 && sumdepo < 0.511*1.05)
+            {
+                numTwo_Same_sum_5percent++;
+                G4ThreeVector d = SM.ScintRecords[rFirst.iScint].FacePos - SM.ScintRecords[rSecond.iScint].FacePos;
+                averageScintDistSum5 += d.getR();
+
+                if (depo1 < depo2) two_FirstSmaller5++;
+                two_AvRatioFirstSecond5 += depo1/depo2;
+            }
+            if (sumdepo > 0.511*0.90 && sumdepo < 0.511*1.10)
+            {
+                numTwo_Same_sum_10percent++;
+                G4ThreeVector d = SM.ScintRecords[rFirst.iScint].FacePos - SM.ScintRecords[rSecond.iScint].FacePos;
+                averageScintDistSum10 += d.getR();
+
+                if (depo1 < depo2) two_FirstSmaller10++;
+                two_AvRatioFirstSecond10 += depo1/depo2;
+            }
+        }
+        else
+        {
+            const double depo1 = rFirst.energy;
+            if (depo1 > 0.511*0.95 && depo1 < 0.511*1.05) numTwo_Dif_first_5percent++;
+            if (depo1 > 0.511*0.90 && depo1 < 0.511*1.10) numTwo_Dif_first_10percent++;
+            const double depo2 = rSecond.energy;
+            if (depo2 > 0.511*0.95 && depo2 < 0.511*1.05) numTwo_Dif_second_5percent++;
+            if (depo2 > 0.511*0.90 && depo2 < 0.511*1.10) numTwo_Dif_second_10percent++;
+        }
+    }
+    else if (EventRecord.size() == 3)
+    {
+
+    }
+}

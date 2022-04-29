@@ -331,4 +331,63 @@ protected:
 
 };
 
+// ---
+struct DepoStatRec
+{
+    int    iScint;
+    double energy;
+    double time;
+};
+class DepoStatMode : public SimModeBase
+{
+public:
+    DepoStatMode(int numEvents, const std::string & fileName);
+
+    std::string getTypeName() const override {return "DepoStatMode";}
+    //void readFromJson(const json11::Json & json) override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    void run() override;
+    void onEventStarted() override;
+
+    void addRecord(int iScint, double depo, double time);
+
+protected:
+    //void doWriteToJson(json11::Json::object & json) const override;
+
+    int NumEvents    = 1;
+    std::vector<DepoStatRec> EventRecord;
+
+    void processEventData();
+
+    int numNothing = 0;
+
+    int numSingle = 0;
+    int numSingle_5percent = 0;
+    int numSingle_10percent = 0;
+
+    int numTwo = 0;
+    int numTwo_SameAssembly = 0;
+    int numTwo_Same_first_5percent = 0;
+    int numTwo_Same_first_10percent = 0;
+    int numTwo_Same_second_5percent = 0;
+    int numTwo_Same_second_10percent = 0;
+    double averageScintDistSecond5 = 0;
+    double averageScintDistSecond10 = 0;
+    int numTwo_Same_sum_5percent = 0;
+    int numTwo_Same_sum_10percent = 0;
+    double averageScintDistSum5 = 0;
+    double averageScintDistSum10 = 0;
+    int two_FirstSmaller5 = 0;
+    double two_AvRatioFirstSecond5 = 0;
+    int two_FirstSmaller10 = 0;
+    double two_AvRatioFirstSecond10 = 0;
+    int numTwo_Dif_first_5percent = 0;
+    int numTwo_Dif_first_10percent = 0;
+    int numTwo_Dif_second_5percent = 0;
+    int numTwo_Dif_second_10percent = 0;
+
+};
+
 #endif // SimulationMode_h
