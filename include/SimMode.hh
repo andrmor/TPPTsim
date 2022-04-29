@@ -361,33 +361,36 @@ protected:
 
     void processEventData();
 
-    int numNothing = 0;
+    std::vector<double> Ranges = {0.05, 0.1};
 
-    int numSingle = 0;
-    int numSingle_5percent = 0;
-    int numSingle_10percent = 0;
+    int num0 = 0;
 
-    int numTwo = 0;
-    int numTwo_SameAssembly = 0;
-    int numTwo_Same_first_5percent = 0;
-    int numTwo_Same_first_10percent = 0;
-    int numTwo_Same_second_5percent = 0;
-    int numTwo_Same_second_10percent = 0;
-    double averageScintDistSecond5 = 0;
-    double averageScintDistSecond10 = 0;
-    int numTwo_Same_sum_5percent = 0;
-    int numTwo_Same_sum_10percent = 0;
-    double averageScintDistSum5 = 0;
-    double averageScintDistSum10 = 0;
-    int two_FirstSmaller5 = 0;
-    double two_AvRatioFirstSecond5 = 0;
-    int two_FirstSmaller10 = 0;
-    double two_AvRatioFirstSecond10 = 0;
-    int numTwo_Dif_first_5percent = 0;
-    int numTwo_Dif_first_10percent = 0;
-    int numTwo_Dif_second_5percent = 0;
-    int numTwo_Dif_second_10percent = 0;
+    int num1 = 0;
+    std::vector<int> Single_In;
 
+    int num2 = 0;
+    int Two_SameAssembly = 0;
+    std::vector<int>    Two_Same_first_In;
+    std::vector<int>    Two_Same_second_In;
+    std::vector<double> Two_Same_AverageDist_First_In;
+    std::vector<double> Two_Same_AverageDist_Second_In;
+    std::vector<int>    Two_Same_sum_In;
+    std::vector<double> Two_Same_AverageDist_Sum_In;
+    std::vector<int>    Two_Same_FirstSmaller_In;
+    std::vector<double> Two_Same_AvRatioFirstSecond_In;
+    std::vector<int>    Two_Dif_first_In;
+    std::vector<int>    Two_Dif_second_In;
+
+    int num3 = 0;
+
+private:
+    void initContainers();
+    void reportInt(const std::vector<int> & vec, int scaleBy);
+    void reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec);
+    void reportRatios(const std::vector<int> & vecStat, const std::vector<double> & vecRatio, const std::vector<int> & scaleVec);
+    void checkDepoIn(double depo, std::vector<int> & vec);
+    void incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec);
+    void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<double> & vecRatio);
 };
 
 #endif // SimulationMode_h
