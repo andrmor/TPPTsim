@@ -45,7 +45,7 @@ public:
     virtual void readFromJson(const json11::Json & /*json*/) {}
 
 protected:
-    virtual void doWriteToJson(json11::Json::object & /*json*/) const {};
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {}
 };
 
 // ---
@@ -361,6 +361,8 @@ protected:
 
     void processEventData();
 
+    double Threshold = 0.01; // in MeV
+
     std::vector<double> Ranges = {0.05, 0.1};
 
     int num0 = 0;
@@ -370,27 +372,50 @@ protected:
 
     int num2 = 0;
     int Two_SameAssembly = 0;
-    std::vector<int>    Two_Same_first_In;
-    std::vector<int>    Two_Same_second_In;
+    std::vector<int>    Two_Same_First_In;
+    std::vector<int>    Two_Same_Second_In;
     std::vector<double> Two_Same_AverageDist_First_In;
     std::vector<double> Two_Same_AverageDist_Second_In;
-    std::vector<int>    Two_Same_sum_In;
+    std::vector<int>    Two_Same_Sum_In;
     std::vector<double> Two_Same_AverageDist_Sum_In;
     std::vector<int>    Two_Same_FirstSmaller_In;
-    std::vector<double> Two_Same_AvRatioFirstSecond_In;
-    std::vector<int>    Two_Dif_first_In;
-    std::vector<int>    Two_Dif_second_In;
+    Hist1D * Two_Same_HistFirstOverSum = nullptr;
+    std::vector<int>    Two_Dif_First_In;
+    std::vector<int>    Two_Dif_Second_In;
+    std::vector<double> Two_Dif_AverageDist_First_In;
+    std::vector<double> Two_Dif_AverageDist_Second_In;
+
+    //alternative
+    std::vector<int>    NoGroup_In_2;
+    std::vector<int>    Assembly_In_2;
+    std::vector<int>    Global_In_2;
 
     int num3 = 0;
+    std::vector<int>    NoGroup_In_3;
+    std::vector<int>    Assembly_In_3;
+    std::vector<int>    Global_In_3;
+
+    int num4 = 0;
+    std::vector<int>    NoGroup_In_4;
+    std::vector<int>    Assembly_In_4;
+    std::vector<int>    Global_In_4;
+
+    int num5plus = 0;
+    std::vector<int>    NoGroup_In_5plus;
+    std::vector<int>    Assembly_In_5plus;
+    std::vector<int>    Global_In_5plus;
+
 
 private:
     void initContainers();
     void reportInt(const std::vector<int> & vec, int scaleBy);
     void reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec);
-    void reportRatios(const std::vector<int> & vecStat, const std::vector<double> & vecRatio, const std::vector<int> & scaleVec);
-    void checkDepoIn(double depo, std::vector<int> & vec);
+    void reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec);
+    void fillDepoIn(double depo, std::vector<int> & vec);
     void incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec);
-    void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<double> & vecRatio);
+    void fillRatios(double depo1, double depo2, std::vector<int> & vecStat);
+    void fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In);
+    void groupRecords(std::vector<DepoStatRec> & records);
 };
 
 #endif // SimulationMode_h

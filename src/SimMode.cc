@@ -903,16 +903,31 @@ void DepoStatMode::initContainers()
     size_t num = Ranges.size();
 
     Single_In.resize(num, 0);
-    Two_Same_first_In.resize(num, 0);
-    Two_Same_second_In.resize(num, 0);
+    Two_Same_First_In.resize(num, 0);
+    Two_Same_Second_In.resize(num, 0);
     Two_Same_AverageDist_First_In.resize(num, 0);
     Two_Same_AverageDist_Second_In.resize(num, 0);
-    Two_Same_sum_In.resize(num, 0);
+    Two_Same_Sum_In.resize(num, 0);
     Two_Same_AverageDist_Sum_In.resize(num, 0);
     Two_Same_FirstSmaller_In.resize(num, 0);
-    Two_Same_AvRatioFirstSecond_In.resize(num, 0);
-    Two_Dif_first_In.resize(num, 0);
-    Two_Dif_second_In.resize(num, 0);
+    Two_Same_HistFirstOverSum = new Hist1D(100, 0, 1.0);
+    Two_Dif_First_In.resize(num, 0);
+    Two_Dif_Second_In.resize(num, 0);
+    Two_Dif_AverageDist_First_In.resize(num, 0);
+    Two_Dif_AverageDist_Second_In.resize(num, 0);
+
+    NoGroup_In_2.resize(num, 0);
+    NoGroup_In_3.resize(num, 0);
+    NoGroup_In_4.resize(num, 0);
+    NoGroup_In_5plus.resize(num, 0);
+    Assembly_In_2.resize(num, 0);
+    Assembly_In_3.resize(num, 0);
+    Assembly_In_4.resize(num, 0);
+    Assembly_In_5plus.resize(num, 0);
+    Global_In_2.resize(num, 0);
+    Global_In_3.resize(num, 0);
+    Global_In_4.resize(num, 0);
+    Global_In_5plus.resize(num, 0);
 }
 
 void DepoStatMode::reportInt(const std::vector<int> & vec, int scaleBy)
@@ -920,7 +935,7 @@ void DepoStatMode::reportInt(const std::vector<int> & vec, int scaleBy)
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("  -->", 100.0 * vec[i] / scaleBy, "% within", std::to_string(factor*100.0), "% of 511 keV");
+        out("  -->", 100.0 * vec[i] / scaleBy, "% within +-", std::to_string(factor*100.0), "% of 511 keV");
     }
 }
 
@@ -929,63 +944,18 @@ void DepoStatMode::reportAvDist(const std::vector<double> & vec, const std::vect
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("  -->", vec[i] / scaleVec[i], "mm for", std::to_string(factor*100.0), "% of 511 keV");
+        out("  -->", vec[i] / scaleVec[i], "mm for +-", std::to_string(factor*100.0), "% of 511 keV");
     }
 }
 
-void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vector<double> & vecRatio, const std::vector<int> & scaleVec)
+void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("  -->Fraction when first depo smaller:", (double)vecStat[i] / scaleVec[i],
-            " and average first/second depo ratio:", vecRatio[i] / scaleVec[i], " for", std::to_string(factor*100.0), "% of 511 keV");
+        out("  -->Fraction with first depo smaller:", (double)vecStat[i] / scaleVec[i],
+            " for +-", std::to_string(factor*100.0), "% of 511 keV");
     }
-}
-
-void DepoStatMode::run()
-{
-    initContainers();
-
-    SessionManager & SM = SessionManager::getInstance();
-    SM.runManager->BeamOn(NumEvents);
-
-    processEventData(); // for the last event!
-
-    // results
-    out("\n\n------------------");
-    int remains = NumEvents;
-
-    out("No interaction:",       100.0 * num0/NumEvents, "%"); remains -= num0;
-
-    out("Single scintillator: ", 100.0 * num1/NumEvents,  "%"); remains -= num1;
-    reportInt(Single_In, NumEvents);
-
-    out("Two scintillators: ",   100.0 * num2/NumEvents,     "%"); remains -= num2;
-    out("  Two within the same assembly:", 100.0*Two_SameAssembly/NumEvents, "%");
-    out("    First:");
-    reportInt(Two_Same_first_In, NumEvents);
-    out("    Second:");
-    reportInt(Two_Same_second_In, NumEvents);
-    out("      Average distance between scints:");
-    reportAvDist(Two_Same_AverageDist_First_In,  Two_Same_first_In);
-    reportAvDist(Two_Same_AverageDist_Second_In, Two_Same_second_In);
-    out("  Sum of two depositions:");
-    reportInt(Two_Same_sum_In, NumEvents);
-    out("      Average distance between scints:");
-    reportAvDist(Two_Same_AverageDist_Sum_In, Two_Same_sum_In);
-    reportRatios(Two_Same_FirstSmaller_In, Two_Same_AvRatioFirstSecond_In, Two_Same_sum_In);
-    out("  Two within different assemblies:");
-    out("    First:");
-    reportInt(Two_Dif_first_In, NumEvents);
-    out("    Second:");
-    reportInt(Two_Dif_second_In, NumEvents);
-
-
-
-    out("Three scintillators: ", 100.0 * num3/NumEvents, "%"); remains -= num3;
-
-    out("Unclassified:", 100.0*remains/NumEvents, "%");
 }
 
 void DepoStatMode::onEventStarted()
@@ -1006,7 +976,7 @@ void DepoStatMode::addRecord(int iScint, double depo, double time)
 
     for (DepoStatRec & r : EventRecord)
     {
-        if (iScint == r.iScint)
+        if (r.iScint == iScint)
         {
             r.energy += depo;
             if (time < r.time) r.time = time;
@@ -1016,7 +986,7 @@ void DepoStatMode::addRecord(int iScint, double depo, double time)
     EventRecord.emplace_back(DepoStatRec{iScint, depo, time});
 }
 
-void DepoStatMode::checkDepoIn(double depo, std::vector<int> & vec)
+void DepoStatMode::fillDepoIn(double depo, std::vector<int> & vec)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1040,7 +1010,7 @@ void DepoStatMode::incrementDistance(double depo, const G4ThreeVector & v1, cons
     }
 }
 
-void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<double> & vecRatio)
+void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vecStat)
 {
     const double sumDepo = depo1 + depo2;
     for (size_t i = 0; i < Ranges.size(); i++)
@@ -1050,22 +1020,32 @@ void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vec
            )
         {
             if (depo1 < depo2) vecStat[i]++;
-            vecRatio[i] += depo1 / depo2;
         }
     }
 }
 
 void DepoStatMode::processEventData()
 {
-    SessionManager & SM = SessionManager::getInstance();
+    const SessionManager & SM = SessionManager::getInstance();
     //for (const DepoStatRec & r : EventRecord)
     //    out("Scint:", r.iScint, " MeV:", r.energy, "  ns:", r.time);
+
+    // applying threshold
+    if (!EventRecord.empty())
+    {
+        for (int iThis = EventRecord.size()-1; iThis >= 0; iThis--)
+        {
+            const DepoStatRec & Rec = EventRecord[iThis];
+            if (Rec.energy < Threshold)
+                EventRecord.erase(EventRecord.begin() + iThis);
+        }
+    }
 
     if      (EventRecord.empty())     num0++;
     else if (EventRecord.size() == 1)
     {
         num1++;
-        checkDepoIn(EventRecord.front().energy, Single_In);
+        fillDepoIn(EventRecord.front().energy, Single_In);
     }
     else if (EventRecord.size() == 2)
     {
@@ -1079,30 +1059,196 @@ void DepoStatMode::processEventData()
         {
             Two_SameAssembly++;
             const double depo1 = rFirst.energy;
-            checkDepoIn (depo1, Two_Same_first_In);
+            fillDepoIn (depo1, Two_Same_First_In);
             const double depo2 = rSecond.energy;
-            checkDepoIn (depo2, Two_Same_second_In);
+            fillDepoIn (depo2, Two_Same_Second_In);
 
             incrementDistance(depo1, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_AverageDist_First_In);
             incrementDistance(depo2, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_AverageDist_Second_In);
 
             const double sumdepo = depo1 + depo2;
-            checkDepoIn(sumdepo, Two_Same_sum_In);
+            fillDepoIn(sumdepo, Two_Same_Sum_In);
 
             incrementDistance(sumdepo, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_AverageDist_Sum_In);
 
-            fillRatios(depo1, depo2, Two_Same_FirstSmaller_In, Two_Same_AvRatioFirstSecond_In);
+            fillRatios(depo1, depo2, Two_Same_FirstSmaller_In);
+            Two_Same_HistFirstOverSum->fill(depo1/sumdepo);
         }
         else
         {
             const double depo1 = rFirst.energy;
-            checkDepoIn(depo1, Two_Dif_first_In);
+            fillDepoIn(depo1, Two_Dif_First_In);
             const double depo2 = rSecond.energy;
-            checkDepoIn(depo2, Two_Dif_second_In);
+            fillDepoIn(depo2, Two_Dif_Second_In);
+
+            incrementDistance(depo1, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Dif_AverageDist_First_In);
+            incrementDistance(depo2, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Dif_AverageDist_Second_In);
         }
+
+
+        fillInByGrouping(NoGroup_In_2, Assembly_In_2, Global_In_2);
     }
     else if (EventRecord.size() == 3)
     {
         num3++;
+        fillInByGrouping(NoGroup_In_3, Assembly_In_3, Global_In_3);
     }
+    else if (EventRecord.size() == 4)
+    {
+        num4++;
+        fillInByGrouping(NoGroup_In_4, Assembly_In_4, Global_In_4);
+    }
+    else
+    {
+        num5plus++;
+        fillInByGrouping(NoGroup_In_5plus, Assembly_In_5plus, Global_In_5plus);
+    }
+}
+
+void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In)
+{
+    for (size_t iRange = 0; iRange < Ranges.size(); iRange++)
+    {
+        for (DepoStatRec & rec : EventRecord)
+        {
+            const double depo = rec.energy;
+            fillDepoIn(depo, NoGroup_In);
+        }
+
+        std::vector<DepoStatRec> GrouppedRecord = EventRecord;
+        groupRecords(GrouppedRecord);
+        for (DepoStatRec & rec : GrouppedRecord)
+        {
+            const double depo = rec.energy;
+            fillDepoIn(depo, Assembly_In);
+        }
+
+        double sumDepo = 0;
+        for (DepoStatRec & rec : GrouppedRecord) sumDepo += rec.energy;
+        fillDepoIn(sumDepo, Global_In);
+    }
+}
+
+void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
+{
+    const SessionManager & SM = SessionManager::getInstance();
+
+    for (size_t iThis = records.size()-1; iThis > 0; iThis--)
+    {
+        DepoStatRec & ThisRec = records[iThis];
+        for (size_t iCheck = 0; iCheck < iThis; iCheck++)
+        {
+            DepoStatRec & CheckRec = records[iCheck];
+            if (SM.ScintRecords[ThisRec.iScint].AssemblyNumber == SM.ScintRecords[CheckRec.iScint].AssemblyNumber)
+            {
+                CheckRec.energy += ThisRec.energy;
+                records.erase(records.begin() + iThis);
+                break;
+            }
+        }
+    }
+}
+
+void DepoStatMode::run()
+{
+    initContainers();
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+
+    processEventData(); // for the last event!
+
+    // results
+    out("\n\n------------------");
+    int remains = NumEvents;
+
+    out("No interaction:",       100.0 * num0/NumEvents, "%"); remains -= num0;
+
+    num1--; // first dummy event disregarded
+    out("Single scintillator: ", 100.0 * num1/NumEvents, "%"); remains -= num1;
+    reportInt(Single_In, NumEvents);
+
+    out("Two scintillators: ",   100.0 * num2/NumEvents, "%"); remains -= num2;
+    out("  Two within the same assembly:", 100.0*Two_SameAssembly/NumEvents, "%");
+    out("    First:");
+    reportInt(Two_Same_First_In,  NumEvents);
+    out("    Second:");
+    reportInt(Two_Same_Second_In, NumEvents);
+    out("      Average distance between scints");
+    out("        when first in:");
+    reportAvDist(Two_Same_AverageDist_First_In,  Two_Same_First_In);
+    out("        when second in:");
+    reportAvDist(Two_Same_AverageDist_Second_In, Two_Same_Second_In);
+    out("  Sum of two depositions:");
+    reportInt(Two_Same_Sum_In, NumEvents);
+    out("      Average distance between scints:");
+    reportAvDist(Two_Same_AverageDist_Sum_In, Two_Same_Sum_In);
+    reportRatios(Two_Same_FirstSmaller_In, Two_Same_Sum_In);
+    out("  Two within different assemblies:");
+    out("    First:");
+    reportInt(Two_Dif_First_In, NumEvents);
+    out("    Second:");
+    reportInt(Two_Dif_Second_In, NumEvents);
+    out("      Average distance between scints:");
+    out("        when first in:");
+    reportAvDist(Two_Dif_AverageDist_First_In,  Two_Dif_First_In);
+    out("        when second in:");
+    reportAvDist(Two_Dif_AverageDist_Second_In, Two_Dif_Second_In);
+    Two_Same_HistFirstOverSum->report(); Two_Same_HistFirstOverSum->save(SM.WorkingDirectory + "/histFirstOverSum.txt");
+
+    out("Three scintillators: ", 100.0 * num3/NumEvents, "%"); remains -= num3;
+    out("Four  scintillators: ", 100.0 * num4/NumEvents, "%"); remains -= num4;
+    out("Five+ scintillators: ", 100.0 * num5plus/NumEvents, "%"); remains -= num5plus;
+
+    //out("Remainer:", remains);
+
+
+
+    out("------\n");
+    out("If no summing is made, \"good\" event fractions are:");
+    for (size_t i = 0; i < Ranges.size(); i++)
+    {
+        double factor = Ranges[i];
+        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+
+        int tot1 = Single_In[i];
+        int tot2 = NoGroup_In_2[i];
+        int tot3 = NoGroup_In_3[i];
+        int tot4 = NoGroup_In_4[i];
+        int totP = NoGroup_In_5plus[i];
+        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
+    }
+    out("------\n");
+    out("If summing in assemblies is made, \"good\" event fractions are:");
+    for (size_t i = 0; i < Ranges.size(); i++)
+    {
+        double factor = Ranges[i];
+        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+
+        int tot1 = Single_In[i];
+        int tot2 = Assembly_In_2[i];
+        int tot3 = Assembly_In_3[i];
+        int tot4 = Assembly_In_4[i];
+        int totP = Assembly_In_5plus[i];
+        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
+    }
+    out("------\n");
+    out("If global summing is made, \"good\" event fractions are:");
+    for (size_t i = 0; i < Ranges.size(); i++)
+    {
+        double factor = Ranges[i];
+        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+
+        int tot1 = Single_In[i];
+        int tot2 = Global_In_2[i];
+        int tot3 = Global_In_3[i];
+        int tot4 = Global_In_4[i];
+        int totP = Global_In_5plus[i];
+        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
+    }
+
+    out( NumEvents , num0 , num1 , num2 , num3 , num4 , num5plus , remains);
 }
