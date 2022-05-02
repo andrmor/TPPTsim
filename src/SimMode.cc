@@ -910,7 +910,9 @@ void DepoStatMode::initContainers()
     Two_Same_Sum_In.resize(num, 0);
     Two_Same_AverageDist_Sum_In.resize(num, 0);
     Two_Same_FirstSmaller_In.resize(num, 0);
-    Two_Same_HistFirstOverSum = new Hist1D(100, 0, 1.0);
+    Two_Same_HistFirstOverSum.resize(num, nullptr);
+    for (size_t i = 0; i < num; i++)
+        Two_Same_HistFirstOverSum[i] = new Hist1D(100, 0, 1.0);
     Two_Dif_First_In.resize(num, 0);
     Two_Dif_Second_In.resize(num, 0);
     Two_Dif_AverageDist_First_In.resize(num, 0);
@@ -948,13 +950,16 @@ void DepoStatMode::reportAvDist(const std::vector<double> & vec, const std::vect
     }
 }
 
-void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec)
+void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D *> & vecHist)
 {
+    const SessionManager & SM = SessionManager::getInstance();
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
         out("  -->Fraction with first depo smaller:", (double)vecStat[i] / scaleVec[i],
             " for +-", std::to_string(factor*100.0), "% of 511 keV");
+
+        vecHist[i]->save(SM.WorkingDirectory + "/histFirstOverSum-" + std::to_string(factor*100.0) + ".txt");
     }
 }
 
@@ -1010,7 +1015,7 @@ void DepoStatMode::incrementDistance(double depo, const G4ThreeVector & v1, cons
     }
 }
 
-void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vecStat)
+void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D *> & vecHist)
 {
     const double sumDepo = depo1 + depo2;
     for (size_t i = 0; i < Ranges.size(); i++)
@@ -1020,6 +1025,7 @@ void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vec
            )
         {
             if (depo1 < depo2) vecStat[i]++;
+            vecHist[i]->fill(depo1/sumDepo);
         }
     }
 }
@@ -1071,8 +1077,7 @@ void DepoStatMode::processEventData()
 
             incrementDistance(sumdepo, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_AverageDist_Sum_In);
 
-            fillRatios(depo1, depo2, Two_Same_FirstSmaller_In);
-            Two_Same_HistFirstOverSum->fill(depo1/sumdepo);
+            fillRatios(depo1, depo2, Two_Same_FirstSmaller_In, Two_Same_HistFirstOverSum);
         }
         else
         {
@@ -1185,7 +1190,7 @@ void DepoStatMode::run()
     reportInt(Two_Same_Sum_In, NumEvents);
     out("      Average distance between scints:");
     reportAvDist(Two_Same_AverageDist_Sum_In, Two_Same_Sum_In);
-    reportRatios(Two_Same_FirstSmaller_In, Two_Same_Sum_In);
+    reportRatios(Two_Same_FirstSmaller_In, Two_Same_Sum_In, Two_Same_HistFirstOverSum);
     out("  Two within different assemblies:");
     out("    First:");
     reportInt(Two_Dif_First_In, NumEvents);
@@ -1196,7 +1201,6 @@ void DepoStatMode::run()
     reportAvDist(Two_Dif_AverageDist_First_In,  Two_Dif_First_In);
     out("        when second in:");
     reportAvDist(Two_Dif_AverageDist_Second_In, Two_Dif_Second_In);
-    Two_Same_HistFirstOverSum->report(); Two_Same_HistFirstOverSum->save(SM.WorkingDirectory + "/histFirstOverSum.txt");
 
     out("Three scintillators: ", 100.0 * num3/NumEvents, "%"); remains -= num3;
     out("Four  scintillators: ", 100.0 * num4/NumEvents, "%"); remains -= num4;

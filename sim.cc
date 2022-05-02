@@ -93,7 +93,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
-        SM.SourceMode       = new PointSource(new Gamma, new ConstantTime(0), {50, 50, 30});
+        SM.SourceMode       = new PointSource(new Gamma, new ConstantTime(0), {0, 0, 0});
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
