@@ -363,7 +363,7 @@ protected:
 
     double Threshold = 0.01; // in MeV
 
-    std::vector<double> Ranges = {0.05, 0.1};
+    std::vector<double> Ranges = {0.05, 0.1}; // WARNING! it is assumed an exclusive (<0.5) window: if one depo node is inside, all other nodes should be outside
 
     int num0 = 0;
 

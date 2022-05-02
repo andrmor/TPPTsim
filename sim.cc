@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 
         // Simulation mode
         //SM.SimMode          = new SimModeGui();
-        SM.SimMode          = new DepoStatMode(2e5, "tmp.txt");
+        SM.SimMode          = new DepoStatMode(1e6, "tmp.txt");
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);

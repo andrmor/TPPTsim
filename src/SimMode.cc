@@ -1131,6 +1131,8 @@ void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<i
 
 void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
 {
+    if (records.size() < 2)  return;
+
     const SessionManager & SM = SessionManager::getInstance();
 
     for (size_t iThis = records.size()-1; iThis > 0; iThis--)
@@ -1205,11 +1207,12 @@ void DepoStatMode::run()
 
 
     out("------\n");
-    out("If no summing is made, \"good\" event fractions are:");
+    out("Total number of gammas generated:", NumEvents);
+    out("If no grouping is made, \"good\" events are:");
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+        out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
         int tot1 = Single_In[i];
         int tot2 = NoGroup_In_2[i];
@@ -1220,11 +1223,11 @@ void DepoStatMode::run()
         out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
     }
     out("------\n");
-    out("If summing in assemblies is made, \"good\" event fractions are:");
+    out("If grouping in assemblies is made, \"good\" events are:");
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+        out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
         int tot1 = Single_In[i];
         int tot2 = Assembly_In_2[i];
@@ -1235,11 +1238,11 @@ void DepoStatMode::run()
         out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
     }
     out("------\n");
-    out("If global summing is made, \"good\" event fractions are:");
+    out("If global grouping is made, \"good\" events are:");
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
-        out("Window of",std::to_string(factor*100.0), "% of 511 keV:");
+        out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
         int tot1 = Single_In[i];
         int tot2 = Global_In_2[i];

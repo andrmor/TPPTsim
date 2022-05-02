@@ -265,7 +265,7 @@ void SteppingAction_DepoStatMode::UserSteppingAction(const G4Step * step)
     const double depo = step->GetTotalEnergyDeposit(); // in MeV
     if (depo == 0) return;
 
-    // note that energy deposition cam be on exiting scintillator!
+    // note that energy deposition can be on exiting scintillator!
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
     const G4StepPoint * preP   = step->GetPreStepPoint();
