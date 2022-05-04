@@ -341,10 +341,10 @@ struct DepoStatRec
 class DepoStatMode : public SimModeBase
 {
 public:
-    DepoStatMode(int numEvents, const std::string & fileName);
+    DepoStatMode(int numEvents, double thresholdMeV = 0.01, std::vector<double> Ranges = {0.05, 0.1}); // energy windows are 0.511 +- Range[i]
 
     std::string getTypeName() const override {return "DepoStatMode";}
-    //void readFromJson(const json11::Json & json) override;
+    void readFromJson(const json11::Json & json) override;
 
     G4UserSteppingAction * getSteppingAction() override;
 
@@ -354,7 +354,7 @@ public:
     void addRecord(int iScint, double depo, double time);
 
 protected:
-    //void doWriteToJson(json11::Json::object & json) const override;
+    void doWriteToJson(json11::Json::object & json) const override;
 
     int NumEvents    = 1;
     std::vector<DepoStatRec> EventRecord;
@@ -362,6 +362,7 @@ protected:
     void processEventData();
 
     double Threshold = 0.01; // in MeV
+
 
     std::vector<double> Ranges = {0.05, 0.1}; // WARNING! it is assumed an exclusive (<0.5) window: if one depo node is inside, all other nodes should be outside
 
@@ -378,6 +379,7 @@ protected:
     std::vector<double> Two_Same_AverageDist_Second_In;
     std::vector<int>    Two_Same_Sum_In;
     std::vector<double> Two_Same_AverageDist_Sum_In;
+    std::vector<Hist1D*>Two_Same_HistDist;
     std::vector<int>    Two_Same_FirstSmaller_In;
     std::vector<Hist1D*>Two_Same_HistFirstOverSum;
     std::vector<int>    Two_Dif_First_In;
@@ -410,8 +412,10 @@ private:
     void initContainers();
     void reportInt(const std::vector<int> & vec, int scaleBy);
     void reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec);
+    void saveDistHist(const std::vector<Hist1D *> & HistDist);
     void reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D*> & vecHist);
     void fillDepoIn(double depo, std::vector<int> & vec);
+    void fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D*> & vecHist);
     void incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec);
     void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D*> & vecHist);
     void fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In);

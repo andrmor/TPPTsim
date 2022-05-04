@@ -34,6 +34,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
     else if (Type == "SimModeFirstStage")     sm = new SimModeFirstStage(0, "dummy.txt", false);
     else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
+    else if (Type == "DepoStatMode")          sm = new DepoStatMode(0, 0.01, {0.05, 0.1});
     else
     {
         out("Unknown simulation mode type!");
@@ -887,15 +888,27 @@ G4UserSteppingAction * PesAnalyzerMode::getSteppingAction()
 
 // ---
 
-DepoStatMode::DepoStatMode(int numEvents, const std::string & fileName) :
-    SimModeBase(), NumEvents(numEvents)
+DepoStatMode::DepoStatMode(int numEvents, double thresholdMeV, std::vector<double> ranges) :
+    SimModeBase(), NumEvents(numEvents), Threshold(thresholdMeV), Ranges(ranges) {}
+
+void DepoStatMode::doWriteToJson(json11::Json::object & json) const
 {
-    SessionManager & SM = SessionManager::getInstance();
+    json["NumEvents"] = NumEvents;
+    json["Threshold"] = Threshold;
 
-    SM.FileName = fileName;
-    bNeedOutput = true;
+    json11::Json::array jar;
+    for (size_t i = 0; i < Ranges.size(); i++) jar.push_back(Ranges[i]);
+    json["Ranges"] = jar;
+}
 
-    //SM.EvNumberInterval = 1;
+void DepoStatMode::readFromJson(const json11::Json & json)
+{
+    jstools::readInt   (json, "NumEvents", NumEvents);
+    jstools::readDouble(json, "Threshold", Threshold);
+
+    json11::Json::array jar;
+    jstools::readArray(json, "Ranges", jar);
+    for (size_t i = 0; i < jar.size(); i++) Ranges[i] = jar[i].number_value();
 }
 
 void DepoStatMode::initContainers()
@@ -909,6 +922,9 @@ void DepoStatMode::initContainers()
     Two_Same_AverageDist_Second_In.resize(num, 0);
     Two_Same_Sum_In.resize(num, 0);
     Two_Same_AverageDist_Sum_In.resize(num, 0);
+    Two_Same_HistDist.resize(num, nullptr);
+    for (size_t i = 0; i < num; i++)
+        Two_Same_HistDist[i] = new Hist1D(100, 0, 30.0);
     Two_Same_FirstSmaller_In.resize(num, 0);
     Two_Same_HistFirstOverSum.resize(num, nullptr);
     for (size_t i = 0; i < num; i++)
@@ -947,6 +963,16 @@ void DepoStatMode::reportAvDist(const std::vector<double> & vec, const std::vect
     {
         double factor = Ranges[i];
         out("  -->", vec[i] / scaleVec[i], "mm for +-", std::to_string(factor*100.0), "% of 511 keV");
+    }
+}
+
+void DepoStatMode::saveDistHist(const std::vector<Hist1D*> & HistDist)
+{
+    const SessionManager & SM = SessionManager::getInstance();
+    for (size_t i=0; i<Ranges.size(); i++)
+    {
+        double factor = Ranges[i];
+        HistDist[i]->save(SM.WorkingDirectory + "/histDistTwoSumInside-" + std::to_string(factor*100.0) + ".txt");
     }
 }
 
@@ -998,6 +1024,20 @@ void DepoStatMode::fillDepoIn(double depo, std::vector<int> & vec)
         if ( depo > (0.511 * (1.0 - Ranges[i])) &&
              depo < (0.511 * (1.0 + Ranges[i]))
            ) vec[i]++;
+    }
+}
+
+void DepoStatMode::fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D *> & vecHist)
+{
+    for (size_t i = 0; i < Ranges.size(); i++)
+    {
+        if ( depoSum > (0.511 * (1.0 - Ranges[i])) &&
+             depoSum < (0.511 * (1.0 + Ranges[i]))
+           )
+        {
+            const G4ThreeVector d = pos1 - pos2;
+            vecHist[i]->fill(d.getR());
+        }
     }
 }
 
@@ -1074,6 +1114,7 @@ void DepoStatMode::processEventData()
 
             const double sumdepo = depo1 + depo2;
             fillDepoIn(sumdepo, Two_Same_Sum_In);
+            fillDistHist(sumdepo, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_HistDist);
 
             incrementDistance(sumdepo, SM.ScintRecords[rFirst.iScint].FacePos, SM.ScintRecords[rSecond.iScint].FacePos, Two_Same_AverageDist_Sum_In);
 
@@ -1188,8 +1229,9 @@ void DepoStatMode::run()
     reportAvDist(Two_Same_AverageDist_Second_In, Two_Same_Second_In);
     out("  Sum of two depositions:");
     reportInt(Two_Same_Sum_In, NumEvents);
-    out("      Average distance between scints:");
+    out("      Average distance between scints when sum energy is in window:");
     reportAvDist(Two_Same_AverageDist_Sum_In, Two_Same_Sum_In);
+    saveDistHist(Two_Same_HistDist);
     reportRatios(Two_Same_FirstSmaller_In, Two_Same_Sum_In, Two_Same_HistFirstOverSum);
     out("  Two within different assemblies:");
     out("    First:");

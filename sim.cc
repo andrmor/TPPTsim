@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DepoStat";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DepoStat/50-50-30-10keV";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
-        SM.SourceMode       = new PointSource(new Gamma, new ConstantTime(0), {0, 0, 0});
+        SM.SourceMode       = new PointSource(new Gamma, new ConstantTime(0), {50.0, 50.0, 30.0});
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 
         // Simulation mode
         //SM.SimMode          = new SimModeGui();
-        SM.SimMode          = new DepoStatMode(1e6, "tmp.txt");
+        SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
