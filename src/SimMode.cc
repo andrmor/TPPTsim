@@ -1153,26 +1153,23 @@ void DepoStatMode::processEventData()
 
 void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In)
 {
-    for (size_t iRange = 0; iRange < Ranges.size(); iRange++)
+    for (DepoStatRec & rec : EventRecord)
     {
-        for (DepoStatRec & rec : EventRecord)
-        {
-            const double depo = rec.energy;
-            fillDepoIn(depo, NoGroup_In);
-        }
-
-        std::vector<DepoStatRec> GrouppedRecord = EventRecord;
-        groupRecords(GrouppedRecord);
-        for (DepoStatRec & rec : GrouppedRecord)
-        {
-            const double depo = rec.energy;
-            fillDepoIn(depo, Assembly_In);
-        }
-
-        double sumDepo = 0;
-        for (DepoStatRec & rec : GrouppedRecord) sumDepo += rec.energy;
-        fillDepoIn(sumDepo, Global_In);
+        const double depo = rec.energy;
+        fillDepoIn(depo, NoGroup_In);
     }
+
+    std::vector<DepoStatRec> GrouppedRecord = EventRecord;
+    groupRecords(GrouppedRecord);
+    for (DepoStatRec & rec : GrouppedRecord)
+    {
+        const double depo = rec.energy;
+        fillDepoIn(depo, Assembly_In);
+    }
+
+    double sumDepo = 0;
+    for (DepoStatRec & rec : GrouppedRecord) sumDepo += rec.energy;
+    fillDepoIn(sumDepo, Global_In);
 }
 
 void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
@@ -1249,8 +1246,6 @@ void DepoStatMode::run()
     out("Five+ scintillators: ", 100.0 * num5plus/NumEvents, "%"); remains -= num5plus;
 
     //out("Remainer:", remains);
-
-
 
     out("------\n");
     out("Total number of gammas generated:", NumEvents);
