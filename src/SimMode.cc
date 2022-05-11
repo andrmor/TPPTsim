@@ -891,6 +891,17 @@ G4UserSteppingAction * PesAnalyzerMode::getSteppingAction()
 DepoStatMode::DepoStatMode(int numEvents, double thresholdMeV, std::vector<double> ranges) :
     SimModeBase(), NumEvents(numEvents), Threshold(thresholdMeV), Ranges(ranges) {}
 
+void DepoStatMode::run()
+{
+    initContainers();
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+    processEventData(); // for the last event!
+
+    reportResults();
+}
+
 void DepoStatMode::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
@@ -1168,7 +1179,7 @@ void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<i
     }
 
     double sumDepo = 0;
-    for (DepoStatRec & rec : GrouppedRecord) sumDepo += rec.energy;
+    for (const DepoStatRec & rec : GrouppedRecord) sumDepo += rec.energy;
     fillDepoIn(sumDepo, Global_In);
 }
 
@@ -1178,10 +1189,10 @@ void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
 
     const SessionManager & SM = SessionManager::getInstance();
 
-    for (size_t iThis = records.size()-1; iThis > 0; iThis--)
+    for (int iThis = records.size()-1; iThis > 0; iThis--)
     {
         DepoStatRec & ThisRec = records[iThis];
-        for (size_t iCheck = 0; iCheck < iThis; iCheck++)
+        for (int iCheck = 0; iCheck < iThis; iCheck++)
         {
             DepoStatRec & CheckRec = records[iCheck];
             if (SM.ScintRecords[ThisRec.iScint].AssemblyNumber == SM.ScintRecords[CheckRec.iScint].AssemblyNumber)
@@ -1194,17 +1205,13 @@ void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
     }
 }
 
-void DepoStatMode::run()
+void DepoStatMode::reportResults()
 {
-    initContainers();
-
-    SessionManager & SM = SessionManager::getInstance();
-    SM.runManager->BeamOn(NumEvents);
-
-    processEventData(); // for the last event!
-
     // results
     out("\n\n------------------");
+    out("Total number of gammas generated:", NumEvents);
+    out("Threshold:", Threshold, '\n');
+
     int remains = NumEvents;
 
     out("No interaction:",       100.0 * num0/NumEvents, "%"); remains -= num0;
@@ -1248,19 +1255,19 @@ void DepoStatMode::run()
     //out("Remainer:", remains);
 
     out("------\n");
-    out("Total number of gammas generated:", NumEvents);
+
     out("If no grouping is made, \"good\" events are:");
     for (size_t i = 0; i < Ranges.size(); i++)
     {
         double factor = Ranges[i];
         out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
-        int tot1 = Single_In[i];
-        int tot2 = NoGroup_In_2[i];
-        int tot3 = NoGroup_In_3[i];
-        int tot4 = NoGroup_In_4[i];
-        int totP = NoGroup_In_5plus[i];
-        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        double tot1 = 100.0 / NumEvents * Single_In[i];
+        double tot2 = 100.0 / NumEvents * NoGroup_In_2[i];
+        double tot3 = 100.0 / NumEvents * NoGroup_In_3[i];
+        double tot4 = 100.0 / NumEvents * NoGroup_In_4[i];
+        double totP = 100.0 / NumEvents * NoGroup_In_5plus[i];
+        double tot = tot1 + tot2 + tot3 + tot4 + totP;
         out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
     }
     out("------\n");
@@ -1270,12 +1277,12 @@ void DepoStatMode::run()
         double factor = Ranges[i];
         out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
-        int tot1 = Single_In[i];
-        int tot2 = Assembly_In_2[i];
-        int tot3 = Assembly_In_3[i];
-        int tot4 = Assembly_In_4[i];
-        int totP = Assembly_In_5plus[i];
-        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        double tot1 = 100.0 / NumEvents * Single_In[i];
+        double tot2 = 100.0 / NumEvents * Assembly_In_2[i];
+        double tot3 = 100.0 / NumEvents * Assembly_In_3[i];
+        double tot4 = 100.0 / NumEvents * Assembly_In_4[i];
+        double totP = 100.0 / NumEvents * Assembly_In_5plus[i];
+        double tot = tot1 + tot2 + tot3 + tot4 + totP;
         out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
     }
     out("------\n");
@@ -1285,14 +1292,14 @@ void DepoStatMode::run()
         double factor = Ranges[i];
         out("Window of +-", std::to_string(factor*100.0), "% of 511 keV:");
 
-        int tot1 = Single_In[i];
-        int tot2 = Global_In_2[i];
-        int tot3 = Global_In_3[i];
-        int tot4 = Global_In_4[i];
-        int totP = Global_In_5plus[i];
-        int tot = tot1 + tot2 + tot3 + tot4 + totP;
+        double tot1 = 100.0 / NumEvents * Single_In[i];
+        double tot2 = 100.0 / NumEvents * Global_In_2[i];
+        double tot3 = 100.0 / NumEvents * Global_In_3[i];
+        double tot4 = 100.0 / NumEvents * Global_In_4[i];
+        double totP = 100.0 / NumEvents * Global_In_5plus[i];
+        double tot = tot1 + tot2 + tot3 + tot4 + totP;
         out("  Total", tot, "     1:", tot1, "  2:", tot2, "  3:", tot3, "  4:", tot4, "  5+:", totP);
     }
 
-    out( NumEvents , num0 , num1 , num2 , num3 , num4 , num5plus , remains);
+    //out( NumEvents , num0 , num1 , num2 , num3 , num4 , num5plus , remains);
 }

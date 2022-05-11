@@ -420,6 +420,7 @@ private:
     void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D*> & vecHist);
     void fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In);
     void groupRecords(std::vector<DepoStatRec> & records);
+    void reportResults();
 };
 
 #endif // SimulationMode_h
