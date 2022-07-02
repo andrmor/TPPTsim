@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DepoStat1/center-10keV";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;

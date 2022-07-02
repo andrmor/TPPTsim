@@ -53,14 +53,6 @@ public:
 
 // ---
 
-class SteppingAction_PesAnalyzer : public G4UserSteppingAction
-{
-public:
-    void UserSteppingAction(const G4Step * step) override;
-};
-
-// ---
-
 class SteppingAction_DepoStatMode : public G4UserSteppingAction
 {
 public:

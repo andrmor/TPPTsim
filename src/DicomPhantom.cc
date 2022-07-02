@@ -367,7 +367,7 @@ G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
 
     new G4PVPlacement(nullptr, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
 
-    if (ContainerInvisible) PhantomLogical->SetVisAttributes(G4VisAttributes::Invisible);
+    if (ContainerInvisible) PhantomLogical->SetVisAttributes(false);
     else                    PhantomLogical->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 
     return PhantomLogical;

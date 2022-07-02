@@ -8,8 +8,6 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 
-#include <QDebug>
-
 G4bool SensitiveDetectorFSM::ProcessHits(G4Step * step, G4TouchableHistory *)
 {
     SessionManager & SM = SessionManager::getInstance();

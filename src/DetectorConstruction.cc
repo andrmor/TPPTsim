@@ -38,7 +38,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logicWorld   = new G4LogicalVolume(solidWorld, WorldMat, "World_LV");
     SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
     logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
-    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
+    logicWorld->SetVisAttributes(false);
 
     if (SM.detectorContains(DetComp::GDML)) addGDML();
 
