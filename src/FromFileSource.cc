@@ -196,14 +196,14 @@ void FromFileSource::addPrimary(G4Event * anEvent)
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
-int FromFileSource::CountEvents()
+double FromFileSource::CountEvents()
 {
     if (!inStream) return 0;
 
     inStream->clear();
     inStream->seekg(0);
 
-    int iCounter = 0;
+    double iCounter = 0;
     if (bBinary)
     {
         char ch;

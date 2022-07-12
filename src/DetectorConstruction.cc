@@ -34,7 +34,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     defineMaterials();
 
-    G4Box * solidWorld   = new G4Box("World", 750.0*mm, 750.0*mm, 750.0*mm);
+    G4Box * solidWorld   = new G4Box("World", 3000.0*mm, 3000.0*mm, 3000.0*mm);
     logicWorld   = new G4LogicalVolume(solidWorld, WorldMat, "World_LV");
     SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
     logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));

@@ -280,6 +280,81 @@ void PencilBeam::doReadFromJson(const json11::Json &json)
 
 // ---
 
+MultiBeam::MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, const std::vector<BeamRecord> & beams) :
+    SourceModeBase(particle, nullptr),
+    Origin(origin), Beams(beams)
+{
+    ParticleGun->SetParticlePosition(origin);
+}
+
+/*
+MultiBeam::MultiBeam(const json11::Json & json)
+{
+
+}
+*/
+
+double MultiBeam::CountEvents()
+{
+    double num = 0;
+    for (const BeamRecord & br : Beams) num += br.NumParticles;
+    return num;
+}
+
+void MultiBeam::GeneratePrimaries(G4Event * anEvent)
+{
+    if (iRecord >= Beams.size())
+    {
+        out("All defined beamlets were already generated");
+        return;
+    }
+
+    if (iParticle >= Beams[iRecord].NumParticles)
+    {
+        iRecord++;
+        iParticle = 0;
+        return GeneratePrimaries(anEvent);
+    }
+
+    out("Generating particle for beam #", iRecord, " and particle #", iParticle);
+    const BeamRecord & Beam = Beams[iRecord];
+
+    // position already set in ctor
+    out("  Position:", Origin, "  [mm]");
+
+    //energy
+    ParticleGun->SetParticleEnergy(Beam.Energy);
+    out("  Energy:", Beam.Energy, " MeV");
+
+    //time
+    const double time = Beam.TimeStart + Beam.TimeSpan * G4UniformRand();
+    ParticleGun->SetParticleTime(time);
+    out("  Time:", time, "ns");
+
+    //direction
+    double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
+    double Z = G4RandGauss::shoot(Beam.ZIsoCenter, Beam.PositionSigma);
+    G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
+    dir = dir.unit();
+    ParticleGun->SetParticleMomentumDirection(dir);
+    out("  Direction:", dir);
+
+    ParticleGun->GeneratePrimaryVertex(anEvent);
+    iParticle++;
+}
+
+void MultiBeam::doWriteToJson(json11::Json::object & json) const
+{
+
+}
+
+void MultiBeam::doReadFromJson(const json11::Json & json)
+{
+
+}
+
+// ---
+
 #include "G4Navigator.hh"
 MaterialLimitedSource::MaterialLimitedSource(ParticleBase * particle,
                                              TimeGeneratorBase * timeGenerator,

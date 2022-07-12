@@ -19,7 +19,7 @@ public:
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    int CountEvents() override;
+    double CountEvents() override;
 
     std::string getTypeName() const override {return "FromFileSource";}
 
