@@ -2,36 +2,15 @@
 #define pesgenerationmode_h
 
 #include "SimMode.hh"
+#include "PesGenRecord.hh"
 
 #include <array>
 #include <vector>
 #include <string>
 
-class PesGenRecord
-{
-public:
-    PesGenRecord(int targetZ, int targetA, std::string pes) : TargetZ(targetZ), TargetA(targetA), PES(pes) {}
-    PesGenRecord(){}
-
-    int         TargetZ; // 6;
-    int         TargetA; // 12;
-
-    std::string PES;     // "C11";
-
-    std::vector<std::pair<double,double>> CrossSection; // [MeV] [millibarn]
-
-    //runtime
-    double NumberDensity;
-    double getCrossSection(double energy) const;
-
-    //only for direct mode
-    std::vector<std::vector<std::vector<double>>> * ProbArray = nullptr;
-};
-
-// ---
-
 class G4Track;
 
+// this class is also the base class for ActivityGenerationMode!
 class PesGenerationMode : public SimModeBase
 {
 public:
@@ -65,34 +44,35 @@ protected:
     void exploreMaterials();
     void updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity);
 
-private:
     int    NumEvents;
-
-    bool   bDirectMode = false;
-    int    CurrentEvent = 0;
+    int    LastMaterial;
 
     double LastEnergy;
     double LastTrackLength;
     G4ThreeVector LastPosition;
-    int    LastMaterial;
-
-    // MC mode specific
-    double SaveDirection[3];
-    double SaveEnergy = 0;
-    std::vector<double> ProbVec;
 
     // direct mode specific
     std::array<double, 3> BinSize; // mm
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
 
-    void commonConstructor();
-    bool doTriggerMC(const G4Track * track); // return status (true = kill) is now ignored, proton is traced to the end of track
-    void doTriggerDirect(const G4Track * track);
-
-    bool getVoxel(const G4ThreeVector & pos, int * index);
     void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path);
     void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path);
+
+private:
+    bool   bDirectMode = false;
+    int    CurrentEvent = 0;
+
+    // MC mode specific
+    double SaveDirection[3];
+    double SaveEnergy = 0;
+    std::vector<double> ProbVec;
+
+    void commonConstructor();
+    bool doTriggerMC(const G4Track * track); // return status (true = kill) is now ignored, proton is traced to the end of track
+    virtual void doTriggerDirect(const G4Track * track);
+
+    bool getVoxel(const G4ThreeVector & pos, int * index);
     bool isValidVoxel(int * coords) const;
     void initProbArrays();
     void saveArrays();

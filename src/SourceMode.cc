@@ -316,20 +316,20 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
         return GeneratePrimaries(anEvent);
     }
 
-    out("Generating particle for beam #", iRecord, " and particle #", iParticle);
+    //out("Generating particle for beam #", iRecord, " and particle #", iParticle);
     const BeamRecord & Beam = Beams[iRecord];
 
     // position already set in ctor
-    out("  Position:", Origin, "  [mm]");
+    //out("  Position:", Origin, "  [mm]");
 
     //energy
     ParticleGun->SetParticleEnergy(Beam.Energy);
-    out("  Energy:", Beam.Energy, " MeV");
+    //out("  Energy:", Beam.Energy, " MeV");
 
     //time
     const double time = Beam.TimeStart + Beam.TimeSpan * G4UniformRand();
     ParticleGun->SetParticleTime(time);
-    out("  Time:", time, "ns");
+    //out("  Time:", time, "ns");
 
     //direction
     double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
@@ -337,7 +337,7 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
     dir = dir.unit();
     ParticleGun->SetParticleMomentumDirection(dir);
-    out("  Direction:", dir);
+    //out("  Direction:", dir);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
     iParticle++;

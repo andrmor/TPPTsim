@@ -9,6 +9,7 @@
 #include "DetComp.hh"
 #include "out.hh"
 #include "PesGenerationMode.hh"
+#include "ActivityGenerationMode.hh"
 #include "ActivityProfiler.hh"
 
 #include <chrono>
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 100;
+        SM.Seed               = 1000;
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
@@ -55,7 +56,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/MultiBeam";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -91,7 +92,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/margarida/Downloads/GDML_version3/mother.gdml";
 
         // Source
-        SM.SourceMode       = new MultiBeam(new Proton(150.0*MeV), {0, 2500.0, 0}, { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 15} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        SM.SourceMode       = new MultiBeam(new Proton(150.0*MeV), {0, 2500.0, 0}, { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
@@ -107,15 +108,16 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
-        //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
         //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events * last argument in PencilBeam!
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
-        //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{200,201}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
+        //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
+//        SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
+        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5},  { {0, 1e20} });
 
     // --- END of user init ---
     }
