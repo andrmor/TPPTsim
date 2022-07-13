@@ -86,6 +86,7 @@ int main(int argc, char** argv)
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         SM.DetectorComposition.add(DetComp::CoolingAssemblies);
+        SM.DetectorComposition.add(DetComp::Nozzle);
 
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
 //        SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 500} });
+//        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 500} });
 
     // --- END of user init ---
     }

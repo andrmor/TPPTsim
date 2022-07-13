@@ -23,6 +23,7 @@
 #include "G4Navigator.hh"
 #include "G4SDManager.hh"
 #include "G4GDMLParser.hh"
+#include "Nozzle.hh"
 
 #define _USE_MATH_DEFINES
 
@@ -34,7 +35,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     defineMaterials();
 
-    G4Box * solidWorld   = new G4Box("World", 3000.0*mm, 3000.0*mm, 3000.0*mm);
+    G4Box * solidWorld   = new G4Box("World", 6000.0*mm, 6000.0*mm, 6000.0*mm);
     logicWorld   = new G4LogicalVolume(solidWorld, WorldMat, "World_LV");
     SM.physWorld = new G4PVPlacement(nullptr, {0, 0, 0}, logicWorld, "World_PV", nullptr, false, 0);
     logicWorld->SetVisAttributes(G4VisAttributes({0, 1, 0}));
@@ -53,6 +54,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if (SM.detectorContains(DetComp::PCB))               addPCB();
     if (SM.detectorContains(DetComp::CopperStructure))   addCopperStructure();
     if (SM.detectorContains(DetComp::CoolingAssemblies)) addCoolingAssemblies();
+    if (SM.detectorContains(DetComp::Nozzle))
+    {
+        Nozzle nozzlemaker;
+        nozzlemaker.constructNozzle(logicWorld);
+    }
 
     return SM.physWorld;
 }
