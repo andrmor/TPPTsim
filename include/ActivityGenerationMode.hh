@@ -31,12 +31,14 @@ protected:
 private:
     std::vector<std::pair<double,double>> TimeWindows;
 
+    // output data
     std::vector<std::vector<std::vector<double>>> Activity; // total number of decays in the defined time window
 
     void doTriggerDirect(const G4Track * track);
 
     double calculateTimeFactor(double t0, double decayTime);
     void   saveData();
+    void   initActivityArray();
 };
 
 #endif // activitygenerationmode_h

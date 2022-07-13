@@ -1,6 +1,7 @@
 #include "ActivityGenerationMode.hh"
 #include "SessionManager.hh"
 #include "out.hh"
+#include "jstools.hh"
 
 #include "G4MTRunManager.hh"
 
@@ -9,6 +10,11 @@ ActivityGenerationMode::ActivityGenerationMode(int numEvents,
                                                const std::vector<std::pair<double,double>> & acquisitionFromTos) :
     PesGenerationMode(numEvents, binSize, numBins, origin),
     TimeWindows(acquisitionFromTos)
+{
+    initActivityArray();
+}
+
+void ActivityGenerationMode::initActivityArray()
 {
     // X
     Activity.resize(NumBins[0]);
@@ -41,14 +47,34 @@ void ActivityGenerationMode::run()
     saveData();
 }
 
-void ActivityGenerationMode::readFromJson(const json11::Json &json)
+void ActivityGenerationMode::readFromJson(const json11::Json & json)
 {
+    PesGenerationMode::readFromJson(json);
+    initActivityArray();
 
+    TimeWindows.clear();
+    json11::Json::array ar;
+    jstools::readArray(json, "TimeWindows", ar);
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        json11::Json::array el = ar[i].array_items();
+        TimeWindows.push_back( {el[0].number_value(), el[1].number_value()} );
+    }
 }
 
-void ActivityGenerationMode::doWriteToJson(json11::Json::object &json) const
+void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
 {
+    PesGenerationMode::doWriteToJson(json);
 
+    json11::Json::array ar;
+    for (const auto & p : TimeWindows)
+    {
+        json11::Json::array el;
+            el.push_back(p.first);
+            el.push_back(p.second);
+        ar.push_back(el);
+    }
+    json["TimeWindows"] = ar;
 }
 
 void ActivityGenerationMode::doTriggerDirect(const G4Track *track)
