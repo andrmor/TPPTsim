@@ -36,6 +36,7 @@ private:
     void doTriggerDirect(const G4Track * track);
 
     double calculateTimeFactor(double t0, double decayTime);
+    void   saveData();
 };
 
 #endif // activitygenerationmode_h

@@ -56,8 +56,9 @@ protected:
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
 
-    void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path);
-    void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path);
+    //path gives voxel indexes and trackLength
+    void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path); // simplistic: slow and not very precise
+    void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path); // use this one!
 
 private:
     bool   bDirectMode = false;

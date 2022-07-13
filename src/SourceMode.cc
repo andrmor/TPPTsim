@@ -334,6 +334,7 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     //direction
     double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
     double Z = G4RandGauss::shoot(Beam.ZIsoCenter, Beam.PositionSigma);
+    //out(Beam.XIsoCenter, Beam.PositionSigma, X); out(Beam.ZIsoCenter, Beam.PositionSigma, Z); exit(111);
     G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
     dir = dir.unit();
     ParticleGun->SetParticleMomentumDirection(dir);
