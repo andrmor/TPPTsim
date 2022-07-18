@@ -280,6 +280,29 @@ void PencilBeam::doReadFromJson(const json11::Json &json)
 
 // ---
 
+void BeamRecord::writeToJson(json11::Json::object & json) const
+{
+    json["Energy"] = Energy;
+    json["XIsoCenter"] = XIsoCenter;
+    json["ZIsoCenter"] = ZIsoCenter;
+    json["PositionSigma"] = PositionSigma;
+    json["TimeStart"] = TimeStart;
+    json["TimeSpan"] = TimeSpan;
+    json["NumParticles"] = NumParticles;
+}
+
+void BeamRecord::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "Energy",        Energy);
+    jstools::readDouble(json, "XIsoCenter",    XIsoCenter);
+    jstools::readDouble(json, "ZIsoCenter",    ZIsoCenter);
+    jstools::readDouble(json, "PositionSigma", PositionSigma);
+    jstools::readDouble(json, "TimeStart",     TimeStart);
+    jstools::readDouble(json, "TimeSpan",      TimeSpan);
+    jstools::readDouble(json, "NumParticles",  NumParticles);
+}
+
+
 MultiBeam::MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, const std::vector<BeamRecord> & beams) :
     SourceModeBase(particle, nullptr),
     Origin(origin), Beams(beams)
@@ -287,12 +310,13 @@ MultiBeam::MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, cons
     ParticleGun->SetParticlePosition(origin);
 }
 
-/*
-MultiBeam::MultiBeam(const json11::Json & json)
+MultiBeam::MultiBeam(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
 {
-
+    MultiBeam::doReadFromJson(json);
+    readFromJson(json);
+    ParticleGun->SetParticlePosition(Origin);
 }
-*/
 
 double MultiBeam::CountEvents()
 {
@@ -344,14 +368,52 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     iParticle++;
 }
 
+std::vector<std::pair<double, double>> MultiBeam::getTimeWindows(double marginFrom, double marginTo) const
+{
+    std::vector<std::pair<double, double>> wins;
+
+    for (const auto & beam : Beams)
+    {
+        const double from = beam.TimeStart + marginFrom;
+        const double to   = beam.TimeStart + beam.TimeSpan - marginTo;
+        if (to > from) wins.push_back({from, to - from});
+    }
+
+    return wins;
+}
+
 void MultiBeam::doWriteToJson(json11::Json::object & json) const
 {
+    json["OriginX"] = Origin.x();
+    json["OriginY"] = Origin.y();
+    json["OriginZ"] = Origin.z();
 
+    json11::Json::array ar;
+    for (const auto & b : Beams)
+    {
+        json11::Json::object el;
+        b.writeToJson(el);
+        ar.push_back(el);
+    }
+    json["Beams"] = ar;
 }
 
 void MultiBeam::doReadFromJson(const json11::Json & json)
 {
+    jstools::readDouble(json, "OriginX", Origin[0]);
+    jstools::readDouble(json, "OriginY", Origin[1]);
+    jstools::readDouble(json, "OriginZ", Origin[2]);
 
+    Beams.clear();
+    json11::Json::array ar;
+    jstools::readArray(json, "Beams", ar);
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        json11::Json::object el = ar[i].object_items();
+        BeamRecord rec;
+        rec.readFromJson(el);
+        Beams.push_back(rec);
+    }
 }
 
 // ---

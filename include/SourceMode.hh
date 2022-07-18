@@ -219,19 +219,23 @@ struct BeamRecord
     double TimeStart;
     double TimeSpan;
     double NumParticles;
+
+    void writeToJson(json11::Json::object & json) const;
+    void readFromJson(const json11::Json & json);
 };
 
 class MultiBeam : public SourceModeBase
 {
 public:
     MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, const std::vector<BeamRecord> & beams);
-    //MultiBeam(const json11::Json & json);
-    //~MultiBeam();
+    MultiBeam(const json11::Json & json);
 
     double CountEvents() override;
 
     std::string getTypeName() const override {return "MultiBeam";}
     void GeneratePrimaries(G4Event * anEvent) override;
+
+    std::vector<std::pair<double,double>> getTimeWindows(double marginFrom, double marginTo) const;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

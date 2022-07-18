@@ -383,11 +383,9 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
                                       Phi0,
                                       Phi);
 
-    G4LogicalVolume* StainlessCH1LogicalVolume
-            = new G4LogicalVolume(StainlessCH1, Stainless, "StainlessCH1Log");
+    G4LogicalVolume* StainlessCH1LogicalVolume = new G4LogicalVolume(StainlessCH1, Stainless, "StainlessCH1Log");
 
-    G4VPhysicalVolume * StainlessCH1Phys  =
-            new G4PVPlacement(0,
+    G4VPhysicalVolume * StainlessCH1Phys = new G4PVPlacement(0,
                               G4ThreeVector(StainlessCH1PosX,
                                             StainlessCH1PosY,
                                             StainlessCH1PosZ),
@@ -412,16 +410,8 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
     G4double downStainlessCH1FlangePosY =  0.  *cm;
     G4double downStainlessCH1FlangePosZ = 52.1 *cm;
 
-    G4Tubs* downStainlessCH1Flange =
-            new G4Tubs("downStainlessCH1Flange",
-                       downStainlessCH1FlangeR0,
-                       downStainlessCH1FlangeR,
-                       downStainlessCH1FlangeZ,
-                       Phi0,
-                       Phi);
-
-    G4LogicalVolume* downStainlessCH1FlangeLogicalVolume
-            = new G4LogicalVolume(downStainlessCH1Flange, Stainless, "downStainlessCH1FlangeLog");
+    G4Tubs* downStainlessCH1Flange = new G4Tubs("downStainlessCH1Flange", downStainlessCH1FlangeR0, downStainlessCH1FlangeR, downStainlessCH1FlangeZ, Phi0, Phi);
+    G4LogicalVolume* downStainlessCH1FlangeLogicalVolume = new G4LogicalVolume(downStainlessCH1Flange, Stainless, "downStainlessCH1FlangeLog");
     G4VPhysicalVolume * downStainlessCH1FlangePhys = new G4PVPlacement(0,
                               G4ThreeVector(downStainlessCH1FlangePosX,
                                             downStainlessCH1FlangePosY,
@@ -453,13 +443,8 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
                                         Phi0,
                                         Phi);
 
-    G4LogicalVolume* HeStainlessCH1LogicalVolume
-            = new G4LogicalVolume(HeStainlessCH1,
-                                  Helium,
-                                  "HeStainlessCH1Log");
-
-    G4VPhysicalVolume * HeStainlessCH1Phys  =
-            new G4PVPlacement(0,
+    G4LogicalVolume* HeStainlessCH1LogicalVolume = new G4LogicalVolume(HeStainlessCH1, Helium, "HeStainlessCH1Log");
+    G4VPhysicalVolume * HeStainlessCH1Phys  = new G4PVPlacement(0,
                               G4ThreeVector(HeStainlessCH1PosX,
                                             HeStainlessCH1PosY,
                                             HeStainlessCH1PosZ),
@@ -948,13 +933,8 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
     // Helium gas inside flange of Ceramics Chamber 2 (G3-CHC2).
     //*********************************************************
 
-    G4LogicalVolume* upHeStainlessCH2FlangeLogicalVolume
-            = new G4LogicalVolume(upStainlessCH2FlangeBoxIn,
-                                  Helium,
-                                  "upHeStainlessCH2FlangeLog");
-
-    G4VPhysicalVolume * upHeStainlessCH2FlangePhys  =
-            new G4PVPlacement(0,
+    G4LogicalVolume* upHeStainlessCH2FlangeLogicalVolume = new G4LogicalVolume(upStainlessCH2FlangeBoxIn, Helium, "upHeStainlessCH2FlangeLog");
+    G4VPhysicalVolume * upHeStainlessCH2FlangePhys = new G4PVPlacement(0,
                               G4ThreeVector(0,
                                             0,
                                             0),
@@ -1017,10 +997,7 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
     // Helium gas inside Stainless Chamber 2 (G3-HC2).
     //*********************************************************
 
-    G4LogicalVolume* upHeStainlessCH2LogicalVolume
-            = new G4LogicalVolume(StainlessCH2BoxIn,
-                                  Helium,
-                                  "upHeStainlessCH2Log");
+    G4LogicalVolume* upHeStainlessCH2LogicalVolume = new G4LogicalVolume(StainlessCH2BoxIn, Helium, "upHeStainlessCH2Log");
 
     // Mother vol. is the Stainless CH2.
     // Position in respect to mother vol.
@@ -1065,18 +1042,9 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
                        Phi0,
                        Phi);
 
-    G4SubtractionSolid* downStainlessCH2Flange =
-            new G4SubtractionSolid("downStainlessCH2Flange",
-                                   downStainlessCH2FlangeTubsOut,
-                                   downStainlessCH2FlangeBoxIn);
-
-    G4LogicalVolume* downStainlessCH2FlangeLogicalVolume
-            = new G4LogicalVolume(downStainlessCH2Flange,
-                                  Stainless,
-                                  "downStainlessCH2FlangeLog");
-
-    G4VPhysicalVolume * downStainlessCH2FlangePhys  =
-            new G4PVPlacement(0,
+    G4SubtractionSolid* downStainlessCH2Flange = new G4SubtractionSolid("downStainlessCH2Flange", downStainlessCH2FlangeTubsOut, downStainlessCH2FlangeBoxIn);
+    G4LogicalVolume* downStainlessCH2FlangeLogicalVolume = new G4LogicalVolume(downStainlessCH2Flange, Stainless, "downStainlessCH2FlangeLog");
+    G4VPhysicalVolume * downStainlessCH2FlangePhys = new G4PVPlacement(0,
                               G4ThreeVector(downStainlessCH2FlangePosX,
                                             downStainlessCH2FlangePosY,
                                             downStainlessCH2FlangePosZ),
@@ -1090,13 +1058,8 @@ void Nozzle::HeliumChamber(G4LogicalVolume * mother)
     // Helium gas inside flange of Ceramics Chamber 2 (G3-CHC2).
     //*********************************************************
 
-    G4LogicalVolume* downHeStainlessCH2FlangeLogicalVolume
-            = new G4LogicalVolume(downStainlessCH2FlangeBoxIn,
-                                  Helium,
-                                  "downHeStainlessCH2FlangeLog");
-
-    G4VPhysicalVolume * downHeStainlessCH2FlangePhys  =
-            new G4PVPlacement(0,
+    G4LogicalVolume* downHeStainlessCH2FlangeLogicalVolume = new G4LogicalVolume(downStainlessCH2FlangeBoxIn, Helium, "downHeStainlessCH2FlangeLog");
+    G4VPhysicalVolume * downHeStainlessCH2FlangePhys = new G4PVPlacement(0,
                               G4ThreeVector(0,
                                             0,
                                             0),

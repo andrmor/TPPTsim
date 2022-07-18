@@ -16,7 +16,8 @@ class ActivityGenerationMode : public PesGenerationMode
 public:
     ActivityGenerationMode(int numEvents,
                            std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
-                           const std::vector<std::pair<double,double>> & acquisitionFromTos);
+                           const std::vector<std::pair<double,double>> & acquisitionFromTos,
+                           const std::string & fileName);
 
     std::string getTypeName() const override {return "ActivityGenerationMode";}
 
@@ -30,13 +31,14 @@ protected:
 
 private:
     std::vector<std::pair<double,double>> TimeWindows;
+    std::string FileName;
 
     // output data
     std::vector<std::vector<std::vector<double>>> Activity; // total number of decays in the defined time window
 
     void doTriggerDirect(const G4Track * track);
 
-    double calculateTimeFactor(double t0, double decayTime);
+    double calculateTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
     void   saveData();
     void   initActivityArray();
 };

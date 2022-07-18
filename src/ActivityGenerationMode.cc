@@ -7,9 +7,11 @@
 
 ActivityGenerationMode::ActivityGenerationMode(int numEvents,
                                                std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
-                                               const std::vector<std::pair<double,double>> & acquisitionFromTos) :
+                                               const std::vector<std::pair<double,double>> & acquisitionFromTos,
+                                               const std::string & fileName) :
     PesGenerationMode(numEvents, binSize, numBins, origin),
-    TimeWindows(acquisitionFromTos)
+    TimeWindows(acquisitionFromTos),
+    FileName(fileName)
 {
     initActivityArray();
 }
@@ -60,6 +62,8 @@ void ActivityGenerationMode::readFromJson(const json11::Json & json)
         json11::Json::array el = ar[i].array_items();
         TimeWindows.push_back( {el[0].number_value(), el[1].number_value()} );
     }
+
+    jstools::readString(json, "FileName", FileName);
 }
 
 void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
@@ -75,6 +79,7 @@ void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
         ar.push_back(el);
     }
     json["TimeWindows"] = ar;
+    json["FileName"] = FileName;
 }
 
 void ActivityGenerationMode::doTriggerDirect(const G4Track *track)
@@ -129,7 +134,7 @@ double ActivityGenerationMode::calculateTimeFactor(double t0, double decayTime)
 void ActivityGenerationMode::saveData()
 {
     SessionManager& SM = SessionManager::getInstance();
-    std::string fullFileName = SM.WorkingDirectory + '/' + "test.dat";
+    std::string fullFileName = SM.WorkingDirectory + '/' + FileName;
 
     // save resulting 3D array of activity
     std::ofstream stream;

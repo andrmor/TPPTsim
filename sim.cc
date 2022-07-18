@@ -86,15 +86,17 @@ int main(int argc, char** argv)
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         SM.DetectorComposition.add(DetComp::CoolingAssemblies);
-        SM.DetectorComposition.add(DetComp::Nozzle);
+//        SM.DetectorComposition.add(DetComp::Nozzle);
 
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
         //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/margarida/Downloads/GDML_version3/mother.gdml";
 
         // Source
-        SM.SourceMode       = new MultiBeam(new Proton(150.0*MeV), {0, 2500.0, 0},
-                                            { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        SM.SourceMode       = new MultiBeam(new Proton(), {0, 2500.0, 0}, { {130.0*MeV, 0.0,0.0, 5.44,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        //SM.SourceMode       = new MultiBeam(new Proton(), {0, 2500.0, 0},
+        //                                    { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+//        SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
@@ -107,7 +109,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
@@ -116,7 +118,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
 //        SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-//        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 500} });
+        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "test.dat");
 
     // --- END of user init ---
     }
@@ -147,7 +149,6 @@ int main(int argc, char** argv)
 //sources
 //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
 //SM.SourceMode       = new PointSource(new Gamma, new ConstantTime(0), {0,0,0}); //{50.0, 50.0, 30.0});
-//SM.SourceMode       = new PencilBeam(new Geantino, new ConstantTime(0), {184.0*mm, 10.0*mm, -100.0*mm}, {0,0,1.0});
 //SM.SourceMode       = new PencilBeam(new Proton(160.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);
 //SM.SourceMode       = new PencilBeam(new Geantino, new UniformTime(0, 238.0*s), {0,5,5}, {1,0,0}, 1);
 //SM.SourceMode       = new PencilBeam(new Proton(55.0*MeV), new UniformTime(0, 238.0*s), {0, -150.0, 0}, {0,1.0,0}, 1);

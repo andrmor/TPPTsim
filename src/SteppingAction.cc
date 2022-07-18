@@ -111,7 +111,10 @@ void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
         logVolName  = postP->GetPhysicalVolume()->GetLogicalVolume()->GetName();
         copyNum = postP->GetPhysicalVolume()->GetCopyNo();
         matName = postP->GetMaterial()->GetName();
-        out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ", physVolName, "/", logVolName, "(#",copyNum, ")", matName, '(', postP->GetMaterial()->GetDensity()/g*cm3, "g/cm3)");
+        out(procName, " -> (", pos[0], ",",pos[1],",", pos[2],") ",
+            physVolName, "/", logVolName, "(#",copyNum, ")",
+            matName, '(', postP->GetMaterial()->GetDensity()/g*cm3, "g/cm3)",
+            postP->GetKineticEnergy()/MeV);
         //out(proc->GetProcessType());
     }
     else
