@@ -61,10 +61,11 @@ public:
 
 // ---
 
+// used as the base class for EnergyCalibrationMode (see next class)
 class DoseExtractorMode : public SimModeBase
 {
 public:
-    DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, std::string fileName);
+    DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
 
     void fill(double energy, const G4ThreeVector & pos);
 
@@ -80,13 +81,35 @@ protected:
     std::array<double, 3> BinSize; // mm
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
+    std::string           FileName;
 
     std::vector<std::vector<std::vector<double>>> DepositionMeV;
+
+    void init();
 
     bool getVoxel(const G4ThreeVector & pos, std::array<int, 3> & index);
 
     void saveArray();
     void writeBinningToJson(json11::Json::object & json) const;
+};
+
+// ---
+
+class EnergyCalibrationMode : public DoseExtractorMode
+{
+public:
+    EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName);
+
+    void run() override;
+    std::string getTypeName() const override {return "EnergyCalibrationMode";}
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    void saveData();
+
+    double BinSize;
 };
 
 // ---

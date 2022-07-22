@@ -72,14 +72,19 @@ void SimModeGui::run()
 
 // ---
 
-DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, std::string fileName) :
-    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin)
+DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
+    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin), FileName(fileName)
+{
+    init();
+}
+
+void DoseExtractorMode::init()
 {
     bNeedGui    = false;
     bNeedOutput = true;
 
     SessionManager & SM = SessionManager::getInstance();
-    SM.FileName = fileName;
+    SM.FileName = FileName;
     SM.bBinOutput = false;
 
     DepositionMeV.resize(NumBins[0]);
@@ -127,6 +132,8 @@ void DoseExtractorMode::readFromJson(const json11::Json & json)
         jstools::readArray(json, "Origin", jar);
         for (int i = 0; i < 3; i++) Origin[i] = jar[i].number_value();
     }
+
+    init();
 }
 
 void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
@@ -198,6 +205,36 @@ void DoseExtractorMode::saveArray()
             *SM.outStream << '\n';
         }
     }
+}
+
+// ---
+
+EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName) :
+    DoseExtractorMode(numEvents, {1000,1000,1000}, {1,1,1}, {0,0,0}, fileName), BinSize(binSize)
+{
+    DoseExtractorMode::init();
+}
+
+void EnergyCalibrationMode::run()
+{
+
+}
+
+void EnergyCalibrationMode::readFromJson(const json11::Json & json)
+{
+    DoseExtractorMode::readFromJson(json);
+    jstools::readDouble(json, "BinSize", BinSize);
+}
+
+void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
+{
+    DoseExtractorMode::doWriteToJson(json);
+    json["BinSize"] = BinSize;
+}
+
+void EnergyCalibrationMode::saveData()
+{
+
 }
 
 // ---
