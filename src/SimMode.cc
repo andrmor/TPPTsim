@@ -210,31 +210,81 @@ void DoseExtractorMode::saveArray()
 // ---
 
 EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName) :
-    DoseExtractorMode(numEvents, {1000,1000,1000}, {1,1,1}, {0,0,0}, fileName), BinSize(binSize)
+    NumEvents(numEvents), BinSize(binSize), FileName(fileName)
 {
-    DoseExtractorMode::init();
+    init();
+}
+
+void EnergyCalibrationMode::init()
+{
+    if (BinSize <= 0)
+    {
+        out("\n\n\n------\nError: BinSize has to be positive!");
+        exit(13);
+    }
+
+    size_t size = RecordedRange / BinSize + 1;
+    Deposition.resize(size);
 }
 
 void EnergyCalibrationMode::run()
 {
+    SessionManager & SM = SessionManager::getInstance();
 
+    //for (double energy = 70.0*MeV; energy < 225.0*MeV; MeV += 0.9*MeV)
+    double energy = 70.0*MeV;
+    {
+        out("Energy: ", energy);
+
+        std::fill(Deposition.begin(), Deposition.end(), 0);
+        SM.runManager->BeamOn(NumEvents);
+
+        const double range = extractRange();
+        Output.push_back( {energy, range} );
+    }
+
+    saveData();
+}
+
+double EnergyCalibrationMode::extractRange()
+{
+    return 1.2345;
+}
+
+G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
+{
+    return new SteppingAction_EnCal();
 }
 
 void EnergyCalibrationMode::readFromJson(const json11::Json & json)
 {
-    DoseExtractorMode::readFromJson(json);
-    jstools::readDouble(json, "BinSize", BinSize);
+    jstools::readInt   (json, "NumEvents", NumEvents);
+    jstools::readDouble(json, "BinSize",   BinSize);
+    jstools::readString(json, "FileName",  FileName);
+
+    init();
+}
+
+void EnergyCalibrationMode::fill(double depo, double yPos)
+{
+    const size_t iBin = yPos / BinSize;
+    if (iBin >= Deposition.size()) return;
+
+    Deposition[iBin] += depo;
 }
 
 void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
 {
-    DoseExtractorMode::doWriteToJson(json);
-    json["BinSize"] = BinSize;
+    json["NumEvents"] = NumEvents;
+    json["BinSize"]   = BinSize;
+    json["FileName"]  = FileName;
 }
 
 void EnergyCalibrationMode::saveData()
 {
-
+    out("\n\n\nEnergy(MeV) --> Range(mm)");
+    for (const auto & p : Output)
+        out(p.first, " --> ", p.second);
 }
 
 // ---

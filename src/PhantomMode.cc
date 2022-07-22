@@ -373,8 +373,9 @@ G4LogicalVolume * PhantomEnergyCalibration::definePhantom(G4LogicalVolume * logi
 
     G4Material * matW = man->FindOrBuildMaterial("G4_WATER");
 
-    const double halfSizeY  = 150.0*mm;
-    const double halfSizeXZ = 75.0*mm;
+    const double halfSizeY  = 200.0*mm;  // along the beam!
+    const double halfSizeXZ =  75.0*mm;
+
     G4VSolid          * solid = new G4Box("wPh", halfSizeXZ, halfSizeY, halfSizeXZ);
     G4LogicalVolume   * logic = new G4LogicalVolume(solid, matW, "PhantWaterLog");
     logic->SetVisAttributes(G4Color::Blue());

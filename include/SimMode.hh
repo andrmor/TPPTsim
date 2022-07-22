@@ -61,7 +61,6 @@ public:
 
 // ---
 
-// used as the base class for EnergyCalibrationMode (see next class)
 class DoseExtractorMode : public SimModeBase
 {
 public:
@@ -95,21 +94,35 @@ protected:
 
 // ---
 
-class EnergyCalibrationMode : public DoseExtractorMode
+class EnergyCalibrationMode : public SimModeBase
 {
 public:
     EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName);
 
     void run() override;
     std::string getTypeName() const override {return "EnergyCalibrationMode";}
+    G4UserSteppingAction * getSteppingAction() override;
     void readFromJson(const json11::Json & json) override;
+
+    void fill(double depo, double yPos);
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
-    void saveData();
+    void   init();
+    void   saveData();
+    double extractRange();
 
-    double BinSize;
+    const double RecordedRange = 350.0*mm;
+
+    int         NumEvents;
+    double      BinSize;
+    std::string FileName;
+
+    //runtime
+    std::vector<double> Deposition;
+    std::vector<std::pair<double,double>> Output; // pairs of (energy_MeV,range_mm)
+
 };
 
 // ---
