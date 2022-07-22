@@ -288,8 +288,6 @@ class SessionManager
         G4Material          * ScintMat    = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
 
-        G4ParticleGun       * ParticleGun = nullptr;
-
         CLHEP::RanecuEngine * randGen     = nullptr;
 
         G4UIExecutive       * ui          = nullptr;

@@ -210,13 +210,18 @@ void DoseExtractorMode::saveArray()
 // ---
 
 EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName) :
-    NumEvents(numEvents), BinSize(binSize), FileName(fileName)
+    SimModeBase(), NumEvents(numEvents), BinSize(binSize), FileName(fileName)
 {
     init();
 }
 
 void EnergyCalibrationMode::init()
 {
+    SessionManager & SM = SessionManager::getInstance();
+
+    bNeedOutput = true;
+    SM.FileName = FileName;
+
     if (BinSize <= 0)
     {
         out("\n\n\n------\nError: BinSize has to be positive!");
@@ -227,20 +232,24 @@ void EnergyCalibrationMode::init()
     Deposition.resize(size);
 }
 
+#include "SourceMode.hh"
 void EnergyCalibrationMode::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    //for (double energy = 70.0*MeV; energy < 225.0*MeV; MeV += 0.9*MeV)
-    double energy = 70.0*MeV;
+    for (double energy = 70.0*MeV; energy < 225.0*MeV; energy += 1.0*MeV)
     {
         out("Energy: ", energy);
+
+        SM.SourceMode->setParticleEnergy(energy);
 
         std::fill(Deposition.begin(), Deposition.end(), 0);
         SM.runManager->BeamOn(NumEvents);
 
         const double range = extractRange();
-        Output.push_back( {energy, range} );
+        Range.push_back( {energy, range} );
+
+        out("Range:", Range.back().second);
     }
 
     saveData();
@@ -248,7 +257,36 @@ void EnergyCalibrationMode::run()
 
 double EnergyCalibrationMode::extractRange()
 {
-    return 1.2345;
+    size_t iMax = 0;
+    double max = 0;
+    for (size_t i = 0; i < Deposition.size(); i++)
+        if (Deposition[i] > max)
+        {
+            max = Deposition[i];
+            iMax = i;
+        }
+
+    int numCrosses = 0;
+    int iRange = 0;
+    for (size_t i = iMax + 1; i < Deposition.size(); i++)
+    {
+        if (Deposition[i-1] > max * RangeLevel && Deposition[i] <= max * RangeLevel)
+        {
+            numCrosses++;
+            if (numCrosses > 1)
+            {
+                out("Error: multiple cross of the threshold line.\nIncrease statistics or increase bin size");
+                exit(14);
+            }
+            iRange = i;
+        }
+    }
+
+    // interpolating in the range (iRange-1, iRange]
+    const double iDelta = (Deposition[iRange-1] - max*RangeLevel) / (Deposition[iRange-1] - Deposition[iRange]);
+    const double range = BinSize * (iDelta + iRange-1);
+    //out("iRange", iRange, "Lev:",max*RangeLevel, " Depos:", Deposition[iRange-1], Deposition[iRange], " iDelta", iDelta, " Result:", range);
+    return range;
 }
 
 G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
@@ -267,7 +305,7 @@ void EnergyCalibrationMode::readFromJson(const json11::Json & json)
 
 void EnergyCalibrationMode::fill(double depo, double yPos)
 {
-    const size_t iBin = yPos / BinSize;
+    const size_t iBin = -yPos / BinSize;
     if (iBin >= Deposition.size()) return;
 
     Deposition[iBin] += depo;
@@ -282,9 +320,14 @@ void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
 
 void EnergyCalibrationMode::saveData()
 {
+    SessionManager & SM = SessionManager::getInstance();
+
     out("\n\n\nEnergy(MeV) --> Range(mm)");
-    for (const auto & p : Output)
+    for (const auto & p : Range)
+    {
         out(p.first, " --> ", p.second);
+        *SM.outStream << p.first << ' ' << p.second << '\n';
+    }
 }
 
 // ---

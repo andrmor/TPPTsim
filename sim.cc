@@ -61,8 +61,7 @@ int main(int argc, char** argv)
 
         SM.Verbose          = false;
         SM.Debug            = false;
-        SM.ShowEventNumber  = true;
-        SM.EvNumberInterval = 10000;
+        //SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
@@ -105,7 +104,7 @@ int main(int argc, char** argv)
         */
         //SM.SourceMode       = new MultiBeam(new Proton(), {0, 2500.0, 0}, { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
-        SM.SourceMode       = new PencilBeam(new Proton(100.0*MeV), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
+        SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
@@ -118,7 +117,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
@@ -128,7 +127,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiVac.dat");
-        //SM.SimMode           = EnergyCalibrationMode(100, 1.0, "dummy.txt");
+        SM.SimMode           = new EnergyCalibrationMode(10000, 1.0, "EnergyRangeWater.txt");
 
     // --- END of user init ---
     }

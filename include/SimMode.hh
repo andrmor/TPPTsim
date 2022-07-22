@@ -114,6 +114,7 @@ protected:
     double extractRange();
 
     const double RecordedRange = 350.0*mm;
+    const double RangeLevel    = 0.8;
 
     int         NumEvents;
     double      BinSize;
@@ -121,7 +122,7 @@ protected:
 
     //runtime
     std::vector<double> Deposition;
-    std::vector<std::pair<double,double>> Output; // pairs of (energy_MeV,range_mm)
+    std::vector<std::pair<double,double>> Range; // pairs of (energy_MeV,range_mm)
 
 };
 

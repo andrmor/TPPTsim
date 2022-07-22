@@ -125,6 +125,11 @@ void SourceModeBase::readFromJson(const json11::Json & json)
     //do not call particular loader, using this function in the constructor!
 }
 
+void SourceModeBase::setParticleEnergy(double energy)
+{
+    ParticleGun->SetParticleEnergy(energy);
+}
+
 void SourceModeBase::generateSecondGamma(G4Event * anEvent)
 {
     ParticleGun->SetParticleMomentumDirection(-Direction);

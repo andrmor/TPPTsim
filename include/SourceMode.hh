@@ -40,6 +40,8 @@ public:
     void writeToJson(json11::Json::object & json) const;
     void readFromJson(const json11::Json & json);
 
+    void setParticleEnergy(double energy);
+
 protected:
     virtual void customPostInit() {}
     virtual void doWriteToJson(json11::Json::object & json) const = 0;
