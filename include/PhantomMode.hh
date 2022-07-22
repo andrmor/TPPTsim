@@ -110,10 +110,19 @@ public:
     std::string getTypeName() const override {return "PhantomParam";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
-    void readFromJson(const json11::Json &) override {};
+    void readFromJson(const json11::Json &) override {}
 
 protected:
-    void doWriteToJson(json11::Json::object &) const override {};
+    void doWriteToJson(json11::Json::object &) const override {}
+};
+
+// ---
+
+class PhantomEnergyCalibration : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomEnergyCalibration";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 // ---

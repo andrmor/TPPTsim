@@ -126,7 +126,8 @@ void SessionManager::configureGUI()
     UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/saveHistory");
 
-    if ( detectorContains(DetComp::GDML) ) scanMaterials();
+    //if ( detectorContains(DetComp::GDML) )
+        scanMaterials();
 }
 
 void SessionManager::scanMaterials()
@@ -148,6 +149,14 @@ void SessionManager::scanMaterials()
         else if (name == "SiPM") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
         else if (name == "PBC") lv->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
         else if (name == "ABS") lv->SetVisAttributes(new G4VisAttributes(grey));
+
+        else if (name == "Polyimide") lv->SetVisAttributes(new G4VisAttributes(G4Color::Yellow()));
+        else if (name == "Stainless") lv->SetVisAttributes(G4Color::Cyan());
+        else if (name == "Copper") lv->SetVisAttributes(new G4VisAttributes(brown));
+        else if (name == "Tungsten") lv->SetVisAttributes(new G4VisAttributes(G4Color::Magenta()));
+        else if (name == "Ceramics") lv->SetVisAttributes(new G4VisAttributes(G4Color::Green()));
+        else if (name == "Aluminum") lv->SetVisAttributes(new G4VisAttributes(G4Color::Blue()));
+        else if (name == "Helium") lv->SetVisAttributes(G4Color::Red());
     }
 
     out("<--Material scan completed");

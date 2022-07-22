@@ -367,6 +367,24 @@ G4LogicalVolume * PhantomParam::definePhantom(G4LogicalVolume * logicWorld)
 
 // ---
 
+G4LogicalVolume * PhantomEnergyCalibration::definePhantom(G4LogicalVolume * logicWorld)
+{
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matW = man->FindOrBuildMaterial("G4_WATER");
+
+    const double halfSizeY  = 150.0*mm;
+    const double halfSizeXZ = 75.0*mm;
+    G4VSolid          * solid = new G4Box("wPh", halfSizeXZ, halfSizeY, halfSizeXZ);
+    G4LogicalVolume   * logic = new G4LogicalVolume(solid, matW, "PhantWaterLog");
+    logic->SetVisAttributes(G4Color::Blue());
+    new G4PVPlacement(nullptr, {0, -halfSizeY, 0}, logic, "ltp", logicWorld, false, 0);
+
+    return logic;
+}
+
+// ---
+
 G4LogicalVolume *PhantomEspana::definePhantom(G4LogicalVolume * logicWorld)
 {
     G4NistManager * man = G4NistManager::Instance();
