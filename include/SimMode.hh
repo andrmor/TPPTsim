@@ -66,7 +66,7 @@ class DoseExtractorMode : public SimModeBase
 public:
     DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, std::string fileName);
 
-    void fill(double energy, const G4ThreeVector & pos, double density);
+    void fill(double energy, const G4ThreeVector & pos);
 
     void run() override;
     std::string getTypeName() const override {return "DoseExtractorMode";}
@@ -81,9 +81,7 @@ protected:
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
 
-    double VoxelVolume;
-
-    std::vector<std::vector<std::vector<double>>> Dose;
+    std::vector<std::vector<std::vector<double>>> DepositionMeV;
 
     bool getVoxel(const G4ThreeVector & pos, std::array<int, 3> & index);
 
