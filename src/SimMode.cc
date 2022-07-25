@@ -240,22 +240,27 @@ void EnergyCalibrationMode::run()
     for (double energy = 70.0*MeV; energy < 225.0*MeV; energy += 1.0*MeV)
     {
         out("Energy: ", energy);
-
         SM.SourceMode->setParticleEnergy(energy);
 
-        std::fill(Deposition.begin(), Deposition.end(), 0);
-        SM.runManager->BeamOn(NumEvents);
+        bool failFlag = false;
+        double range;
+        do
+        {
+            std::fill(Deposition.begin(), Deposition.end(), 0);
+            SM.runManager->BeamOn(NumEvents);
+            range = extractRange();
+            failFlag = (range == 0);
+        }
+        while (failFlag);
 
-        const double range = extractRange();
         Range.push_back( {energy, range} );
-
         out("Range:", Range.back().second);
     }
 
     saveData();
 }
 
-double EnergyCalibrationMode::extractRange()
+double EnergyCalibrationMode::extractRange()  // returns zero if failed
 {
     size_t iMax = 0;
     double max = 0;
@@ -275,8 +280,8 @@ double EnergyCalibrationMode::extractRange()
             numCrosses++;
             if (numCrosses > 1)
             {
-                out("Error: multiple cross of the threshold line.\nIncrease statistics or increase bin size");
-                exit(14);
+                out("Multiple cross of the threshold line.");
+                return 0;
             }
             iRange = i;
         }

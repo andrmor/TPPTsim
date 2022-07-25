@@ -127,7 +127,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiVac.dat");
-        SM.SimMode           = new EnergyCalibrationMode(10000, 1.0, "EnergyRangeWater.txt");
+        SM.SimMode           = new EnergyCalibrationMode(20000, 1, "EnergyRangeWater.txt");
 
     // --- END of user init ---
     }

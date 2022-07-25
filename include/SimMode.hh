@@ -111,10 +111,10 @@ protected:
 
     void   init();
     void   saveData();
-    double extractRange();
+    double extractRange(); // returns zero if failed
 
     const double RecordedRange = 350.0*mm;
-    const double RangeLevel    = 0.8;
+    const double RangeLevel    = 0.925; // according to Falk, between 95% abnd 90%
 
     int         NumEvents;
     double      BinSize;
