@@ -217,11 +217,6 @@ EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, cons
 
 void EnergyCalibrationMode::init()
 {
-    SessionManager & SM = SessionManager::getInstance();
-
-    bNeedOutput = true;
-    SM.FileName = FileName;
-
     if (BinSize <= 0)
     {
         out("\n\n\n------\nError: BinSize has to be positive!");
@@ -240,6 +235,9 @@ void EnergyCalibrationMode::init()
     }
 
     loadSavedRanges("/home/andr/WORK/TPPT/MultiBeam/EnergyCalibration/EnergyRangeWater-1mm-50k.txt");
+
+    saveRangeData();
+    calibrate();
     exit(111);
 }
 
@@ -268,7 +266,8 @@ void EnergyCalibrationMode::run()
         out("Range:", Ranges.back().second);
     }
 
-    saveData();
+    saveRangeData();
+    calibrate();
 }
 
 double EnergyCalibrationMode::extractRange()  // returns zero if failed
@@ -317,7 +316,7 @@ void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
     MdaData.clear();
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue; //allow empty lines
         if (line[0] == '#') continue; //allow comments
 
@@ -329,7 +328,7 @@ void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
             out("Unexpected format of a line in the file with MDA data");
             exit(3);
         }
-        out(Energy, WaterRange, Sigma);
+        //out(Energy, WaterRange, Sigma);
         MdaData.push_back({Energy*MeV, WaterRange*cm, Sigma*mm});
     }
 }
@@ -346,7 +345,7 @@ void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
     Ranges.clear();
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue; //allow empty lines
 
         std::stringstream ss(line);  // units in the file are MeV and mbarns
@@ -357,10 +356,10 @@ void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
             out("Unexpected format of a line in the file with simulated range data");
             exit(3);
         }
-        out(Energy, WaterRange);
+        //out(Energy, WaterRange);
         Ranges.push_back({Energy*MeV, WaterRange*mm});
     }
-    out(Ranges.size());
+    //out(Ranges.size());
 }
 
 G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
@@ -392,16 +391,77 @@ void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
     json["FileName"]  = FileName;
 }
 
-void EnergyCalibrationMode::saveData()
+void EnergyCalibrationMode::saveRangeData()
 {
     SessionManager & SM = SessionManager::getInstance();
 
+    std::string fullFileName = SM.WorkingDirectory + '/' + "Ranges-" + FileName;
+
+    std::ofstream outStream;
+    outStream.open(fullFileName);
+    if (!outStream.is_open() || outStream.fail() || outStream.bad())
+    {
+        out("Cannot open file:", fullFileName);
+        exit(2);
+    }
+
+    out("Saving ranges to file", fullFileName);
     out("\n\n\nEnergy(MeV) --> Range(mm)");
+
     for (const auto & p : Ranges)
     {
         out(p.first, " --> ", p.second);
-        *SM.outStream << p.first << ' ' << p.second << '\n';
+        outStream << p.first << ' ' << p.second << '\n';
     }
+
+    outStream.close();
+}
+
+void EnergyCalibrationMode::calibrate()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    std::string fullFileName = SM.WorkingDirectory + '/' + FileName;
+
+    std::ofstream outStream;
+    outStream.open(fullFileName);
+    if (!outStream.is_open() || outStream.fail() || outStream.bad())
+    {
+        out("Cannot open file:", fullFileName);
+        exit(2);
+    }
+
+    out("Saving calibration data to file", fullFileName);
+    out("\n\n\nNominal_energy(MeV), True_energy(MeV), SpotSigma(mm)");
+
+    size_t lastRangeRec = 1;
+    for (const auto & ar : MdaData)
+    {
+        const double & nominalEnergy = ar[0];
+        const double & nominalRange  = ar[1];
+        const double & nominalSigma  = ar[2];
+
+        double trueEnergy;
+        //real energy from range
+        for (size_t i = lastRangeRec; i < Ranges.size(); i++)  // Energy(first) / Range(second)
+        {
+            const double & thisRange     = Ranges[i].second;
+            const double & previousRange = Ranges[i-1].second;
+            if (thisRange < nominalRange) continue;
+
+            lastRangeRec = i;
+            const double fraction = (nominalRange - previousRange) / (thisRange - previousRange);
+            trueEnergy = SessionManager::interpolate(Ranges[i-1].first, Ranges[i].first, fraction); //a + fraction * (b−a)
+            break;
+        }
+
+        //sigma
+        const double sigma = nominalSigma * SpotSigmaFactor;
+
+        outStream << nominalEnergy << ' ' << trueEnergy << ' ' << sigma << '\n';
+    }
+
+    outStream.close();
 }
 
 // ---

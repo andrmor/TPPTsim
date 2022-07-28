@@ -110,13 +110,16 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
     void   init();
-    void   saveData();
+    void   saveRangeData();
+    void   calibrate();
     double extractRange(); // returns zero if failed
     void   loadMdaData(const std::string & fileName);
     void   loadSavedRanges(const std::string & fileName);
 
     const double RecordedRange = 350.0*mm;
     const double RangeLevel    = 0.925; // according to Falk, between 95% abnd 90%
+
+    const double SpotSigmaFactor = 0.93; // Falk
 
     int         NumEvents;
     double      BinSize;

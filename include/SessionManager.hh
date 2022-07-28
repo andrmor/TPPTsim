@@ -62,6 +62,7 @@ class SessionManager
         void saveScintillatorTable(const std::string & fileName);
         int  isDirExist(const std::string & dirName);
         static int isFileExist(const std::string & fileName);
+        static double interpolate (double a, double b, double fraction); // a + fraction * (b - a)    assumes that fraction is in [0, 1]
 
         void saveConfig(const std::string & fileName) const;
         void loadConfig(const std::string & fileName);

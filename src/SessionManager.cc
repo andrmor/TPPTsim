@@ -352,6 +352,13 @@ int SessionManager::isFileExist(const std::string & fileName)
     return infile.good();
 }
 
+double SessionManager::interpolate(double a, double b, double fraction)
+{
+    if (fraction == 0.0) return a;
+    if (fraction == 1.0) return b;
+    return a + fraction * (b - a);
+}
+
 #include "json11.hh"
 void SessionManager::saveConfig(const std::string & fileName) const
 {
