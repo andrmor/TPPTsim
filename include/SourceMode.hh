@@ -33,7 +33,7 @@ public:
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
-    virtual double CountEvents() {return -1;}
+    virtual double CountEvents() {return 1;}
 
     virtual std::string getTypeName() const = 0;
 
@@ -229,7 +229,7 @@ struct BeamRecord
 class MultiBeam : public SourceModeBase
 {
 public:
-    MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, const std::vector<BeamRecord> & beams);
+    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams);
     MultiBeam(const json11::Json & json);
 
     double CountEvents() override;
@@ -243,7 +243,8 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void doReadFromJson(const json11::Json & json);
 
-    G4ThreeVector Origin = {0,0,0};
+    const G4ThreeVector Origin  = {0, 2520.0, 0};
+    const double StartBeamFromY = 150.0;
     std::vector<BeamRecord> Beams;
 
     //runtime

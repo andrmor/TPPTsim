@@ -45,6 +45,7 @@ set(EXTRA_FILES
   CT2Density.dat
   Materials.dat
   ColorMap.dat
+  EnergyRangeSigma.txt
   )
 
 foreach(_file ${EXTRA_FILES})

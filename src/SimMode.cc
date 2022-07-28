@@ -230,6 +230,17 @@ void EnergyCalibrationMode::init()
 
     size_t size = RecordedRange / BinSize + 1;
     Deposition.resize(size);
+
+    loadMdaData("EnergyRangeSigma.txt");
+    if (MdaData.size() != 94)
+    {
+        out(MdaData.size());
+        out("Not expected size of MDA data file!");
+        exit(4);
+    }
+
+    loadSavedRanges("/home/andr/WORK/TPPT/MultiBeam/EnergyCalibration/EnergyRangeWater-1mm-50k.txt");
+    exit(111);
 }
 
 #include "SourceMode.hh"
@@ -253,8 +264,8 @@ void EnergyCalibrationMode::run()
         }
         while (failFlag);
 
-        Range.push_back( {energy, range} );
-        out("Range:", Range.back().second);
+        Ranges.push_back( {energy, range} );
+        out("Range:", Ranges.back().second);
     }
 
     saveData();
@@ -294,6 +305,64 @@ double EnergyCalibrationMode::extractRange()  // returns zero if failed
     return range;
 }
 
+void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with MDA data (energy / water_range / spot_sigma):\n", fileName);
+        exit(1);
+    }
+
+    MdaData.clear();
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+        if (line[0] == '#') continue; //allow comments
+
+        std::stringstream ss(line);  // units in the file are MeV and mbarns
+        double Energy, WaterRange, Sigma; //[MeV, cm, mm]
+        ss >> Energy >> WaterRange >> Sigma;
+        if (ss.fail())
+        {
+            out("Unexpected format of a line in the file with MDA data");
+            exit(3);
+        }
+        out(Energy, WaterRange, Sigma);
+        MdaData.push_back({Energy*MeV, WaterRange*cm, Sigma*mm});
+    }
+}
+
+void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with simulated range data (energy / water_range):\n", fileName);
+        exit(1);
+    }
+
+    Ranges.clear();
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+
+        std::stringstream ss(line);  // units in the file are MeV and mbarns
+        double Energy, WaterRange; //[MeV, mm]
+        ss >> Energy >> WaterRange;
+        if (ss.fail())
+        {
+            out("Unexpected format of a line in the file with simulated range data");
+            exit(3);
+        }
+        out(Energy, WaterRange);
+        Ranges.push_back({Energy*MeV, WaterRange*mm});
+    }
+    out(Ranges.size());
+}
+
 G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
 {
     return new SteppingAction_EnCal();
@@ -328,7 +397,7 @@ void EnergyCalibrationMode::saveData()
     SessionManager & SM = SessionManager::getInstance();
 
     out("\n\n\nEnergy(MeV) --> Range(mm)");
-    for (const auto & p : Range)
+    for (const auto & p : Ranges)
     {
         out(p.first, " --> ", p.second);
         *SM.outStream << p.first << ' ' << p.second << '\n';

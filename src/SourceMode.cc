@@ -308,19 +308,14 @@ void BeamRecord::readFromJson(const json11::Json & json)
 }
 
 
-MultiBeam::MultiBeam(ParticleBase * particle, const G4ThreeVector & origin, const std::vector<BeamRecord> & beams) :
-    SourceModeBase(particle, nullptr),
-    Origin(origin), Beams(beams)
-{
-    ParticleGun->SetParticlePosition(origin);
-}
+MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams) :
+    SourceModeBase(particle, nullptr), Beams(beams) {}
 
 MultiBeam::MultiBeam(const json11::Json & json) :
     SourceModeBase(nullptr, nullptr)
 {
-    MultiBeam::doReadFromJson(json);
     readFromJson(json);
-    ParticleGun->SetParticlePosition(Origin);
+    MultiBeam::doReadFromJson(json);
 }
 
 double MultiBeam::CountEvents()
@@ -348,8 +343,6 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     //out("Generating particle for beam #", iRecord, " and particle #", iParticle);
     const BeamRecord & Beam = Beams[iRecord];
 
-    // position already set in ctor
-    //out("  Position:", Origin, "  [mm]");
 
     //energy
     ParticleGun->SetParticleEnergy(Beam.Energy);
@@ -361,13 +354,19 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     //out("  Time:", time, "ns");
 
     //direction
-    double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
-    double Z = G4RandGauss::shoot(Beam.ZIsoCenter, Beam.PositionSigma);
+    const double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
+    const double Z = G4RandGauss::shoot(Beam.ZIsoCenter, Beam.PositionSigma);
     //out(Beam.XIsoCenter, Beam.PositionSigma, X); out(Beam.ZIsoCenter, Beam.PositionSigma, Z); exit(111);
     G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
     dir = dir.unit();
     ParticleGun->SetParticleMomentumDirection(dir);
     //out("  Direction:", dir);
+
+    //position
+    const double fraction = (Origin[1] - StartBeamFromY) / Origin[1];
+    const G4ThreeVector xyz = {X * fraction, StartBeamFromY, Z * fraction};
+    ParticleGun->SetParticlePosition(xyz);
+    out("  Position:", xyz, "  [mm]");
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
     iParticle++;
@@ -389,10 +388,6 @@ std::vector<std::pair<double, double>> MultiBeam::getTimeWindows(double marginFr
 
 void MultiBeam::doWriteToJson(json11::Json::object & json) const
 {
-    json["OriginX"] = Origin.x();
-    json["OriginY"] = Origin.y();
-    json["OriginZ"] = Origin.z();
-
     json11::Json::array ar;
     for (const auto & b : Beams)
     {
@@ -405,10 +400,6 @@ void MultiBeam::doWriteToJson(json11::Json::object & json) const
 
 void MultiBeam::doReadFromJson(const json11::Json & json)
 {
-    jstools::readDouble(json, "OriginX", Origin[0]);
-    jstools::readDouble(json, "OriginY", Origin[1]);
-    jstools::readDouble(json, "OriginZ", Origin[2]);
-
     Beams.clear();
     json11::Json::array ar;
     jstools::readArray(json, "Beams", ar);

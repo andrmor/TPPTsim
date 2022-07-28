@@ -102,9 +102,10 @@ int main(int argc, char** argv)
                                                 { 99.5*MeV, 0.0, 50.0, 10.82, 100.0*ns,1.0*ns, 1e5}
                                             }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
         */
-        //SM.SourceMode       = new MultiBeam(new Proton(), {0, 2500.0, 0}, { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        //SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        SM.SourceMode       = new MultiBeam(new Geantino(), { {100.0*MeV, 10.0,25.0, 0.001,  100.0*ns,1.0*ns, 10} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
-        SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
+        //SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiVac.dat");
-        SM.SimMode           = new EnergyCalibrationMode(20000, 1, "EnergyRangeWater.txt");
+        SM.SimMode           = new EnergyCalibrationMode(50000, 1, "EnergyRangeWater.txt");
 
     // --- END of user init ---
     }

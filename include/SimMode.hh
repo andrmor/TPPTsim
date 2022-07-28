@@ -112,6 +112,8 @@ protected:
     void   init();
     void   saveData();
     double extractRange(); // returns zero if failed
+    void   loadMdaData(const std::string & fileName);
+    void   loadSavedRanges(const std::string & fileName);
 
     const double RecordedRange = 350.0*mm;
     const double RangeLevel    = 0.925; // according to Falk, between 95% abnd 90%
@@ -122,7 +124,9 @@ protected:
 
     //runtime
     std::vector<double> Deposition;
-    std::vector<std::pair<double,double>> Range; // pairs of (energy_MeV,range_mm)
+    std::vector<std::pair<double,double>> Ranges; // pairs of (energy_MeV,range_mm)
+
+    std::vector<std::array<double,3>> MdaData; // Energy, Range, Sigma
 
 };
 

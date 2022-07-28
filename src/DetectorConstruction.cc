@@ -147,8 +147,7 @@ void DetectorConstruction::defineMaterials()
     G4Material * matWater = man->ConstructNewMaterial("Water", elements, natoms, 1.0*g/cm3);
 
     // Assigning materials to the detector components
-    //WorldMat        = matAir;
-    WorldMat        = matVacuum;
+    WorldMat        = matAir; // WorldMat        = matVacuum;
     SM.ScintMat     = matLYSOCe;
     EncapsMat       = matTeflon;
     BaseMat         = matABS;
