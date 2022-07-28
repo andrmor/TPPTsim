@@ -65,8 +65,8 @@ int main(int argc, char** argv)
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
-        //SM.PhantomMode      = new PhantomPMMA;
-        SM.PhantomMode      = new PhantomEnergyCalibration;
+        SM.PhantomMode      = new PhantomPMMA;
+//        SM.PhantomMode      = new PhantomEnergyCalibration;
         //SM.PhantomMode      = new PhantomParam;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
@@ -94,16 +94,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::Nozzle);
 
         // Source
-        /*
-        SM.SourceMode       = new MultiBeam(new Proton(), {0, 2520.0, 0},
-                                            {
-                                                {195.6*MeV, 0.0,-50.0, 6.01,  100.0*ns,1.0*ns, 1e5},
-                                                {161.6*MeV, 0.0,  0.0, 7.03,  100.0*ns,1.0*ns, 1e5},
-                                                { 99.5*MeV, 0.0, 50.0, 10.82, 100.0*ns,1.0*ns, 1e5}
-                                            }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
-        */
-        //SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 10.0,25.0, 1.0,  100.0*ns,1.0*ns, 1e4}, {165.0*MeV, -15.0,-15.0, 2.0,  100.0*ns,1.0*ns, 1e4} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
-        SM.SourceMode       = new MultiBeam(new Geantino(), { {100.0*MeV, 10.0,25.0, 0.001,  100.0*ns,1.0*ns, 10} }); // Energy, XIsoCenter, ZIsoCenter, PositionSigma, TimeStart, TimeSpan, NumParticles;
+        SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }, "/home/andr/WORK/TPPT/MultiBeam/EnergyCalibration/DefaultMDA.txt"); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
         //SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
@@ -118,7 +109,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
@@ -127,8 +118,8 @@ int main(int argc, char** argv)
         //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
         //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-        //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiVac.dat");
-        SM.SimMode           = new EnergyCalibrationMode(50000, 1, "Convertion.txt");
+//        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
+//        SM.SimMode           = new EnergyCalibrationMode(50000, 1, "Convertion.txt");
 
     // --- END of user init ---
     }

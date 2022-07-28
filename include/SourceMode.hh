@@ -217,7 +217,6 @@ struct BeamRecord
     double Energy;
     double XIsoCenter;
     double ZIsoCenter;
-    double PositionSigma;
     double TimeStart;
     double TimeSpan;
     double NumParticles;
@@ -229,8 +228,8 @@ struct BeamRecord
 class MultiBeam : public SourceModeBase
 {
 public:
-    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams);
-    MultiBeam(const json11::Json & json);
+    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, const std::string & calibrationFileName);
+    MultiBeam(const json11::Json & json); // !!!*** not finished! need to load calibration data too!
 
     double CountEvents() override;
 
@@ -243,9 +242,13 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void doReadFromJson(const json11::Json & json);
 
+    void loadCalibration(const std::string & fileName);
+
     const G4ThreeVector Origin  = {0, 2520.0, 0};
     const double StartBeamFromY = 150.0;
     std::vector<BeamRecord> Beams;
+
+    std::vector<std::array<double,3>> Calibration; // Nominal_energy[MeV] True_energy[MeV] SpotSigma[mm]
 
     //runtime
     double iRecord = 0;

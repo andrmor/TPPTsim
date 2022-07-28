@@ -290,7 +290,6 @@ void BeamRecord::writeToJson(json11::Json::object & json) const
     json["Energy"] = Energy;
     json["XIsoCenter"] = XIsoCenter;
     json["ZIsoCenter"] = ZIsoCenter;
-    json["PositionSigma"] = PositionSigma;
     json["TimeStart"] = TimeStart;
     json["TimeSpan"] = TimeSpan;
     json["NumParticles"] = NumParticles;
@@ -301,21 +300,53 @@ void BeamRecord::readFromJson(const json11::Json & json)
     jstools::readDouble(json, "Energy",        Energy);
     jstools::readDouble(json, "XIsoCenter",    XIsoCenter);
     jstools::readDouble(json, "ZIsoCenter",    ZIsoCenter);
-    jstools::readDouble(json, "PositionSigma", PositionSigma);
     jstools::readDouble(json, "TimeStart",     TimeStart);
     jstools::readDouble(json, "TimeSpan",      TimeSpan);
     jstools::readDouble(json, "NumParticles",  NumParticles);
 }
 
 
-MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams) :
-    SourceModeBase(particle, nullptr), Beams(beams) {}
+MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, const std::string & calibrationFileName) :
+    SourceModeBase(particle, nullptr), Beams(beams)
+{
+    loadCalibration(calibrationFileName);
+}
 
 MultiBeam::MultiBeam(const json11::Json & json) :
     SourceModeBase(nullptr, nullptr)
 {
     readFromJson(json);
     MultiBeam::doReadFromJson(json);
+    // TODO: load calibration
+}
+
+void MultiBeam::loadCalibration(const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with calibration:\n", fileName);
+        exit(1);
+    }
+
+    Calibration.clear();
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+        if (line[0] == '#') continue; //allow comments
+
+        std::stringstream ss(line);  // units in the file are MeV and mbarns
+        double NomEnergy, TrueEnergy, SpotSigma; //[MeV, MeV, mm]
+        ss >> NomEnergy >> TrueEnergy >> SpotSigma;
+        if (ss.fail())
+        {
+            out("Unexpected format of a line in the calibration file:\nExpect lines with NominalEnergy[MeV] TrueEnergy[MeV] SpotSigma[mm]");
+            exit(3);
+        }
+        //out(Energy, WaterRange);
+        Calibration.push_back({NomEnergy*MeV, TrueEnergy*MeV, SpotSigma*mm});
+    }
 }
 
 double MultiBeam::CountEvents()
@@ -325,7 +356,7 @@ double MultiBeam::CountEvents()
     return num;
 }
 
-void MultiBeam::GeneratePrimaries(G4Event * anEvent)
+void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolation once for the same energy! !!!***
 {
     if (iRecord >= Beams.size())
     {
@@ -343,10 +374,22 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     //out("Generating particle for beam #", iRecord, " and particle #", iParticle);
     const BeamRecord & Beam = Beams[iRecord];
 
+    const double & nominalEnergy = Beam.Energy;
+    double iUpper = 1;
+    for (; iUpper < Calibration.size(); iUpper++)
+        if (Calibration[iUpper][0] > nominalEnergy) break;
+    if (iUpper == Calibration.size())
+    {
+        out("Energy is outise calibration range");
+        exit(5);
+    }
+    const double interpolationfactor = (nominalEnergy - Calibration[iUpper-1][0]) / ( Calibration[iUpper][0] - Calibration[iUpper-1][0] );
+    //out("  Energy:", nominalEnergy, " i.f.:", interpolationfactor);
 
     //energy
-    ParticleGun->SetParticleEnergy(Beam.Energy);
-    //out("  Energy:", Beam.Energy, " MeV");
+    const double trueEnergy = SessionManager::interpolate(Calibration[iUpper-1][1], Calibration[iUpper][1], interpolationfactor);
+    ParticleGun->SetParticleEnergy(trueEnergy);
+    //out("  Energy:", trueEnergy, " MeV");
 
     //time
     const double time = Beam.TimeStart + Beam.TimeSpan * G4UniformRand();
@@ -354,8 +397,10 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     //out("  Time:", time, "ns");
 
     //direction
-    const double X = G4RandGauss::shoot(Beam.XIsoCenter, Beam.PositionSigma);
-    const double Z = G4RandGauss::shoot(Beam.ZIsoCenter, Beam.PositionSigma);
+    const double sigma = SessionManager::interpolate(Calibration[iUpper-1][2], Calibration[iUpper][2], interpolationfactor);
+    //out("  Sigma:", sigma);
+    const double X = G4RandGauss::shoot(Beam.XIsoCenter, sigma);
+    const double Z = G4RandGauss::shoot(Beam.ZIsoCenter, sigma);
     //out(Beam.XIsoCenter, Beam.PositionSigma, X); out(Beam.ZIsoCenter, Beam.PositionSigma, Z); exit(111);
     G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
     dir = dir.unit();
@@ -366,7 +411,7 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)
     const double fraction = (Origin[1] - StartBeamFromY) / Origin[1];
     const G4ThreeVector xyz = {X * fraction, StartBeamFromY, Z * fraction};
     ParticleGun->SetParticlePosition(xyz);
-    out("  Position:", xyz, "  [mm]");
+    //out("  Position:", xyz, "  [mm]");
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
     iParticle++;
