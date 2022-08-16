@@ -305,11 +305,25 @@ void BeamRecord::readFromJson(const json11::Json & json)
     jstools::readDouble(json, "NumParticles",  NumParticles);
 }
 
+void BeamRecord::print() const
+{
+    out("Nom energy", Energy/MeV, "MeV; Xiso", XIsoCenter/mm, "mm; Ziso", ZIsoCenter/mm, "mm; Time0", TimeStart/ns, "ns; Tspan", TimeSpan/ns, "ns; Num", NumParticles);
+}
 
-MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, const std::string & calibrationFileName) :
+
+MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams) :
     SourceModeBase(particle, nullptr), Beams(beams)
 {
-    loadCalibration(calibrationFileName);
+    loadCalibration();
+}
+
+MultiBeam::MultiBeam(ParticleBase * particle, const std::string & beamletFileName) :
+    SourceModeBase(particle, nullptr)
+{
+    loadCalibration();
+    loadBeamletData(beamletFileName);
+    //out(Beams.size());
+    //for (const auto & r : Beams) r.print();
 }
 
 MultiBeam::MultiBeam(const json11::Json & json) :
@@ -317,19 +331,20 @@ MultiBeam::MultiBeam(const json11::Json & json) :
 {
     readFromJson(json);
     MultiBeam::doReadFromJson(json);
-    // TODO: load calibration
+    loadCalibration();
 }
 
-void MultiBeam::loadCalibration(const std::string & fileName)
+void MultiBeam::loadCalibration()
 {
-    std::ifstream inStream(fileName);
+    std::ifstream inStream(CalibrationFileName); // the file is copied automatically by cmake to the run directory
     if (!inStream.is_open())
     {
-        out("Cannot open file with calibration:\n", fileName);
+        out("Cannot open file with calibration:\n", CalibrationFileName);
         exit(1);
     }
 
     Calibration.clear();
+    double NomEnergy, TrueEnergy, SpotSigma; //[MeV, MeV, mm]
     for (std::string line; std::getline(inStream, line); )
     {
         out(">>>",line);
@@ -337,7 +352,6 @@ void MultiBeam::loadCalibration(const std::string & fileName)
         if (line[0] == '#') continue; //allow comments
 
         std::stringstream ss(line);  // units in the file are MeV and mbarns
-        double NomEnergy, TrueEnergy, SpotSigma; //[MeV, MeV, mm]
         ss >> NomEnergy >> TrueEnergy >> SpotSigma;
         if (ss.fail())
         {
@@ -346,6 +360,35 @@ void MultiBeam::loadCalibration(const std::string & fileName)
         }
         //out(Energy, WaterRange);
         Calibration.push_back({NomEnergy*MeV, TrueEnergy*MeV, SpotSigma*mm});
+    }
+}
+
+void MultiBeam::loadBeamletData(const std::string & beamletDataFile)
+{
+    std::ifstream inStream(beamletDataFile);
+    if (!inStream.is_open())
+    {
+        out("Cannot open file with beamlet data:\n", beamletDataFile);
+        exit(2);
+    }
+
+    Beams.clear();
+    double NominalEnergy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles; // [MeV, mm, mm, ns, ns, number]
+    for (std::string line; std::getline(inStream, line); )
+    {
+        out(">>>",line);
+        if (line.empty()) continue; //allow empty lines
+        if (line[0] == '#') continue; //allow comments
+
+        std::stringstream ss(line);  // units in the file are MeV and mbarns
+        ss >> NominalEnergy >> XIsoCenter >> ZIsoCenter >> TimeStart >> TimeSpan >> NumParticles;
+        if (ss.fail())
+        {
+            out("Unexpected format of a line in the calibration file:\nExpect lines with NominalEnergy[MeV] TrueEnergy[MeV] SpotSigma[mm]");
+            exit(3);
+        }
+        //out(Energy, WaterRange);
+        Beams.push_back( {NominalEnergy*MeV, XIsoCenter*mm, ZIsoCenter*mm, TimeStart*ns, TimeSpan*ns, NumParticles} );
     }
 }
 

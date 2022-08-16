@@ -94,7 +94,8 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::Nozzle);
 
         // Source
-        SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }, "/home/andr/WORK/TPPT/MultiBeam/EnergyCalibration/DefaultMDA.txt"); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;
+        //SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;
+        SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt");
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
         //SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
@@ -109,17 +110,13 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
         //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
-        //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events * last argument in PencilBeam!
-        //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
-        //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-//        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
-//        SM.SimMode           = new EnergyCalibrationMode(50000, 1, "Convertion.txt");
+        SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
 
     // --- END of user init ---
     }
@@ -136,6 +133,7 @@ int main(int argc, char** argv)
 // examples of other simulation mode usage
 //SM.SimMode          = new SimModeShowEvent(119);
 //SM.SimMode          = new SimModeScintPosTest();
+//SM.SimMode           = new EnergyCalibrationMode(50000, 1, "Convertion.txt");
 //SM.SimMode          = new SimModeAcollinTest(10000, 2.0, 100, "AcolTest.txt");
 //SM.SimMode          = new SimModeAnnihilTest(SM.SourceMode->CountEvents(), 0, "Annihil.txt", false);
 //SM.SimMode          = new SimModeSingleEvents(10000);
@@ -146,6 +144,9 @@ int main(int argc, char** argv)
 //SM.SimMode          = new SimModeNatRadTest(1000000, 500, "natRadEnergyDistr.txt");
 //SM.SimMode          = new PesAnalyzerMode(100000, "aaaaa.txt");
 //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {91, 200, 91}, {-45.5, -150, -45.5}); // Direct PES mode; number of protons = events times last argument in PencilBeam!
+//SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events * last argument in PencilBeam!
+//SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
+//SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
 
 //sources
 //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
