@@ -219,7 +219,7 @@ struct BeamRecord
     double ZIsoCenter;
     double TimeStart;
     double TimeSpan;
-    double NumParticles;
+    double StatWeight;
 
     void writeToJson(json11::Json::object & json) const;
     void readFromJson(const json11::Json & json);
@@ -230,11 +230,11 @@ struct BeamRecord
 class MultiBeam : public SourceModeBase
 {
 public:
-    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams);
-    MultiBeam(ParticleBase * particle, const std::string & beamletFileName); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] Number
+    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles);
+    MultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] Number
     MultiBeam(const json11::Json & json);
 
-    double CountEvents() override;
+    double CountEvents() override {return NumParticles;}
 
     std::string getTypeName() const override {return "MultiBeam";}
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -247,15 +247,18 @@ protected:
 
     void loadCalibration();
     void loadBeamletData(const std::string & beamletDataFile);
+    void calculateParticlesPerStatWeightUnit();
 
     const G4ThreeVector Origin  = {0, 2520.0, 0};
     const double StartBeamFromY = 150.0;
     std::vector<BeamRecord> Beams;
+    double NumParticles = 0;
 
     std::vector<std::array<double,3>> Calibration; // Nominal_energy[MeV] True_energy[MeV] SpotSigma[mm]
     const std::string CalibrationFileName = "EnergyRangeSigma.txt";
 
     //runtime
+    double ParticlesPerStatWeightUnit = 0;
     double iRecord = 0;
     double iParticle = 0;
 };

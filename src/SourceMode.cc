@@ -287,41 +287,42 @@ void PencilBeam::doReadFromJson(const json11::Json &json)
 
 void BeamRecord::writeToJson(json11::Json::object & json) const
 {
-    json["Energy"] = Energy;
+    json["Energy"]     = Energy;
     json["XIsoCenter"] = XIsoCenter;
     json["ZIsoCenter"] = ZIsoCenter;
-    json["TimeStart"] = TimeStart;
-    json["TimeSpan"] = TimeSpan;
-    json["NumParticles"] = NumParticles;
+    json["TimeStart"]  = TimeStart;
+    json["TimeSpan"]   = TimeSpan;
+    json["StatWeight"] = StatWeight;
 }
 
 void BeamRecord::readFromJson(const json11::Json & json)
 {
-    jstools::readDouble(json, "Energy",        Energy);
-    jstools::readDouble(json, "XIsoCenter",    XIsoCenter);
-    jstools::readDouble(json, "ZIsoCenter",    ZIsoCenter);
-    jstools::readDouble(json, "TimeStart",     TimeStart);
-    jstools::readDouble(json, "TimeSpan",      TimeSpan);
-    jstools::readDouble(json, "NumParticles",  NumParticles);
+    jstools::readDouble(json, "Energy",     Energy);
+    jstools::readDouble(json, "XIsoCenter", XIsoCenter);
+    jstools::readDouble(json, "ZIsoCenter", ZIsoCenter);
+    jstools::readDouble(json, "TimeStart",  TimeStart);
+    jstools::readDouble(json, "TimeSpan",   TimeSpan);
+    jstools::readDouble(json, "StatWeight", StatWeight);
 }
 
 void BeamRecord::print() const
 {
-    out("Nom energy", Energy/MeV, "MeV; Xiso", XIsoCenter/mm, "mm; Ziso", ZIsoCenter/mm, "mm; Time0", TimeStart/ns, "ns; Tspan", TimeSpan/ns, "ns; Num", NumParticles);
+    out("NominalEnergy", Energy/MeV, "MeV; Xiso", XIsoCenter/mm, "mm; Ziso", ZIsoCenter/mm, "mm; Time0", TimeStart/ns, "ns; Tspan", TimeSpan/ns, "ns; StatWeight", StatWeight);
 }
 
-
-MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams) :
-    SourceModeBase(particle, nullptr), Beams(beams)
+MultiBeam::MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles) :
+    SourceModeBase(particle, nullptr), Beams(beams), NumParticles(totalParticles)
 {
     loadCalibration();
+    calculateParticlesPerStatWeightUnit();
 }
 
-MultiBeam::MultiBeam(ParticleBase * particle, const std::string & beamletFileName) :
-    SourceModeBase(particle, nullptr)
+MultiBeam::MultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles) :
+    SourceModeBase(particle, nullptr), NumParticles(totalParticles)
 {
     loadCalibration();
     loadBeamletData(beamletFileName);
+    calculateParticlesPerStatWeightUnit();
     //out(Beams.size());
     //for (const auto & r : Beams) r.print();
 }
@@ -332,6 +333,7 @@ MultiBeam::MultiBeam(const json11::Json & json) :
     readFromJson(json);
     MultiBeam::doReadFromJson(json);
     loadCalibration();
+    calculateParticlesPerStatWeightUnit();
 }
 
 void MultiBeam::loadCalibration()
@@ -373,7 +375,7 @@ void MultiBeam::loadBeamletData(const std::string & beamletDataFile)
     }
 
     Beams.clear();
-    double NominalEnergy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles; // [MeV, mm, mm, ns, ns, number]
+    double NominalEnergy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, StatWeight; // [MeV, mm, mm, ns, ns, number]
     for (std::string line; std::getline(inStream, line); )
     {
         out(">>>",line);
@@ -381,22 +383,30 @@ void MultiBeam::loadBeamletData(const std::string & beamletDataFile)
         if (line[0] == '#') continue; //allow comments
 
         std::stringstream ss(line);  // units in the file are MeV and mbarns
-        ss >> NominalEnergy >> XIsoCenter >> ZIsoCenter >> TimeStart >> TimeSpan >> NumParticles;
+        ss >> NominalEnergy >> XIsoCenter >> ZIsoCenter >> TimeStart >> TimeSpan >> StatWeight;
         if (ss.fail())
         {
             out("Unexpected format of a line in the calibration file:\nExpect lines with NominalEnergy[MeV] TrueEnergy[MeV] SpotSigma[mm]");
             exit(3);
         }
         //out(Energy, WaterRange);
-        Beams.push_back( {NominalEnergy*MeV, XIsoCenter*mm, ZIsoCenter*mm, TimeStart*ns, TimeSpan*ns, NumParticles} );
+        Beams.push_back( {NominalEnergy*MeV, XIsoCenter*mm, ZIsoCenter*mm, TimeStart*ns, TimeSpan*ns, StatWeight} );
     }
 }
 
-double MultiBeam::CountEvents()
+void MultiBeam::calculateParticlesPerStatWeightUnit()
 {
-    double num = 0;
-    for (const BeamRecord & br : Beams) num += br.NumParticles;
-    return num;
+    double sum = 0;
+    for (const BeamRecord & br : Beams) sum += br.StatWeight;
+
+    if (sum <= 0)
+    {
+        out("Sum stat weight of the beamlets should be a positive number!");
+        exit(11);
+    }
+
+    ParticlesPerStatWeightUnit = NumParticles / sum;
+    out("----->Sum of stat weights:", sum, "  Particles:", NumParticles, "  Particles per stat weight unit:", ParticlesPerStatWeightUnit);
 }
 
 void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolation once for the same energy! !!!***
@@ -407,7 +417,8 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolat
         return;
     }
 
-    if (iParticle >= Beams[iRecord].NumParticles)
+    //if (iParticle >= Beams[iRecord].NumParticles)
+    if ( iParticle >= round(ParticlesPerStatWeightUnit * Beams[iRecord].StatWeight) )
     {
         iRecord++;
         iParticle = 0;
@@ -432,7 +443,7 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolat
     //energy
     const double trueEnergy = SessionManager::interpolate(Calibration[iUpper-1][1], Calibration[iUpper][1], interpolationfactor);
     ParticleGun->SetParticleEnergy(trueEnergy);
-    //out("  Energy:", trueEnergy, " MeV");
+    out("  Energy:", trueEnergy, " MeV");
 
     //time
     const double time = Beam.TimeStart + Beam.TimeSpan * G4UniformRand();
@@ -484,6 +495,7 @@ void MultiBeam::doWriteToJson(json11::Json::object & json) const
         ar.push_back(el);
     }
     json["Beams"] = ar;
+    json["NumParticles"] = NumParticles;
 }
 
 void MultiBeam::doReadFromJson(const json11::Json & json)
@@ -498,6 +510,7 @@ void MultiBeam::doReadFromJson(const json11::Json & json)
         rec.readFromJson(el);
         Beams.push_back(rec);
     }
+    jstools::readDouble(json, "NumParticles", NumParticles);
 }
 
 // ---
