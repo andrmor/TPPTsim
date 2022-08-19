@@ -231,7 +231,7 @@ class MultiBeam : public SourceModeBase
 {
 public:
     MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles);
-    MultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] Number
+    MultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
     MultiBeam(const json11::Json & json);
 
     double CountEvents() override {return NumParticles;}
