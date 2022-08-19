@@ -417,7 +417,6 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolat
         return;
     }
 
-    //if (iParticle >= Beams[iRecord].NumParticles)
     if ( iParticle >= round(ParticlesPerStatWeightUnit * Beams[iRecord].StatWeight) )
     {
         iRecord++;
@@ -438,12 +437,12 @@ void MultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do interpolat
         exit(5);
     }
     const double interpolationfactor = (nominalEnergy - Calibration[iUpper-1][0]) / ( Calibration[iUpper][0] - Calibration[iUpper-1][0] );
-    //out("  Energy:", nominalEnergy, " i.f.:", interpolationfactor);
+    //out("  Nominal energy:", nominalEnergy, " i.f.:", interpolationfactor);
 
     //energy
     const double trueEnergy = SessionManager::interpolate(Calibration[iUpper-1][1], Calibration[iUpper][1], interpolationfactor);
     ParticleGun->SetParticleEnergy(trueEnergy);
-    out("  Energy:", trueEnergy, " MeV");
+    //out("  Energy:", trueEnergy, " MeV");
 
     //time
     const double time = Beam.TimeStart + Beam.TimeSpan * G4UniformRand();

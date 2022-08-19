@@ -255,7 +255,7 @@ protected:
     double NumParticles = 0;
 
     std::vector<std::array<double,3>> Calibration; // Nominal_energy[MeV] True_energy[MeV] SpotSigma[mm]
-    const std::string CalibrationFileName = "EnergyRangeSigma.txt";
+    const std::string CalibrationFileName = "BeamletCalibration.txt";
 
     //runtime
     double ParticlesPerStatWeightUnit = 0;

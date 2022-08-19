@@ -354,6 +354,7 @@ int SessionManager::isFileExist(const std::string & fileName)
 
 double SessionManager::interpolate(double a, double b, double fraction)
 {
+    //out("    interpolation->", a, b, fraction);
     if (fraction == 0.0) return a;
     if (fraction == 1.0) return b;
     return a + fraction * (b - a);

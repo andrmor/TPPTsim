@@ -46,6 +46,7 @@ set(EXTRA_FILES
   Materials.dat
   ColorMap.dat
   EnergyRangeSigma.txt
+  BeamletCalibration.txt
   )
 
 foreach(_file ${EXTRA_FILES})
