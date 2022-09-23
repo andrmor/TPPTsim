@@ -16,6 +16,9 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+#Uncomment the folowing line to activate GDML support!
+#add_compile_definitions(USE_GDML)
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project

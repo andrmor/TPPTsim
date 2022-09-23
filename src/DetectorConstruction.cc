@@ -22,8 +22,12 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Navigator.hh"
 #include "G4SDManager.hh"
-#include "G4GDMLParser.hh"
 #include "Nozzle.hh"
+#include "G4Trd.hh"
+
+#ifdef USE_GDML
+#include "G4GDMLParser.hh"
+#endif
 
 #define _USE_MATH_DEFINES
 
@@ -162,6 +166,7 @@ void DetectorConstruction::defineMaterials()
 
 void DetectorConstruction::addGDML()
 {
+#ifdef USE_GDML
     SessionManager & SM = SessionManager::getInstance();
 
     G4GDMLParser parser;
@@ -178,6 +183,10 @@ void DetectorConstruction::addGDML()
         G4LogicalVolume * logic = d->GetLogicalVolume();
         new G4PVPlacement(nullptr, {0, 0, -SM.IsoCenterGDML}, logic, logic->GetName() + "_PV", logicWorld, false, 0);
     }
+#else
+    out("The framework was compiled without GDMl support\nTo activate it, uncomment add_compile_definitions(USE_GDML) line in CMakeLists.txt");
+    exit(1234);
+#endif
 }
 
 void DetectorConstruction::addFSM()
