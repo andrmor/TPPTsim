@@ -25,7 +25,7 @@ void jstools::readInt(const json11::Json & json, const std::string & key, int & 
         exit(102);
     }
     var = json[key].int_value();
-    out(key, var);
+    //out(key, var);
 }
 
 //#include <sstream>
@@ -50,7 +50,7 @@ void jstools::readDouble(const json11::Json & json, const std::string & key, dou
     var = stod(str);
     */
 
-    out(key, var);
+    //out(key, var);
 }
 
 void jstools::readBool(const json11::Json & json, const std::string & key, bool & var)
@@ -62,7 +62,7 @@ void jstools::readBool(const json11::Json & json, const std::string & key, bool 
         exit(102);
     }
     var = json[key].bool_value();
-    out(key, (var ? "true" : "false"));
+    //out(key, (var ? "true" : "false"));
 }
 
 void jstools::readArray(const json11::Json &json, const std::string &key, json11::Json::array & var)
@@ -85,7 +85,7 @@ void jstools::readString(const json11::Json &json, const std::string &key, std::
         exit(102);
     }
     var = json[key].string_value();
-    out(key, var);
+    //out(key, var);
 }
 
 void jstools::readObject(const json11::Json &json, const std::string &key, json11::Json::object &var)

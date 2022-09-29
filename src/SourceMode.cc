@@ -30,6 +30,7 @@ SourceModeBase * SourceModeFactory::makeSourceModeInstance(const json11::Json & 
     else if (Type == "NaturalLysoSource")     sc = new NaturalLysoSource(json);
     else if (Type == "BlurredPointSource")    sc = new BlurredPointSource(json);
     else if (Type == "FromFileSource")        sc = new FromFileSource(json);
+    else if (Type == "MultiBeam")             sc = new MultiBeam(json);
     else
     {
         out("Unknown source type!");
@@ -323,6 +324,7 @@ MultiBeam::MultiBeam(ParticleBase * particle, const std::string & beamletFileNam
     loadCalibration();
     loadBeamletData(beamletFileName);
     calculateParticlesPerStatWeightUnit();
+
     //out(Beams.size());
     //for (const auto & r : Beams) r.print();
 }
@@ -334,6 +336,9 @@ MultiBeam::MultiBeam(const json11::Json & json) :
     MultiBeam::doReadFromJson(json);
     loadCalibration();
     calculateParticlesPerStatWeightUnit();
+
+    //out(Beams.size());
+    //for (const auto & r : Beams) r.print();
 }
 
 void MultiBeam::loadCalibration()
@@ -378,7 +383,7 @@ void MultiBeam::loadBeamletData(const std::string & beamletDataFile)
     double NominalEnergy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, StatWeight; // [MeV, mm, mm, ns, ns, number]
     for (std::string line; std::getline(inStream, line); )
     {
-        out(">>>",line);
+        //out(">>>",line);
         if (line.empty()) continue; //allow empty lines
         if (line[0] == '#') continue; //allow comments
 

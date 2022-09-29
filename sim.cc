@@ -56,7 +56,7 @@ int main(int argc, char** argv)
         //double timeFrom = 0;
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/MultiBeam/EnergyCalibration";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/MultiBeam/Test";
         //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
@@ -95,10 +95,10 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::Nozzle);
 
         // Source
-        //SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 100); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
+        SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 10); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
         //SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
-        SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
+        //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
-        //SM.SimMode          = new PesGenerationMode(1e6, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
+        //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
 
