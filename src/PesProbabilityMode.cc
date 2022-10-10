@@ -13,6 +13,8 @@ PesProbabilityMode::PesProbabilityMode(int numEvents, std::array<double, 3> binS
     PesGenerationMode(numEvents, "dummy.txt", false),
     BinSize(binSize), NumBins(numBins), Origin(origin)
 {
+    bNeedOutput = false;
+
     initProbArrays();
 
     // tests for voxel finding algorithms
