@@ -9,7 +9,7 @@ ActivityGenerationMode::ActivityGenerationMode(int numEvents,
                                                std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
                                                const std::vector<std::pair<double,double>> & acquisitionFromTos,
                                                const std::string & fileName) :
-    PesGenerationMode(numEvents, binSize, numBins, origin),
+    PesProbabilityMode(numEvents, binSize, numBins, origin),
     TimeWindows(acquisitionFromTos),
     FileName(fileName)
 {
@@ -34,24 +34,13 @@ void ActivityGenerationMode::initActivityArray()
 
 void ActivityGenerationMode::run()
 {
-    SessionManager& SM = SessionManager::getInstance();
-    exploreMaterials();
-
-    // this sub-mode is just to debug!
-    if (bNeedGui)
-    {
-        SM.startGUI();
-        return;
-    }
-
-    SM.runManager->BeamOn(NumEvents);
-
+    PesGenerationMode::run(); // PesGenerationMode indeed
     saveData();
 }
 
 void ActivityGenerationMode::readFromJson(const json11::Json & json)
 {
-    PesGenerationMode::readFromJson(json);
+    PesProbabilityMode::readFromJson(json);
     initActivityArray();
 
     TimeWindows.clear();
@@ -68,7 +57,7 @@ void ActivityGenerationMode::readFromJson(const json11::Json & json)
 
 void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
 {
-    PesGenerationMode::doWriteToJson(json);
+    PesProbabilityMode::doWriteToJson(json);
 
     json11::Json::array ar;
     for (const auto & p : TimeWindows)
@@ -82,15 +71,15 @@ void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
     json["FileName"] = FileName;
 }
 
-void ActivityGenerationMode::doTriggerDirect(const G4Track *track)
+bool ActivityGenerationMode::doTrigger(const G4Track *track)
 {
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
-    if (Records.empty()) return;
+    if (Records.empty()) return false;
 
     std::vector<std::tuple<int, int, int, double>> Path;
     addPathA(LastPosition, track->GetPosition(), Path);
     //out("Path length:", Path.size());
-    if (Path.empty()) return;
+    if (Path.empty()) return false;
 
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
     for (const PesGenRecord & r : Records)
@@ -108,6 +97,8 @@ void ActivityGenerationMode::doTriggerDirect(const G4Track *track)
             Activity[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += decays;
         }
     }
+
+    return false;
 }
 
 double ActivityGenerationMode::calculateTimeFactor(double t0, double decayTime)
@@ -148,7 +139,7 @@ void ActivityGenerationMode::saveData()
     else out("\nSaving array data to file", fullFileName);
 
     json11::Json::object json;
-    PesGenerationMode::doWriteToJson(json);
+    PesProbabilityMode::doWriteToJson(json);
     json11::Json aa(json);
     std::string str = '#' + aa.dump();
     stream << str << '\n';

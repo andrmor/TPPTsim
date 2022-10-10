@@ -1,7 +1,7 @@
 #ifndef activitygenerationmode_h
 #define activitygenerationmode_h
 
-#include "PesGenerationMode.hh"
+#include "PesProbabilityMode.hh"
 #include "SimMode.hh"
 #include "PesGenRecord.hh"
 
@@ -11,7 +11,7 @@
 
 class G4Track;
 
-class ActivityGenerationMode : public PesGenerationMode
+class ActivityGenerationMode : public PesProbabilityMode
 {
 public:
     ActivityGenerationMode(int numEvents,
@@ -36,7 +36,7 @@ private:
     // output data
     std::vector<std::vector<std::vector<double>>> Activity; // total number of decays in the defined time window
 
-    void doTriggerDirect(const G4Track * track);
+    bool doTrigger(const G4Track * track) override;
 
     double calculateTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
     void   saveData();
