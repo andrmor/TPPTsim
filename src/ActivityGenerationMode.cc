@@ -27,7 +27,7 @@ void ActivityGenerationMode::initActivityArray()
         for (std::vector<double> & arz : ary)
         {
             // Z
-            arz.resize(NumBins[2]);
+            arz.resize(NumBins[2], 0);
         }
     }
 }

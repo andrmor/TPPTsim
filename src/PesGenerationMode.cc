@@ -86,7 +86,7 @@ void PesGenerationMode::initProbArrays()
             for (std::vector<double> & arz : ary)
             {
                 // Z
-                arz.resize(NumBins[2]);
+                arz.resize(NumBins[2], 0);
             }
         }
     }
@@ -124,7 +124,7 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
                 out("Unexpected format of a reaction line in the file with the PES cross-sections");
                 exit(2);
             }
-            currentRecord.DecayTime /= log(2); // half-life to decay time
+            currentRecord.DecayTime /= log(2.0); // half-life to decay time
 
             currentRecord.CrossSection.clear();
             fillingRecord = true;
@@ -146,13 +146,11 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
     }
     if (!currentRecord.CrossSection.empty()) BaseRecords.push_back(currentRecord);
 
-    out("===== PES production cross-section summary:");
+    out("\n\n===== PES production cross-section summary ====");
     out("Number of reactions:", BaseRecords.size());
     for (const auto & r : BaseRecords)
-    {
         out(">", r.TargetZ, r.TargetA, r.PES, "  CS range from:", r.CrossSection.front().first, "to", r.CrossSection.back().first, "MeV");
-    }
-    out("\n");
+    out("===============================================\n\n");
 }
 
 #include "TrackingAction.hh"
@@ -235,7 +233,7 @@ void PesGenerationMode::updateMatRecords(int iMat, int Z, int A, double IsotopeN
         if (rec.TargetZ != Z || rec.TargetA != A) continue;
 
         out("    ==> Adding PES generation record!");
-        PesGenRecord thisRec = rec;
+        PesGenRecord thisRec = rec; // note: it has a pointer to ProbArray
         thisRec.NumberDensity = IsotopeNumberDensity;
         MaterialRecords[iMat].push_back(thisRec);
     }
