@@ -30,7 +30,6 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
 private:
-    std::vector<std::pair<double,double>> TimeWindows;
     std::string FileName;
 
     // output data
@@ -38,7 +37,6 @@ private:
 
     bool doTrigger(const G4Track * track) override;
 
-    double calculateTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
     void   saveData();
     void   initActivityArray();
 };

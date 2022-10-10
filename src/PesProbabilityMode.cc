@@ -9,9 +9,11 @@
 #include "G4RandomTools.hh"
 #include "Randomize.hh"
 
-PesProbabilityMode::PesProbabilityMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin) :
+PesProbabilityMode::PesProbabilityMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
+                                       const std::vector<std::pair<double,double>> & acquisitionFromTos) :
     PesGenerationMode(numEvents, "dummy.txt", false),
-    BinSize(binSize), NumBins(numBins), Origin(origin)
+    BinSize(binSize), NumBins(numBins), Origin(origin),
+    TimeWindows(acquisitionFromTos)
 {
     bNeedOutput = false;
 
@@ -211,6 +213,27 @@ void PesProbabilityMode::addPathA(const G4ThreeVector & posFrom, const G4ThreeVe
         path.push_back( {From[0], From[1], From[2], (1.0 - newK) * totLength} );
 }
 
+double PesProbabilityMode::calculateTimeFactor(double t0, double decayTime)
+{
+    double timeFactor = 0;
+
+    for (size_t i = 0; i < TimeWindows.size(); i++)
+    {
+        double timeTo = TimeWindows[i].second - t0;
+        if (timeTo  <= 0) continue;
+        double timeFrom = TimeWindows[i].first - t0;
+        if (timeFrom < 0) timeFrom = 0;
+
+        const double from = exp(-timeFrom/decayTime);
+        const double to   = exp(-timeTo/decayTime);
+        const double delta = from - to;
+        timeFactor += delta;
+    }
+
+    //out("Time factor:",timeFactor);
+    return timeFactor;
+}
+
 bool PesProbabilityMode::isValidVoxel(int * coords) const
 {
     for (int i = 0; i < 3; i++)
@@ -230,9 +253,11 @@ bool PesProbabilityMode::doTrigger(const G4Track * track)
     for (const PesGenRecord & r : Records)
     {
         const double cs = r.getCrossSection(meanEnergy);
-        const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+        const double DProbPerMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+        const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
+
         for (size_t i = 0; i < Path.size(); i++)
-            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbByMM;
+            (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbPerMM * timeFractionInWindows;
     }
 
     return false;

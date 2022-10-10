@@ -115,7 +115,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
         //SM.SimMode          = new PesGenerationMode(100, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
-        SM.SimMode          = new PesProbabilityMode(100, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5});
+        SM.SimMode          = new PesProbabilityMode(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e10} });
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
 

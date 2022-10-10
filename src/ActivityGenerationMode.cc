@@ -9,8 +9,7 @@ ActivityGenerationMode::ActivityGenerationMode(int numEvents,
                                                std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
                                                const std::vector<std::pair<double,double>> & acquisitionFromTos,
                                                const std::string & fileName) :
-    PesProbabilityMode(numEvents, binSize, numBins, origin),
-    TimeWindows(acquisitionFromTos),
+    PesProbabilityMode(numEvents, binSize, numBins, origin, acquisitionFromTos),
     FileName(fileName)
 {
     initActivityArray();
@@ -86,11 +85,11 @@ bool ActivityGenerationMode::doTrigger(const G4Track *track)
     {
         const double cs = r.getCrossSection(meanEnergy);
         const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
+        const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
 
         for (size_t i = 0; i < Path.size(); i++)
         {
             const double numPES = std::get<3>(Path[i]) * DProbByMM;
-            const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
             const double decays = numPES * timeFractionInWindows;
             //out(decays);
 
@@ -101,26 +100,7 @@ bool ActivityGenerationMode::doTrigger(const G4Track *track)
     return false;
 }
 
-double ActivityGenerationMode::calculateTimeFactor(double t0, double decayTime)
-{
-    double timeFactor = 0;
 
-    for (size_t i = 0; i < TimeWindows.size(); i++)
-    {
-        double timeTo = TimeWindows[i].second - t0;
-        if (timeTo  <= 0) continue;
-        double timeFrom = TimeWindows[i].first - t0;
-        if (timeFrom < 0) timeFrom = 0;
-
-        const double from = exp(-timeFrom/decayTime);
-        const double to   = exp(-timeTo/decayTime);
-        const double delta = from - to;
-        timeFactor += delta;
-    }
-
-    //out("Time factor:",timeFactor);
-    return timeFactor;
-}
 
 void ActivityGenerationMode::saveData()
 {
