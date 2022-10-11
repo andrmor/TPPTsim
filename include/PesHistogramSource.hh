@@ -53,13 +53,14 @@ protected:
 
     void init();
 
-    void prepareStream();
     void addPrimary(G4Event * anEvent);
     void checkInputData();
 
     std::string Directory;
 
     std::vector<PesDataRecord> IsotopeBase;
+    size_t CurrentRecord = 0;
+    size_t CurrentFile = 0;
 
     std::ifstream * inStream = nullptr;
 

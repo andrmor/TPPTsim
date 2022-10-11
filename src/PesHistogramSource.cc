@@ -139,17 +139,17 @@ void PesHistogramSource::init()
 
     checkInputData();
 
-    /*
-    if (bBinary) inStream = new std::ifstream(FileName, std::ios::in | std::ios::binary);
-    else         inStream = new std::ifstream(FileName);
+    CurrentRecord = 0;
+    CurrentFile = 0;
 
+    /*
+    inStream = new std::ifstream(FileName);
     if (!inStream->is_open())
     {
         out("Cannot open input file with particles:" + FileName);
         exit(1000);
         delete inStream; inStream = nullptr;
     }
-    prepareStream();
     */
 }
 
@@ -179,41 +179,56 @@ void PesHistogramSource::checkInputData()
     }
 }
 
-void PesHistogramSource::prepareStream()
-{
-    /*
-    inStream->clear();
-    inStream->seekg(0);
-
-    bool bError = true;
-    if (bBinary)
-    {
-        char ch = 0;
-        int iEv;
-        inStream->get(ch);
-        if (ch == (char)0xEE)
-        {
-            inStream->read((char*)&iEv, sizeof(int));
-            bError = false;
-        }
-    }
-    else
-    {
-        std::string line;
-        std::getline(*inStream, line);
-        if (line.size() > 1 && line[0] == '#') bError = false;
-    }
-
-    if (bError)
-    {
-        out("Input file for FromFileSource does not start with the event marker!");
-        exit(1002);
-    }
-    */
-}
-
 void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
 {
+    if (CurrentRecord >= IsotopeBase.size()) return; // finished with all events
+
+    const PesDataRecord & pes = IsotopeBase[CurrentRecord];
+    PesName = pes.Isotope;
+
+    const std::string & fileName = pes.SpatialFiles[CurrentFile];
+
+    /*
+
+        const size_t numChan = iso.SpatialFiles.size();
+        out("\n====>Isotope", iso.Isotope, " -> ", numChan, "channel(s)");
+        if (numChan == 0) continue;
+
+        for (size_t iChan = 0; iChan < numChan; iChan++)
+        {
+            const std::string fn = DataDirectory + '/' + iso.SpatialFiles[iChan];
+            out(fn);
+
+            BinningParameters thisMapping;
+            thisMapping.read(fn);
+
+            std::ifstream in(fn);
+            std::string line;
+            std::getline(in, line); // skip the first line which is the mapping json
+
+            for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
+                for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
+                {
+                    std::getline(in, line);
+                    size_t sz; // std::string::size_type sz;
+
+                    for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
+                    {
+                        double val = std::stod(line, &sz);
+                        line = line.substr(sz);
+                        //DATA[ix][iy][iz] += val;
+                    }
+                }
+        }
+
+    CurrentFile++;
+    if (CurrentFile >= pes.SpatialFiles.size())
+    {
+        CurrentRecord++;
+        CurrentFile = 0;
+    }
+    */
+
     /*
     if (!inStream)
     {
@@ -232,56 +247,6 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
         exit(111);
     }
 
-    if (bBinary)
-    {
-        char ch;
-        int iEv;
-        while (inStream->get(ch))
-        {
-            if (inStream->eof()) break;
-
-            if (ch == (char)0xEE)
-            {
-                inStream->read((char*)&iEv, sizeof(int));
-                //event finished
-                break;
-            }
-            else if (ch == (char)0xFF)
-            {
-                name.clear();
-                while (inStream->get(ch))
-                {
-                    if (ch == (char)0x00) break;
-                    name += ch;
-                }
-
-                inStream->read((char*)&energy, sizeof(double));
-                inStream->read((char*)&pos[0], sizeof(double));
-                inStream->read((char*)&pos[1], sizeof(double));
-                inStream->read((char*)&pos[2], sizeof(double));
-                inStream->read((char*)&dir[0], sizeof(double));
-                inStream->read((char*)&dir[1], sizeof(double));
-                inStream->read((char*)&dir[2], sizeof(double));
-                inStream->read((char*)&time,   sizeof(double));
-
-                if (inStream->eof())
-                {
-                    out("---End of file reached!");
-                    return;
-                }
-
-                if (!inStream->good())
-                {
-                    out("Error in reading particle data from file!");
-                    exit(111);
-                }
-
-                addPrimary(anEvent);
-            }
-        }
-    }
-    else
-    {
         for (std::string line; std::getline(*inStream, line); )
         {
             //std::cout << "line=>" << line << "<=" << std::endl;
@@ -309,7 +274,6 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
 
             addPrimary(anEvent);
         }
-    }
     */
 }
 
@@ -330,24 +294,10 @@ void PesHistogramSource::addPrimary(G4Event * anEvent)
 
 double PesHistogramSource::CountEvents()
 {
-    if (!inStream) return 0;
-
-    inStream->clear();
-    inStream->seekg(0);
-
-    double iCounter = 0;
-    {
-        for( std::string line; std::getline( *inStream, line ); )
-        {
-            if (inStream->fail()) break;
-            if (line.length() > 0 && line[0] == '#') iCounter++;
-        }
-    }
-
-    prepareStream();
-
-    out("Found events:", iCounter);
-    return iCounter;
+    int numEvents = 0;
+    for (const PesDataRecord & rec : IsotopeBase) numEvents += rec.SpatialFiles.size();
+    out("Number of events is equal to the number of histograms:", numEvents);
+    return numEvents;
 }
 
 void PesHistogramSource::doWriteToJson(json11::Json::object & json) const
