@@ -19,4 +19,16 @@ namespace jstools
     void readObject(const json11::Json & json, const std::string & key, json11::Json::object & var);
 }
 
+struct BinningParameters
+{
+    std::array<double, 3> BinSize;
+    std::array<int,    3> NumBins;
+    std::array<double, 3> Origin;
+
+    bool operator!=(const BinningParameters & other) const;
+
+    void read(const std::string & fileName);
+    void report();
+};
+
 #endif // jstools_h
