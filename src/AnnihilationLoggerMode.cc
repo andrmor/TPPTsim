@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include "G4RunManager.hh"
+#include "G4ThreeVector.hh"
 
 AnnihilationLoggerMode::AnnihilationLoggerMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
     NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin)
@@ -84,7 +85,6 @@ bool AnnihilationLoggerMode::getVoxel(const G4ThreeVector & pos, int * index)
     return true;
 }
 
-#include "G4ThreeVector.hh"
 void AnnihilationLoggerMode::fillPosition(const G4ThreeVector & pos)
 {
     int index[3];

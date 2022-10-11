@@ -122,7 +122,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new PesProbabilityMode(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e10} });
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
         //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
-        SM.SimMode          = new AnnihilationLoggerMode(10, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  "test.txt");
+        SM.SimMode          = new AnnihilationLoggerMode(10000, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  "test.txt");
 
     // --- END of user init ---
     }
