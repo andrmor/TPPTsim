@@ -100,8 +100,6 @@ bool ActivityGenerationMode::doTrigger(const G4Track *track)
     return false;
 }
 
-
-
 void ActivityGenerationMode::saveData()
 {
     SessionManager& SM = SessionManager::getInstance();
