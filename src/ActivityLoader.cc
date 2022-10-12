@@ -1,8 +1,6 @@
 #include "ActivityLoader.hh"
 #include "out.hh"
 
-//#include <iostream>
-//#include <sstream>
 #include <fstream>
 
 void ActivityLoader::load(const std::string & fileName, std::vector<std::vector<std::vector<double>>> & data, BinningParameters & binning)

@@ -1,5 +1,6 @@
 #include "PesHistogramSource.hh"
 #include "SessionManager.hh"
+#include "ActivityLoader.hh"
 #include "out.hh"
 #include "jstools.hh"
 
@@ -7,6 +8,8 @@
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"
+#include "G4RandomTools.hh"
+#include "G4ThreeVector.hh"
 
 #include <ios>
 #include <iostream>
@@ -111,8 +114,8 @@ bool GeantParticleGenerator::extractIonInfo(const std::string & text, int & Z, i
 
 // -------------------------------------
 
-PesHistogramSource::PesHistogramSource(const std::string & directory) :
-    SourceModeBase(nullptr, nullptr), Directory(directory)
+PesHistogramSource::PesHistogramSource(const std::string & directory, double multiplier) :
+    SourceModeBase(nullptr, nullptr), Directory(directory), Multiplier(multiplier)
 {
     init();
 }
@@ -126,11 +129,6 @@ PesHistogramSource::PesHistogramSource(const json11::Json & json) :
     init();
 }
 
-PesHistogramSource::~PesHistogramSource()
-{
-    //delete inStream;
-}
-
 void PesHistogramSource::init()
 {
     IsotopeBase.push_back({ "C11", {"6_12_C11.txt", "8_16_C11.txt"} });
@@ -142,15 +140,8 @@ void PesHistogramSource::init()
     CurrentRecord = 0;
     CurrentFile = 0;
 
-    /*
-    inStream = new std::ifstream(FileName);
-    if (!inStream->is_open())
-    {
-        out("Cannot open input file with particles:" + FileName);
-        exit(1000);
-        delete inStream; inStream = nullptr;
-    }
-    */
+    ParticleGun->SetParticleEnergy(0*keV);
+    ParticleGun->SetParticleMomentumDirection({0,0,1.0});
 }
 
 void PesHistogramSource::checkInputData()
@@ -184,112 +175,42 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
     if (CurrentRecord >= IsotopeBase.size()) return; // finished with all events
 
     const PesDataRecord & pes = IsotopeBase[CurrentRecord];
-    PesName = pes.Isotope;
+    G4ParticleDefinition * pd = ParticleGenerator.makeGeant4Particle(pes.Isotope);
+    ParticleGun->SetParticleDefinition(pd);
 
     const std::string & fileName = pes.SpatialFiles[CurrentFile];
+    out("==>", fileName);
 
-    /*
+    BinningParameters binning;
+    std::vector<std::vector<std::vector<double>>> data;
+    ActivityLoader::load(fileName, data, binning);
 
-        const size_t numChan = iso.SpatialFiles.size();
-        out("\n====>Isotope", iso.Isotope, " -> ", numChan, "channel(s)");
-        if (numChan == 0) continue;
+    for (int ix = 0; ix < binning.NumBins[0]; ix++)
+        for (int iy = 0; iy < binning.NumBins[1]; iy++)
+            for (int iz = 0; iz < binning.NumBins[2]; iz++)
+            {
+                const int number = data[ix][iy][iz] * Multiplier;
+                if (number < 1) continue;
 
-        for (size_t iChan = 0; iChan < numChan; iChan++)
-        {
-            const std::string fn = DataDirectory + '/' + iso.SpatialFiles[iChan];
-            out(fn);
-
-            BinningParameters thisMapping;
-            thisMapping.read(fn);
-
-            std::ifstream in(fn);
-            std::string line;
-            std::getline(in, line); // skip the first line which is the mapping json
-
-            for (int ix = 0; ix < Mapping.NumBins[0]; ix++)
-                for (int iy = 0; iy < Mapping.NumBins[1]; iy++)
+                for (int iPart = 0; iPart < number; iPart++)
                 {
-                    std::getline(in, line);
-                    size_t sz; // std::string::size_type sz;
+                    const double x = binning.Origin[0] + (0.5 + ix) * binning.BinSize[0];
+                    const double y = binning.Origin[1] + (0.5 + iy) * binning.BinSize[1];
+                    const double z = binning.Origin[2] + (0.5 + iz) * binning.BinSize[2];
+                    ParticleGun->SetParticlePosition( {x,y,z} );
 
-                    for (int iz = 0; iz < Mapping.NumBins[2]; iz++)
-                    {
-                        double val = std::stod(line, &sz);
-                        line = line.substr(sz);
-                        //DATA[ix][iy][iz] += val;
-                    }
+                    ParticleGun->SetParticleTime(G4UniformRand() * TimeSpan);
+
+                    ParticleGun->GeneratePrimaryVertex(anEvent);
                 }
-        }
+            }
 
     CurrentFile++;
-    if (CurrentFile >= pes.SpatialFiles.size())
+    if (CurrentFile >= IsotopeBase[CurrentRecord].SpatialFiles.size())
     {
         CurrentRecord++;
         CurrentFile = 0;
     }
-    */
-
-    /*
-    if (!inStream)
-    {
-        out("Stream with particles does not exist: check file name!");
-        return;
-    }
-
-    if (inStream->eof())
-    {
-        out("End of file reached!");
-        return;
-    }
-    if (!inStream->good())
-    {
-        out("Error in reading particle data from file!");
-        exit(111);
-    }
-
-        for (std::string line; std::getline(*inStream, line); )
-        {
-            //std::cout << "line=>" << line << "<=" << std::endl;
-            if (line.size() < 1) continue; //allow empty lines
-
-            if (line[0] == '#') break; //event finished
-
-            if (inStream->eof())
-            {
-                out("---End of file reached!");
-                return;
-            }
-
-            std::stringstream ss(line);  // units in file are mm MeV and ns
-            ss >> name
-               >> energy
-               >> pos[0] >> pos[1] >> pos[2]
-               >> dir[0] >> dir[1] >> dir[2]
-               >> time;
-            if (ss.fail())
-            {
-                out("Unexpected format of a line in the file with the input particles");
-                exit(2111);
-            }
-
-            addPrimary(anEvent);
-        }
-    */
-}
-
-void PesHistogramSource::addPrimary(G4Event * anEvent)
-{
-    pd = ParticleGenerator.makeGeant4Particle(PesName);
-
-    //out("->", pd->GetParticleName(), energy, pos, dir, time);
-
-    ParticleGun->SetParticleDefinition(pd);
-    ParticleGun->SetParticleEnergy(energy*keV);
-    ParticleGun->SetParticleTime(time*ns);
-    ParticleGun->SetParticlePosition(pos);
-    ParticleGun->SetParticleMomentumDirection(dir);
-
-    ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 double PesHistogramSource::CountEvents()
@@ -302,10 +223,12 @@ double PesHistogramSource::CountEvents()
 
 void PesHistogramSource::doWriteToJson(json11::Json::object & json) const
 {
-    json["Directory"] = Directory;
+    json["Directory"]  = Directory;
+    json["Multiplier"] = Multiplier;
 }
 
 void PesHistogramSource::doReadFromJson(const json11::Json & json)
 {
-    jstools::readString(json, "Directory", Directory);
+    jstools::readString(json, "Directory",  Directory);
+    jstools::readDouble(json, "Multiplier", Multiplier);
 }

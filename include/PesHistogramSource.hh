@@ -2,7 +2,6 @@
 #define peshistogramsource_h
 
 #include "SourceMode.hh"
-#include "G4ThreeVector.hh"
 
 #include <string>
 #include <vector>
@@ -37,9 +36,8 @@ struct PesDataRecord
 class PesHistogramSource : public SourceModeBase
 {
 public:
-    PesHistogramSource(const std::string & directory);
+    PesHistogramSource(const std::string & directory, double multiplier);
     PesHistogramSource(const json11::Json & json);
-    ~PesHistogramSource();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
@@ -53,10 +51,10 @@ protected:
 
     void init();
 
-    void addPrimary(G4Event * anEvent);
     void checkInputData();
 
     std::string Directory;
+    double Multiplier;
 
     std::vector<PesDataRecord> IsotopeBase;
     size_t CurrentRecord = 0;
@@ -66,10 +64,7 @@ protected:
 
     GeantParticleGenerator ParticleGenerator;
 
-    std::string PesName;
-    G4ParticleDefinition * pd;
-    double energy, time;
-    G4ThreeVector pos, dir;
+    const double TimeSpan = 1e9;
 };
 
 #endif // peshistogramsource_h

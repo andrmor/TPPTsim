@@ -7,6 +7,7 @@
 #include "out.hh"
 #include "jstools.hh"
 #include "FromFileSource.hh"
+#include "PesHistogramSource.hh"
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
@@ -31,6 +32,7 @@ SourceModeBase * SourceModeFactory::makeSourceModeInstance(const json11::Json & 
     else if (Type == "BlurredPointSource")    sc = new BlurredPointSource(json);
     else if (Type == "FromFileSource")        sc = new FromFileSource(json);
     else if (Type == "MultiBeam")             sc = new MultiBeam(json);
+    else if (Type == "PesHistogramSource")    sc = new PesHistogramSource(json);
     else
     {
         out("Unknown source type!");
