@@ -159,10 +159,11 @@ void PesHistogramSource::checkInputData()
 
             for (const std::string & fn : it->SpatialFiles)
             {
-                std::ifstream infile(fn);
+                std::string fullname = Directory + '/' + fn;
+                std::ifstream infile(fullname);
                 if (!infile.good())
                 {
-                    out("File not found:", fn);
+                    out("File not found:", fullname);
                     exit(3);
                 }
             }
@@ -178,7 +179,7 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
     G4ParticleDefinition * pd = ParticleGenerator.makeGeant4Particle(pes.Isotope);
     ParticleGun->SetParticleDefinition(pd);
 
-    const std::string & fileName = pes.SpatialFiles[CurrentFile];
+    const std::string & fileName = Directory + '/' + pes.SpatialFiles[CurrentFile];
     out("==>", fileName);
 
     BinningParameters binning;
