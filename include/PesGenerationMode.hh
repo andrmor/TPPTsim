@@ -10,12 +10,11 @@
 
 class G4Track;
 
-// this class is also the base class for ActivityGenerationMode!
+// this class is also the base class for PesProbabilityMode and ActivityGenerationMode!
 class PesGenerationMode : public SimModeBase
 {
 public:
-    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput);                                // MC mode
-    PesGenerationMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin); // Direct mode
+    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput); // Brute-force approach which logs generated PES
 
     std::string getTypeName() const override {return "PesGenerationMode";}
     G4UserTrackingAction * getTrackingAction() override;
@@ -51,32 +50,14 @@ protected:
     double LastTrackLength;
     G4ThreeVector LastPosition;
 
-    // direct mode specific
-    std::array<double, 3> BinSize; // mm
-    std::array<int,    3> NumBins;
-    std::array<double, 3> Origin;  // center coordinates of the frame
-
-    //path gives voxel indexes and trackLength
-    void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path); // simplistic: slow and not very precise
-    void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path); // use this one!
-
 private:
-    bool   bDirectMode = false;
-    int    CurrentEvent = 0;
+    int CurrentEvent = 0;
 
-    // MC mode specific
     double SaveDirection[3];
     double SaveEnergy = 0;
     std::vector<double> ProbVec;
 
-    void commonConstructor();
-    bool doTriggerMC(const G4Track * track); // return status (true = kill) is now ignored, proton is traced to the end of track
-    virtual void doTriggerDirect(const G4Track * track);
-
-    bool getVoxel(const G4ThreeVector & pos, int * index);
-    bool isValidVoxel(int * coords) const;
-    void initProbArrays();
-    void saveArrays();
+    virtual bool doTrigger(const G4Track * track); // return status (true = kill); the status is currently ignored (physics reasons)
 };
 
 #endif // pesgenerationmode_h

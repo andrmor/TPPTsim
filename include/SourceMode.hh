@@ -227,6 +227,8 @@ struct BeamRecord
     void print() const;
 };
 
+// Beam is aligned with Y axis (downwards) and starts from Y = StartBeamFromY
+// Divergence is determined using the apex position = Origin
 class MultiBeam : public SourceModeBase
 {
 public:

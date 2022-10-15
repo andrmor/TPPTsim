@@ -11,6 +11,8 @@
 #include "PesGenerationMode.hh"
 #include "ActivityGenerationMode.hh"
 #include "ActivityProfiler.hh"
+#include "AnnihilationLoggerMode.hh"
+#include "PesHistogramSource.hh"
 
 #include <chrono>
 
@@ -61,7 +63,7 @@ int main(int argc, char** argv)
 
         SM.Verbose          = false;
         SM.Debug            = false;
-        //SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
+        SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         // Phantom
         //SM.PhantomMode      = new PhantomNone;
@@ -79,6 +81,7 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::Brain);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
+        /*
         SM.DetectorComposition.add(DetComp::Scintillators);
         SM.DetectorComposition.add(DetComp::Base);
         SM.DetectorComposition.add(DetComp::ClosedStructure);
@@ -86,6 +89,7 @@ int main(int argc, char** argv)
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         SM.DetectorComposition.add(DetComp::CoolingAssemblies);
+        */
 
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
@@ -95,28 +99,31 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::Nozzle);
 
         // Source
-        SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 10); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
+        //SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 10); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
         //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
-        //SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 100.0*mm, 0*mm}, {0,-1.0,0});
+        SM.SourceMode       = new PencilBeam(new Proton(), new ConstantTime(0), {0*mm, 150.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
         //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
+        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0}, {200.0, 200.0, 200.0}, "G4_AIR");//, "derenzoLarge.txt");
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
+//        SM.SourceMode       = new PesHistogramSource("/home/andr/WORK/TPPT/PESGen", 1000);
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        //SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
-        //SM.SimMode          = new PesGenerationMode(100, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
+        SM.SimMode          = new PesGenerationMode(10000, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-        //SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
+//        SM.SimMode          = new PesProbabilityMode(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e10} });
+//        SM.SimMode          = new AnnihilationLoggerMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, "test.txt");
 
     // --- END of user init ---
     }
@@ -147,7 +154,7 @@ int main(int argc, char** argv)
 //SM.SimMode          = new PesGenerationMode(1e3, {1.0, 1.0, 1.0}, {101, 250, 101}, {-50.5, -200, -50.5}); // Direct PES mode; number of protons = events * last argument in PencilBeam!
 //SM.SimMode          = new ActivityProfilerMode({{0,194,1}}, {{417,418}}, "/home/andr/WORK/TPPT/ForStefaanIEEE", "bench");
 //SM.SimMode          = new DepoStatMode(1e6, 0.01, {0.05, 0.1});
-//SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;
+//SM.SimMode          = new ActivityGenerationMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
 
 //sources
 //SM.SourceMode       = new PointSource(new Gamma, new UniformTime(0, 500.0*s), {0, 0, 0});
@@ -160,3 +167,4 @@ int main(int argc, char** argv)
 //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
 //SM.SourceMode       = new PencilBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
 //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 194.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PMMA-E2
+//SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;

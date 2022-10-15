@@ -2,12 +2,12 @@
 #define activityprofilermode_h
 
 #include "SimMode.hh"
+#include "jstools.hh"
 
 #include <vector>
 #include <string>
 #include <array>
 
-// TODO -> move to a seprate file
 struct BeamTimeWindow
 {
     BeamTimeWindow(double from, double to) : From(from), To(to) {}
@@ -35,18 +35,6 @@ struct IsotopeDataRecord
     std::vector<std::string> SpatialFiles;
 };
 
-struct SpatialParameters
-{
-    std::array<double, 3> BinSize;
-    std::array<int,    3> NumBins;
-    std::array<double, 3> Origin;
-
-    bool operator!=(const SpatialParameters & other) const;
-
-    void read(const std::string & fileName);
-    void report();
-};
-
 class ActivityProfilerMode : public SimModeBase
 {
 public:
@@ -66,7 +54,7 @@ protected:
     std::vector<IsotopeDataRecord> IsotopeBase;
     double SumBeamFactors;
 
-    SpatialParameters Mapping;
+    BinningParameters Mapping;
 
     int numTimeRuns = 10000;
 

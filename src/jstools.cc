@@ -98,3 +98,61 @@ void jstools::readObject(const json11::Json &json, const std::string &key, json1
     }
     var = json[key].object_items();
 }
+
+bool BinningParameters::operator!=(const BinningParameters & other) const
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if (BinSize[i] != other.BinSize[i]) return true;
+        if (NumBins[i] != other.NumBins[i]) return true;
+        if (Origin[i]  != other.Origin[i])  return true;
+    }
+    return false;
+}
+
+#include <fstream>
+void BinningParameters::read(const std::string & fileName)
+{
+    std::ifstream in(fileName);
+    if (!in.good())
+    {
+        out("File", fileName, "does not exist or cannot be open!");
+        exit(1);
+    }
+
+    std::string line;
+    std::getline(in, line);
+    line.erase(0, 1);
+
+    std::string err;
+    json11::Json json = json11::Json::parse(line, err);
+    if (!err.empty())
+    {
+        out(err);
+        exit(2);
+    }
+
+    json11::Json::array bsar;
+    jstools::readArray(json, "BinSize", bsar);
+    if (bsar.size() < 3) {out("Cannot read BinSizes"); exit(3);}
+    for (int i=0; i<3; i++) BinSize[i] = bsar[i].number_value();
+
+    json11::Json::array nbar;
+    jstools::readArray(json, "NumBins", nbar);
+    if (nbar.size() < 3) {out("Cannot read NumBins"); exit(3);}
+    for (int i=0; i<3; i++) NumBins[i] = nbar[i].int_value();
+
+    json11::Json::array orar;
+    jstools::readArray(json, "Origin", orar);
+    if (orar.size() < 3) {out("Cannot read Origins"); exit(3);}
+    for (int i=0; i<3; i++) Origin[i] = orar[i].number_value();
+}
+
+void BinningParameters::report()
+{
+    out(
+          "BinSizes: (", BinSize[0],',',BinSize[1],',',BinSize[2],") ",
+          "NumBins:  (", NumBins[0],',',NumBins[1],',',NumBins[2],") ",
+          "Origin:   (", Origin[0], ',',Origin[1], ',',Origin[2], ") "
+        );
+}

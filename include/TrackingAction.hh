@@ -10,4 +10,11 @@ public:
     //void PostUserTrackingAction(const G4Track*) {}
 };
 
+class AnnihilationLoggerTrackingAction : public G4UserTrackingAction
+{
+public:
+    //void PreUserTrackingAction(const G4Track * track);
+    void PostUserTrackingAction(const G4Track * track);
+};
+
 #endif // trackingaction_h

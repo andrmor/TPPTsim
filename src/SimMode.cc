@@ -4,6 +4,8 @@
 #include "SensitiveDetectorScint.hh"
 #include "PesGenerationMode.hh"
 #include "ActivityGenerationMode.hh"
+#include "PesProbabilityMode.hh"
+#include "AnnihilationLoggerMode.hh"
 #include "Hist1D.hh"
 #include "out.hh"
 #include "jstools.hh"
@@ -37,6 +39,8 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
     else if (Type == "ActivityGenerationMode")sm = new ActivityGenerationMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
     else if (Type == "DepoStatMode")          sm = new DepoStatMode(0, 0.01, {0.05, 0.1});
+    else if (Type == "PesProbabilityMode")    sm = new PesProbabilityMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}});
+    else if (Type == "AnnihilationLoggerMode")sm = new AnnihilationLoggerMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
     else
     {
         out("Unknown simulation mode type!");

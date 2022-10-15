@@ -2,6 +2,7 @@
 #define fromfilesource_h
 
 #include "SourceMode.hh"
+#include "GeantParticleGenerator.hh"
 
 #include "G4ThreeVector.hh"
 
@@ -28,11 +29,11 @@ protected:
     void doReadFromJson(const json11::Json & json);
 
     void init();
-    G4ParticleDefinition * makeGeant4Particle(const std::string & particleName);
-    bool extractIonInfo(const std::string & text, int & Z, int & A, double & E);
 
     void prepareStream();
     void addPrimary(G4Event * anEvent);
+
+    GeantParticleGenerator ParticleGenerator;
 
     std::string FileName;
     bool bBinary = false;

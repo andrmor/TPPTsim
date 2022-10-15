@@ -1,7 +1,7 @@
 #ifndef activitygenerationmode_h
 #define activitygenerationmode_h
 
-#include "PesGenerationMode.hh"
+#include "PesProbabilityMode.hh"
 #include "SimMode.hh"
 #include "PesGenRecord.hh"
 
@@ -11,7 +11,7 @@
 
 class G4Track;
 
-class ActivityGenerationMode : public PesGenerationMode
+class ActivityGenerationMode : public PesProbabilityMode
 {
 public:
     ActivityGenerationMode(int numEvents,
@@ -30,15 +30,13 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
 private:
-    std::vector<std::pair<double,double>> TimeWindows;
     std::string FileName;
 
     // output data
     std::vector<std::vector<std::vector<double>>> Activity; // total number of decays in the defined time window
 
-    void doTriggerDirect(const G4Track * track);
+    bool doTrigger(const G4Track * track) override;
 
-    double calculateTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
     void   saveData();
     void   initActivityArray();
 };
