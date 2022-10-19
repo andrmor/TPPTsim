@@ -43,6 +43,7 @@ class SessionManager
         void startSession();
         void endSession();
 
+        void parseRunArguments(int argc, char** argv, std::string & filename);
         void configureGUI();
         void startGUI();
         void configureOutput();
@@ -88,6 +89,8 @@ class SessionManager
         bool bBinOutput        = false;
 
         int  Seed             = 0;      // long->int because of json11
+        int  SeedOverride     = 0;
+        bool UseSeedOverride  = false;
         bool Verbose          = false;
         bool Debug            = false;
         bool ShowEventNumber  = false;

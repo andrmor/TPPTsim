@@ -14,25 +14,17 @@
 #include "AnnihilationLoggerMode.hh"
 #include "PesHistogramSource.hh"
 
+#include <string>
 #include <chrono>
 
 int main(int argc, char** argv)
 {
-    std::string filename;
-    if (argc > 1)
-    {
-        filename = std::string(argv[1]);
-        out("\nLoading config from file:", filename);
-    }
-    else out("\nNo config file provided as argument, using configuration defined in the main of sim");
-
     SessionManager & SM = SessionManager::getInstance(); // side effect: outputs Geant4 version
 
-        // warning: automatically saves config in working directory as SimConfig.json
-        // beware of possible overwright!
+    std::string filename;  //= "/home/andr/WORK/TPPT/SimConfig1.json"; //here you can directly provide the config file name
+    // WARNING: the filename can be overriden with a command line arguments, e.g. sim -f /path/filename.json
 
-        //here you can directly provide the config file name
-    //filename = "/home/andr/WORK/TPPT/SimConfig1.json";
+    SM.parseRunArguments(argc, argv, filename); // checks for override of the random generator seed and config file name
 
     if (!filename.empty())
     {
@@ -43,7 +35,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed               = 1000;
+        SM.Seed = 1000;                // WARNING: the seed can be overriden with a command line argument, e.g. sim -s 123456
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         SM.UseStepLimiter     = true; SM.PhantomStepLimt = 1.0*mm;
@@ -81,7 +73,6 @@ int main(int argc, char** argv)
         //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::Brain);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
-        /*
         SM.DetectorComposition.add(DetComp::Scintillators);
         SM.DetectorComposition.add(DetComp::Base);
         SM.DetectorComposition.add(DetComp::ClosedStructure);
@@ -89,8 +80,6 @@ int main(int argc, char** argv)
         SM.DetectorComposition.add(DetComp::PCB);
         SM.DetectorComposition.add(DetComp::CopperStructure);
         SM.DetectorComposition.add(DetComp::CoolingAssemblies);
-        */
-
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
             // Obsolete components
@@ -113,29 +102,28 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0}, {200.0, 200.0, 200.0}, "G4_AIR");//, "derenzoLarge.txt");
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
-//        SM.SourceMode       = new PesHistogramSource("/home/andr/WORK/TPPT/PESGen", 1000);
+        //SM.SourceMode       = new PesHistogramSource("/home/andr/WORK/TPPT/PESGen", 1000);
 
         // Simulation mode
-        //SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new SimModeGui();
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(1e6, "SimOutput1e6.bin", true);
-        SM.SimMode          = new PesGenerationMode(10000, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
+        //SM.SimMode          = new PesGenerationMode(10000, "Pes.dat", false); // MC PES mode, number of protons = events * last argument in PencilBeam!
         //SM.SimMode          = new PesGenerationMode(SM.SourceMode->CountEvents(), "Pes.dat", false);
-//        SM.SimMode          = new PesProbabilityMode(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e10} });
-//        SM.SimMode          = new AnnihilationLoggerMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, "test.txt");
+        //SM.SimMode          = new PesProbabilityMode(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e10} });
+        //SM.SimMode          = new AnnihilationLoggerMode(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, "test.txt");
 
     // --- END of user init ---
     }
 
-    SM.startSession();
+    SM.startSession(); // warning: automatically saves config in working directory as SimConfig.json
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     SM.SimMode->run();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     out("Run time", (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count())*1e-6, "s");
     SM.endSession();
 }
-
 
 // examples of other simulation mode usage
 //SM.SimMode          = new SimModeShowEvent(119);

@@ -297,7 +297,10 @@ void SessionManager::configureOutput()
 
 void SessionManager::configureRandomGenerator()
 {
+    if (UseSeedOverride) Seed = SeedOverride; // can be overriden in command line arguments!
+
     randGen = new CLHEP::RanecuEngine();
+    out("---> Setting random generator seed to:", Seed);
     randGen->setSeed(Seed);
     G4Random::setTheEngine(randGen);
 }
@@ -333,6 +336,64 @@ void SessionManager::endSession()
     delete visManager;
     delete runManager;
     delete ui;
+}
+
+void SessionManager::parseRunArguments(int argc, char **argv, std::string & filename)
+{
+    if (argc > 1)
+    {
+        for (int iArg = 1; iArg < argc; iArg++)
+        {
+            std::string argStr = std::string(argv[iArg]);
+
+            if (argStr == "-h" || argStr == "-?" || argStr == "--help")
+            {
+                out("\n******************\nTPPT sim framefork\n******************\n");
+                out("If no arguments are provided, the default (compiled) options are used");
+                out("\nCommand line arguments:");
+                out("-h or -? or --help displays this help");
+                out("-f filename -> is used to run with configuration saved in the file");
+                out("-s integer_number -> is used to override the seed of the random generator");
+                out("config and seed can be configured together and in any order");
+                exit(0);
+            }
+
+            if (argStr == "-f")
+            {
+                if (iArg == argc - 1)
+                {
+                    out("-f argument requires a filename");
+                    exit(1122);
+                }
+                iArg++;
+
+                filename = std::string(argv[iArg]);
+                out("\n-----> Loading config from file:", filename, "<-----\n");
+            }
+            else if (argStr == "-s")
+            {
+                if (iArg == argc - 1)
+                {
+                    out("-s argument requires an integer number");
+                    exit(1122);
+                }
+                iArg++;
+
+                std::istringstream ss(argv[iArg]);
+                if (!(ss >> SeedOverride) || !ss.eof())
+                {
+                    out("Invalid seed:", argv[iArg]);
+                    exit(1122);
+                }
+                UseSeedOverride = true;
+            }
+            else
+            {
+                out("Unrecognized argument:", argStr, "\nUse -h argument to list possible options");
+                exit(1122);
+            }
+        }
+    }
 }
 
 #include <sys/types.h>
