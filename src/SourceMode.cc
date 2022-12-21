@@ -8,6 +8,7 @@
 #include "jstools.hh"
 #include "FromFileSource.hh"
 #include "PesHistogramSource.hh"
+#include "GammaPairFromAnnihilHist.hh"
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
@@ -24,15 +25,16 @@ SourceModeBase * SourceModeFactory::makeSourceModeInstance(const json11::Json & 
 
     SourceModeBase * sc = nullptr;
 
-    if      (Type == "PointSource")           sc = new PointSource(json);
-    else if (Type == "LineSource")            sc = new LineSource(json);
-    else if (Type == "PencilBeam")            sc = new PencilBeam(json);
-    else if (Type == "MaterialLimitedSource") sc = new MaterialLimitedSource(json);
-    else if (Type == "NaturalLysoSource")     sc = new NaturalLysoSource(json);
-    else if (Type == "BlurredPointSource")    sc = new BlurredPointSource(json);
-    else if (Type == "FromFileSource")        sc = new FromFileSource(json);
-    else if (Type == "MultiBeam")             sc = new MultiBeam(json);
-    else if (Type == "PesHistogramSource")    sc = new PesHistogramSource(json);
+    if      (Type == "PointSource")              sc = new PointSource(json);
+    else if (Type == "LineSource")               sc = new LineSource(json);
+    else if (Type == "PencilBeam")               sc = new PencilBeam(json);
+    else if (Type == "MaterialLimitedSource")    sc = new MaterialLimitedSource(json);
+    else if (Type == "NaturalLysoSource")        sc = new NaturalLysoSource(json);
+    else if (Type == "BlurredPointSource")       sc = new BlurredPointSource(json);
+    else if (Type == "FromFileSource")           sc = new FromFileSource(json);
+    else if (Type == "MultiBeam")                sc = new MultiBeam(json);
+    else if (Type == "PesHistogramSource")       sc = new PesHistogramSource(json);
+    else if (Type == "GammaPairFromAnnihilHist") sc = new GammaPairFromAnnihilHist(json);
     else
     {
         out("Unknown source type!");
