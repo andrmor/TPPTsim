@@ -30,9 +30,11 @@ PesHistogramSource::PesHistogramSource(const json11::Json & json) :
 
 void PesHistogramSource::init()
 {
-    IsotopeBase.push_back({ "C11", {"6_12_C11.txt", "8_16_C11.txt"} });
-    IsotopeBase.push_back({ "O15", {"8_16_O15.txt"} });
-    IsotopeBase.push_back({ "N13", {"8_16_N13.txt"} });
+    IsotopeBase.push_back({ "C11",  {"6_12_C11.txt", "8_16_C11.txt"} });
+    IsotopeBase.push_back({ "O15",  {"8_16_O15.txt"} });
+    IsotopeBase.push_back({ "N13",  {"8_16_N13.txt"} });
+    IsotopeBase.push_back({ "P31",  {"15_31_P30.txt"} });
+    IsotopeBase.push_back({ "Ca40", {"20_40_K38.txt"} });
 
     checkInputData();
 

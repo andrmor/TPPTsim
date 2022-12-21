@@ -273,7 +273,7 @@ bool PesGenerationMode::doTrigger(const G4Track * track)
 {
     const double stepLength = track->GetTrackLength() - LastTrackLength;
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);
-    //out("Step", stepLength, "MeanEenergy", meanEnergy, " Material index", LastMaterial);
+    //out("Step", stepLength, "MeanEnergy", meanEnergy, " Material index", LastMaterial);
 
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (!Records.empty())
