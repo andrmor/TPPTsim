@@ -11,7 +11,7 @@ class G4ParticleDefinition;
 class GammaPairFromAnnihilHist : public SourceModeBase
 {
 public:
-    GammaPairFromAnnihilHist(const std::string & histogramFileName, double activityMultiplier);
+    GammaPairFromAnnihilHist(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin);  // if not uniform, use bin center
     GammaPairFromAnnihilHist(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -27,8 +27,10 @@ protected:
     void init();
 
     std::string HistogramFileName;
-    double ActivityMultiplier;
-    const double TimeSpan = 1e20; // time span of uniform generator, in ns
+    double      ActivityMultiplier;
+    bool        GenerateUniformOverBin = false; // false = generate always in the bin center
+
+    static constexpr double TimeSpan = 10e9; // time span of uniform generator, in ns
 
     // run-time
     size_t CurrentIy = 0;

@@ -19,7 +19,7 @@ struct PesDataRecord
 class PesHistogramSource : public SourceModeBase
 {
 public:
-    PesHistogramSource(const std::string & directory, double multiplier);
+    PesHistogramSource(const std::string & directory, double multiplier, bool generateUniformOverBin);  // if not uniform, use bin center
     PesHistogramSource(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -37,7 +37,8 @@ protected:
     void checkInputData();
 
     std::string Directory;
-    double Multiplier;
+    double      Multiplier;
+    bool        GenerateUniformOverBin = false; // false = generate always in the bin center
 
     std::vector<PesDataRecord> IsotopeBase;
     size_t CurrentRecord = 0;
@@ -47,7 +48,7 @@ protected:
 
     GeantParticleGenerator ParticleGenerator;
 
-    const double TimeSpan = 1e20;
+    static constexpr double TimeSpan = 10e9; // in ns
 };
 
 #endif // peshistogramsource_h

@@ -13,8 +13,8 @@
 #include <iostream>
 #include <fstream>
 
-PesHistogramSource::PesHistogramSource(const std::string & directory, double multiplier) :
-    SourceModeBase(nullptr, nullptr), Directory(directory), Multiplier(multiplier)
+PesHistogramSource::PesHistogramSource(const std::string & directory, double multiplier, bool generateUniformOverBin) :
+    SourceModeBase(nullptr, nullptr), Directory(directory), Multiplier(multiplier), GenerateUniformOverBin(generateUniformOverBin)
 {
     init();
 }
@@ -96,9 +96,20 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
 
                 for (int iPart = 0; iPart < number; iPart++)
                 {
-                    const double x = binning.Origin[0] + (0.5 + ix) * binning.BinSize[0];
-                    const double y = binning.Origin[1] + (0.5 + iy) * binning.BinSize[1];
-                    const double z = binning.Origin[2] + (0.5 + iz) * binning.BinSize[2];
+                    double x, y, z;
+                    if (GenerateUniformOverBin)
+                    {
+                        x = binning.Origin[0] + (G4UniformRand() + ix) * binning.BinSize[0];
+                        y = binning.Origin[1] + (G4UniformRand() + iy) * binning.BinSize[1];
+                        z = binning.Origin[2] + (G4UniformRand() + iz) * binning.BinSize[2];
+                    }
+                    else // bin center
+                    {
+                        x = binning.Origin[0] + (0.5 + ix) * binning.BinSize[0];
+                        y = binning.Origin[1] + (0.5 + iy) * binning.BinSize[1];
+                        z = binning.Origin[2] + (0.5 + iz) * binning.BinSize[2];
+                    }
+
                     ParticleGun->SetParticlePosition( {x,y,z} );
 
                     ParticleGun->SetParticleTime(G4UniformRand() * TimeSpan);
@@ -125,12 +136,14 @@ double PesHistogramSource::CountEvents()
 
 void PesHistogramSource::doWriteToJson(json11::Json::object & json) const
 {
-    json["Directory"]  = Directory;
-    json["Multiplier"] = Multiplier;
+    json["Directory"]              = Directory;
+    json["Multiplier"]             = Multiplier;
+    json["GenerateUniformOverBin"] = GenerateUniformOverBin;
 }
 
 void PesHistogramSource::doReadFromJson(const json11::Json & json)
 {
-    jstools::readString(json, "Directory",  Directory);
-    jstools::readDouble(json, "Multiplier", Multiplier);
+    jstools::readString(json, "Directory",              Directory);
+    jstools::readDouble(json, "Multiplier",             Multiplier);
+    jstools::readBool  (json, "GenerateUniformOverBin", GenerateUniformOverBin);
 }
