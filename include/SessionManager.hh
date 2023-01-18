@@ -71,7 +71,7 @@ class SessionManager
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
-        PhantomModeBase  * PhantomMode   = nullptr;
+        PhantomModeBase  * Phantom   = nullptr;
 
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;

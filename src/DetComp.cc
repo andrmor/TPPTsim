@@ -8,6 +8,12 @@ void DetComp::set(const std::vector<std::string> & components)
     EnabledComponents = components;
 }
 
+void DetComp::add(const std::vector<std::string> & components)
+{
+    for (const std::string & comp : components)
+        EnabledComponents.push_back(comp);
+}
+
 void DetComp::add(const std::string & component)
 {
     EnabledComponents.push_back(component);

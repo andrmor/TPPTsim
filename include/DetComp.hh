@@ -29,6 +29,7 @@ private:
 
 public:
     void set(const std::vector<std::string> & components);
+    void add(const std::vector<std::string> & components);
     void add(const std::string & component);
 
     bool isValid(const std::string & component) const;

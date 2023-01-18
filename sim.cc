@@ -52,32 +52,19 @@ int main(int argc, char** argv)
         //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
 
         SM.WorkingDirectory  = "/home/andr/WORK/tmp";
-        //SM.WorkingDirectory = "/data/margarida/Data";
 
         SM.Verbose          = false;
         SM.Debug            = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         // Phantom
-        SM.PhantomMode      = new PhantomCylinder(100.0*mm, 300.0*mm, EMaterial::PMMA);
-        //SM.PhantomMode      = new PhantomEnergyCalibration;
-        //SM.PhantomMode      = new PhantomParam;
-        //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
-        //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
-        //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
-        //SM.PhantomMode      = new PhantomEspana();
-        //SM.PhantomMode      = new PhantomBauerGel();
+        SM.Phantom = new PhantomNone;
+        //SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
+        //SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
-        /*
-        SM.DetectorComposition.add(DetComp::Base);
-        SM.DetectorComposition.add(DetComp::ClosedStructure);
-        SM.DetectorComposition.add(DetComp::SIPM);
-        SM.DetectorComposition.add(DetComp::PCB);
-        SM.DetectorComposition.add(DetComp::CopperStructure);
-        SM.DetectorComposition.add(DetComp::CoolingAssemblies);
-        */
+        SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
             // Obsolete components
@@ -126,8 +113,15 @@ int main(int argc, char** argv)
 }
 
 // Examples of phantoms
-//SM.PhantomMode      = new PhantomNone;
-//SM.PhantomMode      = new PhantomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
+//SM.Phantom = new PhantomNone;
+//SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
+//SM.Phantom = new PhantomCylinder(200.0*mm, 200.0*mm, EMaterial::PMMA);
+//SM.Phantom = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
+//SM.Phantom = new PhantomEnergyCalibration;
+//      "hidden" ones
+//SM.Phantom = new PhantomEspana();
+//SM.Phantom = new PhantomBauerGel();
+//SM.Phantom = new PhantomParam;
 
 // examples of other simulation mode usage
 //SM.SimMode          = new SimModeShowEvent(119);

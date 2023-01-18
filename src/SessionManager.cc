@@ -63,7 +63,7 @@ void SessionManager::startSession()
         out("Simulation mode not provided!");
         exit(3);
     }
-    if (!PhantomMode)
+    if (!Phantom)
     {
         out("Phantom mode not provided!");
         exit(4);
@@ -109,7 +109,7 @@ void SessionManager::startSession()
 
 SessionManager::~SessionManager()
 {
-    delete PhantomMode;
+    delete Phantom;
     delete SourceMode;
     delete SimMode;
 }
@@ -451,8 +451,8 @@ void SessionManager::saveConfig(const std::string & fileName) const
     // Phantom
     {
         json11::Json::object js;
-        PhantomMode->writeToJson(js);
-        json["PhantomMode"] = js;
+        Phantom->writeToJson(js);
+        json["Phantom"] = js;
     }
 
     // Detector composition
@@ -543,8 +543,8 @@ void SessionManager::loadConfig(const std::string & fileName)
     // Phantom
     {
         json11::Json::object js;
-        jstools::readObject(json, "PhantomMode", js);
-        PhantomMode = PhantomModeFactory::makePhantomModeInstance(js);
+        jstools::readObject(json, "Phantom", js);
+        Phantom = PhantomModeFactory::makePhantomModeInstance(js);
     }
 
     // Detector composition
