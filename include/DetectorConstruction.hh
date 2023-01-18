@@ -17,7 +17,7 @@ public:
 private:
     void defineMaterials();
     void addGDML();
-    void addFSM();
+    void addParticleLogger();
     void addScintillators();
     void addBase();
     void addClosedStructure();

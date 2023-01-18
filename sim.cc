@@ -60,16 +60,15 @@ int main(int argc, char** argv)
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
         SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
-            // Need special care using the following component - might be not cumulative
-        //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
+        //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
         // Source
         //SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 10); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
-        SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
+        //SM.SourceMode       = new PencilBeam(new Geantino(), new ConstantTime(0), {0*mm, 0*mm, 3500.0*mm}, {0,0,-1.0});
 //        SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new UniformTime(0, 1e10), {0*mm, 150.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
-        //SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
+        SM.SourceMode       = new Na22point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new GammaPair, new UniformTime(0, 1e10), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new LineSource(new GammaPair, new UniformTime(0, 1e10), {0, -50.0, 0.0}, {0, 50.0, 0.0});
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0});
@@ -83,7 +82,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new GammaPairFromAnnihilHist("/home/andr/WORK/TPPT/PESGen/test100.txt", 1, true);
 
         // Simulation mode
-        SM.SimMode          = new SimModeGui();
+        SM.SimMode          = new ModeGui();
+        //SM.SimMode          = new ModeParticleLogger(20, "TestParticleSaver.txt", false);
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
         //SM.SimMode          = new SimModeMultipleEvents(SM.SourceMode->CountEvents(), "FromProb-1000m.txt", false);

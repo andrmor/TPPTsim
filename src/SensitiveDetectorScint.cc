@@ -40,7 +40,7 @@ G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4Toucha
     if (edep == 0) return true;
 
     SessionManager & SM = SessionManager::getInstance();
-    SimModeMultipleEvents * Mode = static_cast<SimModeMultipleEvents*>(SM.SimMode);
+    ModeDepositionScint * Mode = static_cast<ModeDepositionScint*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
     const G4StepPoint * preP   = step->GetPreStepPoint();

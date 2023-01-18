@@ -50,26 +50,26 @@ protected:
 
 // ---
 
-class SimModeGui : public SimModeBase
+class ModeGui : public SimModeBase
 {
 public:
-    SimModeGui();
+    ModeGui();
 
     void run() override;
-    std::string getTypeName() const override {return "SimModeGui";}
+    std::string getTypeName() const override {return "ModeGui";}
 };
 
 // ---
 
-class DoseExtractorMode : public SimModeBase
+class ModeDoseExtractor : public SimModeBase
 {
 public:
-    DoseExtractorMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
+    ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
 
     void fill(double energy, const G4ThreeVector & pos);
 
     void run() override;
-    std::string getTypeName() const override {return "DoseExtractorMode";}
+    std::string getTypeName() const override {return "ModeDoseExtractor";}
     G4UserSteppingAction * getSteppingAction() override;
     void readFromJson(const json11::Json & json) override;
 
@@ -135,13 +135,13 @@ protected:
 
 // ---
 
-class SimModeShowEvent : public SimModeGui
+class ModeShowEvent : public ModeGui
 {
 public:
-    SimModeShowEvent(int EventToShow);
+    ModeShowEvent(int EventToShow);
 
     void run() override;
-    std::string getTypeName() const override {return "SimModeShowEvent";}
+    std::string getTypeName() const override {return "ModeShowEvent";}
     void readFromJson(const json11::Json & json) override;
 
 protected:
@@ -197,16 +197,16 @@ struct DepositionNodeRecord
     double        time;
     double        energy;
 };
-class SimModeMultipleEvents : public SimModeBase
+class ModeDepositionScint : public SimModeBase
 {
 public:
-    SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary,
+    ModeDepositionScint(int numEvents, const std::string & fileName, bool binary,
                           size_t maxCapacity = 10000, bool doCluster  = true, double maxTimeDif  = 0.01*ns);
 
     void run() override;
     G4VSensitiveDetector * getScintDetector() override;
     void saveData(); // can be called multiple times!
-    std::string getTypeName() const override {return "SimModeMultipleEvents";}
+    std::string getTypeName() const override {return "ModeDepositionScint";}
     void readFromJson(const json11::Json & json) override;
 
 protected:
@@ -224,14 +224,14 @@ public:
 
 // ---
 
-class SimModeTracing : public SimModeGui
+class ModeTracing : public ModeGui
 {
 public:
-    SimModeTracing();
+    ModeTracing();
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
-    std::string getTypeName() const override {return "SimModeTracing";}
+    std::string getTypeName() const override {return "ModeTracing";}
 };
 
 // ---
@@ -322,16 +322,16 @@ protected:
 
 // ---
 
-class SimModeFirstStage : public SimModeBase
+class ModeParticleLogger : public SimModeBase
 {
 public:
-    SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary);
+    ModeParticleLogger(int numEvents, const std::string & fileName, bool bBinary);
 
     void saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time);
 
     void run() override;
     void onEventStarted() override;
-    std::string getTypeName() const override {return "SimModeFirstStage";}
+    std::string getTypeName() const override {return "ModeParticleLogger";}
     void readFromJson(const json11::Json & json) override;
 
 protected:

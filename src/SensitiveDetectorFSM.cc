@@ -24,7 +24,7 @@ G4bool SensitiveDetectorFSM::ProcessHits(G4Step * step, G4TouchableHistory *)
     buf[4] = dir[1];
     buf[5] = dir[2];
 
-    SimModeFirstStage * mode = dynamic_cast<SimModeFirstStage*>(SM.SimMode);
+    ModeParticleLogger * mode = dynamic_cast<ModeParticleLogger*>(SM.SimMode);
     if (mode)
     {
         mode->saveParticle(step->GetTrack()->GetParticleDefinition()->GetParticleName(),

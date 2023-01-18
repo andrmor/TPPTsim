@@ -25,17 +25,17 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
     SimModeBase * sm = nullptr;
 
-    if      (Type == "SimModeGui")            sm = new SimModeGui();
-    else if (Type == "SimModeShowEvent")      sm = new SimModeShowEvent(0);
-    else if (Type == "DoseExtractorMode")     sm = new DoseExtractorMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+    if      (Type == "ModeGui")             sm = new ModeGui();
+    else if (Type == "ModeShowEvent")       sm = new ModeShowEvent(0);
+    else if (Type == "ModeDoseExtractor")   sm = new ModeDoseExtractor(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+    else if (Type == "ModeParticleLogger")  sm = new ModeParticleLogger(0, "dummy.txt", false);
+    else if (Type == "ModeDepositionScint") sm = new ModeDepositionScint(0, "dummy.txt", false);
+    else if (Type == "ModeTracing")         sm = new ModeTracing();
     else if (Type == "SimModeScintPosTest")   sm = new SimModeScintPosTest();
     else if (Type == "SimModeSingleEvents")   sm = new SimModeSingleEvents(0);
-    else if (Type == "SimModeMultipleEvents") sm = new SimModeMultipleEvents(0, "dummy.txt", false);
-    else if (Type == "SimModeTracing")        sm = new SimModeTracing();
     else if (Type == "SimModeAcollinTest")    sm = new SimModeAcollinTest(0, 0, 1, "dummy.txt");
     else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, "dummy.txt", false);
     else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
-    else if (Type == "SimModeFirstStage")     sm = new SimModeFirstStage(0, "dummy.txt", false);
     else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
     else if (Type == "ActivityGenerationMode")sm = new ActivityGenerationMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
     else if (Type == "DepoStatMode")          sm = new DepoStatMode(0, 0.01, {0.05, 0.1});
@@ -62,13 +62,13 @@ void SimModeBase::writeToJson(json11::Json::object & json) const
 
 // ---
 
-SimModeGui::SimModeGui()
+ModeGui::ModeGui()
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeGui::run()
+void ModeGui::run()
 {
     SessionManager& SM = SessionManager::getInstance();
     SM.startGUI();
@@ -76,13 +76,13 @@ void SimModeGui::run()
 
 // ---
 
-DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
+ModeDoseExtractor::ModeDoseExtractor(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
     NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin), FileName(fileName)
 {
     init();
 }
 
-void DoseExtractorMode::init()
+void ModeDoseExtractor::init()
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -100,19 +100,19 @@ void DoseExtractorMode::init()
     }
 }
 
-void DoseExtractorMode::run()
+void ModeDoseExtractor::run()
 {
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
     saveArray();
 }
 
-G4UserSteppingAction * DoseExtractorMode::getSteppingAction()
+G4UserSteppingAction * ModeDoseExtractor::getSteppingAction()
 {
     return new SteppingAction_Dose();
 }
 
-void DoseExtractorMode::readFromJson(const json11::Json & json)
+void ModeDoseExtractor::readFromJson(const json11::Json & json)
 {
     SessionManager & SM = SessionManager::getInstance();
     jstools::readInt(json, "NumEvents", NumEvents);
@@ -140,7 +140,7 @@ void DoseExtractorMode::readFromJson(const json11::Json & json)
     init();
 }
 
-void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
+void ModeDoseExtractor::writeBinningToJson(json11::Json::object & json) const
 {
     //BinSize
     {
@@ -162,7 +162,7 @@ void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
     }
 }
 
-void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
+void ModeDoseExtractor::doWriteToJson(json11::Json::object & json) const
 {
     SessionManager & SM = SessionManager::getInstance();
     json["NumEvents"] = NumEvents;
@@ -171,7 +171,7 @@ void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
     writeBinningToJson(json);
 }
 
-void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos)
+void ModeDoseExtractor::fill(double energy, const G4ThreeVector & pos)
 {
     std::array<int,3> index; // on stack, fast
     const bool ok = getVoxel(pos, index);
@@ -180,7 +180,7 @@ void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos)
     DepositionMeV[index[0]][index[1]][index[2]] += energy;
 }
 
-bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
+bool ModeDoseExtractor::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -190,7 +190,7 @@ bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & 
     return true;
 }
 
-void DoseExtractorMode::saveArray()
+void ModeDoseExtractor::saveArray()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -470,25 +470,25 @@ void EnergyCalibrationMode::calibrate()
 
 // ---
 
-SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
+ModeShowEvent::ModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeShowEvent::run()
+void ModeShowEvent::run()
 {
     SessionManager& SM = SessionManager::getInstance();
     if (iEvent != 0) SM.runManager->BeamOn(iEvent);
-    SimModeGui::run();
+    ModeGui::run();
 }
 
-void SimModeShowEvent::readFromJson(const json11::Json & json)
+void ModeShowEvent::readFromJson(const json11::Json & json)
 {
     jstools::readInt(json, "iEvent", iEvent);
 }
 
-void SimModeShowEvent::doWriteToJson(json11::Json::object & json) const
+void ModeShowEvent::doWriteToJson(json11::Json::object & json) const
 {
     json["iEvent"] = iEvent;
 }
@@ -593,7 +593,7 @@ void SimModeSingleEvents::doWriteToJson(json11::Json::object & json) const
 
 // ---
 
-SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary,
+ModeDepositionScint::ModeDepositionScint(int numEvents, const std::string & fileName, bool binary,
                                              size_t maxCapacity, bool doCluster, double maxTimeDif) :
     NumEvents(numEvents), MaxCapacity(maxCapacity), bDoCluster(doCluster), MaxTimeDif(maxTimeDif)
 {
@@ -605,7 +605,7 @@ SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & 
     SM.FileName    = fileName;
 }
 
-void SimModeMultipleEvents::run()
+void ModeDepositionScint::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -626,12 +626,12 @@ void SimModeMultipleEvents::run()
     }
 }
 
-G4VSensitiveDetector *SimModeMultipleEvents::getScintDetector()
+G4VSensitiveDetector *ModeDepositionScint::getScintDetector()
 {
     return new SensitiveDetectorScint_MultipleEvents("SD");
 }
 
-void SimModeMultipleEvents::saveData()
+void ModeDepositionScint::saveData()
 {
     SessionManager& SM = SessionManager::getInstance();
     const int numScint = SM.countScintillators();
@@ -674,7 +674,7 @@ void SimModeMultipleEvents::saveData()
     }
 }
 
-void SimModeMultipleEvents::readFromJson(const json11::Json &json)
+void ModeDepositionScint::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -689,7 +689,7 @@ void SimModeMultipleEvents::readFromJson(const json11::Json &json)
     MaxCapacity = iMaxCapacity;
 }
 
-void SimModeMultipleEvents::doWriteToJson(json11::Json::object &json) const
+void ModeDepositionScint::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -719,18 +719,18 @@ bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double m
 
 // ---
 
-SimModeTracing::SimModeTracing()
+ModeTracing::ModeTracing()
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeTracing::run()
+void ModeTracing::run()
 {
-    SimModeGui::run();
+    ModeGui::run();
 }
 
-G4UserSteppingAction * SimModeTracing::getSteppingAction()
+G4UserSteppingAction * ModeTracing::getSteppingAction()
 {
     return new SteppingAction_Tracing;
 }
@@ -974,7 +974,7 @@ void SimModeNatRadTest::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary) :
+ModeParticleLogger::ModeParticleLogger(int numEvents, const std::string & fileName, bool bBinary) :
     NumEvents(numEvents)
 {
     bNeedOutput = true;
@@ -984,14 +984,14 @@ SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName
     SM.bBinOutput = bBinary;
 }
 
-void SimModeFirstStage::run()
+void ModeParticleLogger::run()
 {
     CurrentEvent = 0;
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
 }
 
-void SimModeFirstStage::saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time)
+void ModeParticleLogger::saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -1018,7 +1018,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy_ke
     //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
 }
 
-void SimModeFirstStage::onEventStarted()
+void ModeParticleLogger::onEventStarted()
 {
     SessionManager & SM = SessionManager::getInstance();
     if (SM.bBinOutput)
@@ -1032,7 +1032,7 @@ void SimModeFirstStage::onEventStarted()
     CurrentEvent++;
 }
 
-void SimModeFirstStage::readFromJson(const json11::Json &json)
+void ModeParticleLogger::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -1041,7 +1041,7 @@ void SimModeFirstStage::readFromJson(const json11::Json &json)
     jstools::readBool  (json, "bBinary",   SM.bBinOutput);
 }
 
-void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
+void ModeParticleLogger::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
