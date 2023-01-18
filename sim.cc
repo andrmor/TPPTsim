@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 {
     SessionManager & SM = SessionManager::getInstance(); // side effect: outputs Geant4 version
 
-    std::string filename  = "/home/andr/WORK/tmp/SimConfigBox.json"; //here you can directly provide the config file name
+    std::string filename;//  = "/home/andr/WORK/tmp/SimConfigBox.json"; //here you can directly provide the config file name
     // WARNING: the filename can be overriden with a command line arguments, e.g. sim -f /path/filename.json
 
     SM.parseRunArguments(argc, argv, filename); // checks for override of the random generator seed and config file name
@@ -59,19 +59,14 @@ int main(int argc, char** argv)
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         // Phantom
-        SM.PhantomMode      = new PhantomNone;
-        //SM.PhantomMode      = new PhantomPMMA;
+        SM.PhantomMode      = new PhantomCylinder(100.0*mm, 300.0*mm, EMaterial::PMMA);
         //SM.PhantomMode      = new PhantomEnergyCalibration;
         //SM.PhantomMode      = new PhantomParam;
         //SM.PhantomMode      = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
         //SM.PhantomMode      = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
-        //SM.PhantomMode      = new PhantomCustomBox(150.0, 200.0, 150.0, PhantomCustomBox::HDPE);
         //SM.PhantomMode      = new PhantomEspana();
-        //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
         //SM.PhantomMode      = new PhantomBauerGel();
-//        SM.PhantomMode      = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PMMA);
-        //SM.PhantomMode      = new PhantomCustomBox(90.0, 300.0, 90.0, PhantomCustomBox::Brain);
 
         // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -129,6 +124,10 @@ int main(int argc, char** argv)
     out("Run time", (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count())*1e-6, "s");
     SM.endSession();
 }
+
+// Examples of phantoms
+//SM.PhantomMode      = new PhantomNone;
+//SM.PhantomMode      = new PhantomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
 
 // examples of other simulation mode usage
 //SM.SimMode          = new SimModeShowEvent(119);

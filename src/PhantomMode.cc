@@ -28,8 +28,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     PhantomModeBase * ph = nullptr;
 
     if      (Type == "PhantomNone")      ph = new PhantomNone();
-    else if (Type == "PhantomPMMA")      ph = new PhantomPMMA();
-    else if (Type == "PhantomTinyCube")  ph = new PhantomTinyCube();
+    else if (Type == "PhantomCylinder")  ph = new PhantomCylinder();
     else if (Type == "PhantomBox")       ph = new PhantomBox();
     else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")     ph = new PhantomParam();
@@ -57,24 +56,36 @@ void PhantomModeBase::writeToJson(json11::Json::object & json) const
 
 // ---
 
-G4LogicalVolume * PhantomPMMA::definePhantom(G4LogicalVolume * logicWorld)
+PhantomCylinder::PhantomCylinder(double diameter, double length, EMaterial material) :
+    Diameter(diameter), Length(length), Material(material) {}
+
+G4LogicalVolume * PhantomCylinder::definePhantom(G4LogicalVolume * logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
-    G4NistManager * man = G4NistManager::Instance();
+    G4Material * mat = MaterialBuilder::build(Material);
 
-    std::vector<G4int> natoms;
-    std::vector<G4String> elements;
-    elements.push_back("C"); natoms.push_back(5);
-    elements.push_back("H"); natoms.push_back(8);
-    elements.push_back("O"); natoms.push_back(2);
-    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
-
-    G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 100.0*mm, 100.0*mm, 0, 360.0*deg);
-    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
+    G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 0.5*Diameter, 0.5*Length, 0, 360.0*deg);
+    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, mat, "Phantom");
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
     logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
 
     return logicPmma;
+}
+
+void PhantomCylinder::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "Diameter", Diameter);
+    jstools::readDouble(json, "Length",   Length);
+
+    MaterialBuilder::readFromJson(json, Material);
+}
+
+void PhantomCylinder::doWriteToJson(json11::Json::object & json) const
+{
+    json["Diameter"] = Diameter;
+    json["Length"]   = Length;
+
+    MaterialBuilder::writeToJson(Material, json);
 }
 
 // ---
@@ -84,11 +95,12 @@ PhantomBox::PhantomBox(double sizeX, double sizeY, double sizeZ, EMaterial mater
 
 G4LogicalVolume * PhantomBox::definePhantom(G4LogicalVolume * logicWorld)
 {
+    SessionManager & SM = SessionManager::getInstance();
     G4Material * mat = MaterialBuilder::build(Material);
 
     G4VSolid          * solid = new G4Box("Phantom_Box", 0.5 * SizeX * mm, 0.5 * SizeY * mm, 0.5 * SizeZ * mm);
     G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
-    new G4PVPlacement(nullptr, {0, 0, 0}, logic, "Phantom_PV", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logic, "Phantom_PV", logicWorld, false, 0);
     logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
 
     return logic;
@@ -110,28 +122,6 @@ void PhantomBox::doWriteToJson(json11::Json::object & json) const
     json["SizeZ"] = SizeZ;
 
     MaterialBuilder::writeToJson(Material, json);
-}
-
-// ---
-
-G4LogicalVolume * PhantomTinyCube::definePhantom(G4LogicalVolume * logicWorld)
-{
-    SessionManager & SM = SessionManager::getInstance();
-    G4NistManager * man = G4NistManager::Instance();
-
-    std::vector<G4int> natoms;
-    std::vector<G4String> elements;
-    elements.push_back("C"); natoms.push_back(5);
-    elements.push_back("H"); natoms.push_back(8);
-    elements.push_back("O"); natoms.push_back(2);
-    G4Material * matPMMA = man->ConstructNewMaterial("PMMA_phantom", elements, natoms, 1.18*g/cm3);
-
-    G4VSolid          * solidPmma = new G4Box("Box", 3.0*mm, 3.0*mm, 3.0*mm);
-    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom");
-    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
-    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
-
-    return logicPmma;
 }
 
 // ---

@@ -1,6 +1,7 @@
 #ifndef PhantomMode_h
 #define PhantomMode_h
 
+#include "MaterialBuilder.hh"
 #include "json11.hh"
 
 #include <string>
@@ -40,14 +41,25 @@ class PhantomNone : public PhantomModeBase
 
 // ---
 
-class PhantomPMMA : public PhantomModeBase
+class PhantomCylinder : public PhantomModeBase
 {
 public:
-    std::string getTypeName() const override {return "PhantomPMMA";}
+    PhantomCylinder(double diameter, double length, EMaterial material);
+    PhantomCylinder(){}
+
+    std::string getTypeName() const override {return "PhantomCylinder";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    double Diameter = 200.0;
+    double Length   = 200.0;
+    EMaterial Material = EMaterial::PMMA;
 };
 
-#include "MaterialBuilder.hh"
 class PhantomBox : public PhantomModeBase
 {
 public:
@@ -62,19 +74,10 @@ public:
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
-    double SizeX = 100;
-    double SizeY = 100;
-    double SizeZ = 100;
+    double SizeX = 100.0;
+    double SizeY = 100.0;
+    double SizeZ = 100.0;
     EMaterial Material = EMaterial::PMMA;
-};
-
-// ---
-
-class PhantomTinyCube : public PhantomModeBase
-{
-public:
-    std::string getTypeName() const override {return "PhantomTinyCube";}
-    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 // ---
