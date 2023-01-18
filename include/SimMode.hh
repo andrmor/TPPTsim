@@ -224,17 +224,17 @@ struct DirAndEnergy
     G4ThreeVector dir;
     double        energy;
 };
-class SimModeAcollinTest : public SimModeBase
+class ModeTestAcollinearity : public SimModeBase
 {
 public:
-    SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName); //range: degrees from 180.0
-    ~SimModeAcollinTest();
+    ModeTestAcollinearity(int numRuns, double range, int numBins, const std::string & fileName); //range: degrees from 180.0
+    ~ModeTestAcollinearity();
 
     void addDirection(const G4ThreeVector & v, int parentID, double energy);
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
-    std::string getTypeName() const override {return "SimModeAcollinTest";}
+    std::string getTypeName() const override {return "ModeTestAcollinearity";}
     void readFromJson(const json11::Json & json) override;
 
 protected:
@@ -255,16 +255,16 @@ protected:
 
 // ---
 
-class SimModeAnnihilTest : public SimModeBase
+class ModeTestAnnihilations : public SimModeBase
 {
 public:
-    SimModeAnnihilTest(int numEvents, double timeStart, const std::string & fileName, bool binary);
+    ModeTestAnnihilations(int numEvents, double timeStart, const std::string & fileName, bool binary);
 
     void saveRecord(const G4ThreeVector & pos, double timeInSeconds);
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
-    std::string getTypeName() const override {return "SimModeAnnihilTest";}
+    std::string getTypeName() const override {return "ModeTestAnnihilations";}
     void readFromJson(const json11::Json & json) override;
 
     int    NumEvents = 1;
@@ -276,17 +276,17 @@ protected:
 
 // ---
 
-class SimModeNatRadTest : public SimModeBase
+class ModeTestLysoNatRad : public SimModeBase
 {
 public:
-    SimModeNatRadTest(int numEvents, int numBins, const std::string & fileName);
-    ~SimModeNatRadTest();
+    ModeTestLysoNatRad(int numEvents, int numBins, const std::string & fileName);
+    ~ModeTestLysoNatRad();
 
     void addEnergy(int iScint, double energy);
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
-    std::string getTypeName() const override {return "SimModeNatRadTest";}
+    std::string getTypeName() const override {return "ModeTestLysoNatRad";}
     void readFromJson(const json11::Json & json) override;
 
 protected:
@@ -331,12 +331,12 @@ struct DepoStatRec
     double energy;
     double time;
 };
-class DepoStatMode : public SimModeBase
+class ModeTestDepositionStat : public SimModeBase
 {
 public:
-    DepoStatMode(int numEvents, double thresholdMeV = 0.01, std::vector<double> Ranges = {0.05, 0.1}); // energy windows are 0.511 +- Range[i]
+    ModeTestDepositionStat(int numEvents, double thresholdMeV = 0.01, std::vector<double> Ranges = {0.05, 0.1}); // energy windows are 0.511 +- Range[i]
 
-    std::string getTypeName() const override {return "DepoStatMode";}
+    std::string getTypeName() const override {return "ModeTestDepositionStat";}
     void readFromJson(const json11::Json & json) override;
 
     G4UserSteppingAction * getSteppingAction() override;

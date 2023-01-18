@@ -166,7 +166,7 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
     //step->GetTrack()->SetTrackStatus(fStopAndKill);
     */
 
-    SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
+    ModeTestAcollinearity * Mode = static_cast<ModeTestAcollinearity*>(SM.SimMode);
     Mode->addDirection(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
 }
 
@@ -191,7 +191,7 @@ void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step * step)
     if (proc->GetProcessType() != fElectromagnetic) return;
     if (proc->GetProcessSubType() != 5) return;
 
-    SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
+    ModeTestAnnihilations * Mode = static_cast<ModeTestAnnihilations*>(SM.SimMode);
     const double time = postP->GetGlobalTime()/s;
     if (time < Mode->TimeStart) return;
 
@@ -223,7 +223,7 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
     const int iScint = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
                                    : postP->GetPhysicalVolume()->GetCopyNo() );
 
-    SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
+    ModeTestLysoNatRad * Mode = static_cast<ModeTestLysoNatRad*>(SM.SimMode);
     Mode->addEnergy(iScint, depo);
 }
 
@@ -253,6 +253,6 @@ void SteppingAction_DepoStatMode::UserSteppingAction(const G4Step * step)
 
     const int iScint = referenceVolume->GetCopyNo();
 
-    DepoStatMode * Mode = static_cast<DepoStatMode*>(SM.SimMode);
+    ModeTestDepositionStat * Mode = static_cast<ModeTestDepositionStat*>(SM.SimMode);
     Mode->addRecord(iScint, depo, postP->GetGlobalTime());
 }
