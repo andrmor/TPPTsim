@@ -47,15 +47,14 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
-class PhantomCustomBox : public PhantomModeBase
+#include "MaterialBuilder.hh"
+class PhantomBox : public PhantomModeBase
 {
 public:
-    enum EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater, Bone, Brain, Blood, Muscle, Tissue};
+    PhantomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
+    PhantomBox(){}
 
-    PhantomCustomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
-    PhantomCustomBox(){}
-
-    std::string getTypeName() const override {return "PhantomCustomBox";}
+    std::string getTypeName() const override {return "PhantomBox";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
     void readFromJson(const json11::Json & json) override;
@@ -66,7 +65,7 @@ protected:
     double SizeX = 100;
     double SizeY = 100;
     double SizeZ = 100;
-    EMaterial Material = HDPE;
+    EMaterial Material = EMaterial::PMMA;
 };
 
 // ---
