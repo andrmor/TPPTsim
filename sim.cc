@@ -48,9 +48,6 @@ int main(int argc, char** argv)
         SM.CutScintElectron   = 0.1 *mm;
         SM.CutScintPositron   = 0.1 *mm;
 
-        //double timeFrom = 0;
-        //double timeTo   = 1e-5*s;  // currently implemented only for the natural rad from LYSO!
-
         SM.WorkingDirectory  = "/home/andr/WORK/tmp";
 
         SM.Verbose          = false;
@@ -58,19 +55,13 @@ int main(int argc, char** argv)
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         // Phantom
-        SM.Phantom = new PhantomNone;
-        //SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
-        //SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
+        SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PMMA);
 
-        // Enabled detector components - it is also possible to use .set( {comp1, comp2, ...} )
+        // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
         SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
             // Need special care using the following component - might be not cumulative
         //SM.DetectorComposition.add(DetComp::FirstStageMonitor);
-            // Obsolete components
-        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "/home/margarida/Downloads/GDML_version3/mother.gdml";
-        //SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
-        //SM.DetectorComposition.add(DetComp::Nozzle);
 
         // Source
         //SM.SourceMode       = new MultiBeam(new Proton(), "/home/andr/WORK/TPPT/MultiBeam/BeamletData.txt", 10); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
@@ -84,7 +75,7 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "der.txt");
-        //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo);
+        //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo); //double timeFrom = 0; //double timeTo   = 1e-5*s;
         //SM.SourceMode       = new FromFileSource("/home/andr/WORK/TPPT/FirstStage.bin", true);
         //SM.SourceMode       = new MaterialLimitedSource(new GammaPair, new UniformTime(0, 500.0*s), {0, 0, 0}, {200.0, 200.0, 200.0}, "G4_AIR");//, "derenzoLarge.txt");
         //SM.SourceMode       = new CylindricalSource(new GammaPair, new UniformTime(0, 500.0*s), 0.5*330, {0,0,-0.5*105}, {0,0,0.5*105});//, "testPos.txt" );
@@ -114,11 +105,13 @@ int main(int argc, char** argv)
 
 // Examples of phantoms
 //SM.Phantom = new PhantomNone;
-//SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, PhantomCustomBox::PE);
 //SM.Phantom = new PhantomCylinder(200.0*mm, 200.0*mm, EMaterial::PMMA);
+//SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PE);
 //SM.Phantom = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
-//SM.Phantom = new PhantomEnergyCalibration;
+//SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
+//SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
 //      "hidden" ones
+//SM.Phantom = new PhantomEnergyCalibration;
 //SM.Phantom = new PhantomEspana();
 //SM.Phantom = new PhantomBauerGel();
 //SM.Phantom = new PhantomParam;
@@ -154,3 +147,7 @@ int main(int argc, char** argv)
 //SM.SourceMode       = new PencilBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
 //SM.SourceMode       = new PencilBeam(new Proton(125.67*MeV), new UniformTime(0, 194.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PMMA-E2
 //SM.SourceMode       = new MultiBeam(new Proton(), { {100.0*MeV, 0,-25.0, 100.0*ns,1.0*ns, 10000}, {160.0*MeV, 0,20.0, 100.0*ns,1.0*ns, 10000} }); // Energy, XIsoCenter, ZIsoCenter, TimeStart, TimeSpan, NumParticles;
+
+// Obsolete components
+//SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
+//SM.DetectorComposition.add(DetComp::Nozzle);
