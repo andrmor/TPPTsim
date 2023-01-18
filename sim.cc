@@ -82,7 +82,9 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new GammaPairFromAnnihilHist("/home/andr/WORK/TPPT/PESGen/test100.txt", 1, true);
 
         // Simulation mode
-        SM.SimMode          = new ModeGui();
+        //SM.SimMode          = new ModeGui();
+        SM.SimMode          = new ModeTestScintPositions();
+
         //SM.SimMode          = new ModeParticleLogger(20, "TestParticleSaver.txt", false);
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");

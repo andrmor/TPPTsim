@@ -31,8 +31,8 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "ModeParticleLogger")  sm = new ModeParticleLogger(0, "dummy.txt", false);
     else if (Type == "ModeDepositionScint") sm = new ModeDepositionScint(0, "dummy.txt", false);
     else if (Type == "ModeTracing")         sm = new ModeTracing();
-    else if (Type == "SimModeScintPosTest")   sm = new SimModeScintPosTest();
-    else if (Type == "SimModeSingleEvents")   sm = new SimModeSingleEvents(0);
+      // tests
+    else if (Type == "ModeTestScintPositions")   sm = new ModeTestScintPositions();
     else if (Type == "SimModeAcollinTest")    sm = new SimModeAcollinTest(0, 0, 1, "dummy.txt");
     else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, "dummy.txt", false);
     else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
@@ -495,13 +495,13 @@ void ModeShowEvent::doWriteToJson(json11::Json::object & json) const
 
 // ---
 
-SimModeScintPosTest::SimModeScintPosTest()
+ModeTestScintPositions::ModeTestScintPositions()
 {
     bNeedGui    = false;
     bNeedOutput = false;
 }
 
-void SimModeScintPosTest::run()
+void ModeTestScintPositions::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -512,83 +512,9 @@ void SimModeScintPosTest::run()
     out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
 }
 
-G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
+G4UserSteppingAction * ModeTestScintPositions::getSteppingAction()
 {
     return new SteppingAction_ScintPosTest;
-}
-
-// ---
-
-SimModeSingleEvents::SimModeSingleEvents(int numEvents) : NumEvents(numEvents)
-{
-    bNeedGui    = false;
-    bNeedOutput = true;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.FileName = "Coincidence-GammaPairs-Test1.txt";
-}
-
-void SimModeSingleEvents::run()
-{
-    SessionManager& SM = SessionManager::getInstance();
-
-    const double EnergyThreshold = 0.500*MeV;
-
-    const int NumScint = SM.countScintillators();
-    for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
-    std::vector<int> hits;
-
-    for (int iRun = 0; iRun < NumEvents; iRun++)
-    {
-        SM.runManager->BeamOn(1);
-
-        hits.clear();
-        for (int iScint = 0; iScint < NumScint; iScint++)
-            if (ScintData[iScint][1] > EnergyThreshold)
-                hits.push_back(iScint);
-
-        if (hits.size() == 2)
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                const int iScint = hits[i];
-                const double Time   = ScintData[iScint][0] / ns;
-                const double Energy = ScintData[iScint][1] / MeV;
-                const G4ThreeVector & Pos   = SM.ScintRecords.at(iScint).FacePos;
-                const double X = Pos[0] / mm;
-                const double Y = Pos[1] / mm;
-                const double Z = Pos[2] / mm;
-
-                out("Scint#",iScint, Time,"ns ", Energy, "MeV  xyz: (",X,Y,Z,")  Run# ",iRun);
-
-                if (SM.outStream)
-                    *SM.outStream << X << " " << Y << " " << Z << " " << Time << " " << Energy << std::endl;
-
-            }
-            out("---");
-        }
-
-        for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
-    }
-
-    outFlush();
-    if (!SM.outStream) out("\nOutput stream was not created, nothing was saved");
-    else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
-}
-
-G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
-{
-    return new SensitiveDetectorScint_SingleEvents("Scint");
-}
-
-void SimModeSingleEvents::readFromJson(const json11::Json & json)
-{
-    jstools::readInt(json, "NumEvents", NumEvents);
-}
-
-void SimModeSingleEvents::doWriteToJson(json11::Json::object & json) const
-{
-    json["NumEvents"] = NumEvents;
 }
 
 // ---

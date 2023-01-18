@@ -151,14 +151,14 @@ protected:
 };
 
 // ---
-class SimModeScintPosTest : public SimModeBase
+class ModeTestScintPositions : public SimModeBase
 {
 public:
-    SimModeScintPosTest();
+    ModeTestScintPositions();
 
     void run() override;
     G4UserSteppingAction * getSteppingAction() override;
-    std::string getTypeName() const override {return "SimModeScintPosTest";}
+    std::string getTypeName() const override {return "ModeTestScintPositions";}
 
     double MaxDelta = 0;
     int    Hits     = 0;
@@ -167,25 +167,6 @@ public:
 
 // ---
 
-class SimModeSingleEvents : public SimModeBase
-{
-public:
-    SimModeSingleEvents(int numEvents);
-
-    void run() override;
-    G4VSensitiveDetector * getScintDetector() override;
-    std::string getTypeName() const override {return "SimModeSingleEvents";}
-    void readFromJson(const json11::Json & json) override;
-
-protected:
-    void doWriteToJson(json11::Json::object & json) const override;
-
-public:
-    int NumEvents = 10000;
-    std::vector<G4ThreeVector> ScintData;
-};
-
-// ---
 struct DepositionNodeRecord
 {
     DepositionNodeRecord(double Time, double Energy) :

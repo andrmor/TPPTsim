@@ -16,7 +16,7 @@
 void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
-    SimModeScintPosTest * Mode = static_cast<SimModeScintPosTest*>(SM.SimMode);
+    ModeTestScintPositions * Mode = static_cast<ModeTestScintPositions*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
 

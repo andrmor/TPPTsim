@@ -9,31 +9,8 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 
-G4bool SensitiveDetectorScint_SingleEvents::ProcessHits(G4Step* step, G4TouchableHistory*)
-{  
-    const double edep = step->GetTotalEnergyDeposit();
-    if (edep == 0) return true;
-
-    SessionManager & SM = SessionManager::getInstance();
-    SimModeSingleEvents * Mode = static_cast<SimModeSingleEvents*>(SM.SimMode);
-
-    const G4StepPoint * postP  = step->GetPostStepPoint();
-
-    int iScint = postP->GetPhysicalVolume()->GetCopyNo();
-
-    double & firstTime = Mode->ScintData[iScint][0];
-    double & sumEnergy = Mode->ScintData[iScint][1];
-
-    double time = postP->GetGlobalTime();
-    if (time < firstTime || firstTime == 0) firstTime = time;
-    sumEnergy += edep;
-
-    return true;
-}
-
-// ---
-
 #include <G4VProcess.hh>
+
 G4bool SensitiveDetectorScint_MultipleEvents::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
     const double edep = step->GetTotalEnergyDeposit();
