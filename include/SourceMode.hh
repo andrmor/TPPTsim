@@ -20,7 +20,7 @@ class SourceModeBase;
 class SourceModeFactory
 {
 public:
-    static SourceModeBase * makeSourceModeInstance(const json11::Json & json);
+    static SourceModeBase * makeSourceInstance(const json11::Json & json);
 };
 
 class SourceModeBase

@@ -68,10 +68,10 @@ int main(int argc, char** argv)
 //        SM.SourceMode       = new PencilBeam(new Proton(130.0*MeV), new UniformTime(0, 1e10), {0*mm, 150.0*mm, 0*mm}, {0,-1.0,0});
         //SM.SourceMode       = new PointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {1.2, 2.3, 2});
         //SM.SourceMode       = new BlurredPointSource(new GammaPair, new ExponentialTime(0, 2.034*60*s), {0, 0, 0}, "/data/margarida/Data/AnnihilTest.txt");
-        SM.SourceMode       = new SourceNa22Point(0,1.0*s, {0, 0, 0});
+        //SM.SourceMode       = new SourceNa22Point(0,1.0*s, {0, 0, 0});
         //SM.SourceMode       = new LineSource(new GammaPair, new UniformTime(0, 1e10), {20.0, 20.0, -20.0}, {20.0, 20.0, 20.0});
         //SM.SourceMode       = new LineSource(new GammaPair, new UniformTime(0, 1e10), {0, -50.0, 0.0}, {0, 50.0, 0.0});
-        //SM.SourceMode       = new PointSource(new O15, new ConstantTime(0), {20.0, 20.0, -20.0});
+        SM.SourceMode       = new SourcePoint(new O15, new ConstantTime(0), {20.0, 20.0, -20.0});
         //SM.SourceMode       = new PencilBeam(new Proton(116.0*MeV), new UniformTime(0, 372*s), {0, -150.0, 0}, {0,1.0,0}, 1, new UniformProfile(70.0*mm, 70.0*mm));
         //SM.SourceMode       = new MaterialLimitedSource(new O15, new ConstantTime(0), {0, 0, 0}, {200.0,200.0,200.0}, "G4_WATER", "der.txt");
         //SM.SourceMode       = new NaturalLysoSource(timeFrom, timeTo); //double timeFrom = 0; //double timeTo   = 1e-5*s;
@@ -82,9 +82,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new GammaPairFromAnnihilHist("/home/andr/WORK/TPPT/PESGen/test100.txt", 1, true);
 
         // Simulation mode
-        //SM.SimMode          = new ModeGui();
-        SM.SimMode          = new ModeTestScintPositions();
-
+        SM.SimMode          = new ModeGui();
+        //SM.SimMode          = new ModeTestScintPositions();
         //SM.SimMode          = new ModeParticleLogger(20, "TestParticleSaver.txt", false);
         //SM.SimMode          = new SimModeTracing();
         //SM.SimMode          = new DoseExtractorMode(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");

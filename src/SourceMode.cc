@@ -17,7 +17,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-SourceModeBase * SourceModeFactory::makeSourceModeInstance(const json11::Json & json)
+SourceModeBase * SourceModeFactory::makeSourceInstance(const json11::Json & json)
 {
     out("Reading source json");
     std::string Type;
