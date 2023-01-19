@@ -1,15 +1,15 @@
 #ifndef pesprobabilitymode_h
 #define pesprobabilitymode_h
 
-#include "PesGenerationMode.hh"
+#include "ModePesGenerator_MC.hh"
 
-class PesProbabilityMode : public PesGenerationMode
+class ModePesGenerator_Prob : public ModePesGenerator_MC
 {
 public:
-    PesProbabilityMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
+    ModePesGenerator_Prob(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
                        const std::vector<std::pair<double,double>> & acquisitionFromTos);
 
-    std::string getTypeName() const override {return "PesProbabilityMode";}
+    std::string getTypeName() const override {return "ModePesGenerator_Prob";}
 
     void run() override;
     void onEventStarted() override {}

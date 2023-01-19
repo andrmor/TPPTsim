@@ -1,4 +1,4 @@
-#include "AnnihilationLoggerMode.hh"
+#include "ModeAnnihilationLogger.hh"
 #include "jstools.hh"
 #include "SessionManager.hh"
 #include "StackingAction.hh"
@@ -12,7 +12,7 @@
 #include "G4RunManager.hh"
 #include "G4ThreeVector.hh"
 
-AnnihilationLoggerMode::AnnihilationLoggerMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
+ModeAnnihilationLogger::ModeAnnihilationLogger(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
     NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin)
 {
     bNeedOutput = true;
@@ -25,7 +25,7 @@ AnnihilationLoggerMode::AnnihilationLoggerMode(int numEvents, std::array<double,
     initArray();
 }
 
-void AnnihilationLoggerMode::run()
+void ModeAnnihilationLogger::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -37,7 +37,7 @@ void AnnihilationLoggerMode::run()
     }
 }
 
-void AnnihilationLoggerMode::readFromJson(const json11::Json &json)
+void ModeAnnihilationLogger::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
     jstools::readInt   (json, "NumEvents", NumEvents);
@@ -65,17 +65,17 @@ void AnnihilationLoggerMode::readFromJson(const json11::Json &json)
     initArray();
 }
 
-G4UserTrackingAction *AnnihilationLoggerMode::getTrackingAction()
+G4UserTrackingAction *ModeAnnihilationLogger::getTrackingAction()
 {
     return new AnnihilationLoggerTrackingAction();
 }
 
-G4UserStackingAction *AnnihilationLoggerMode::getStackingAction()
+G4UserStackingAction *ModeAnnihilationLogger::getStackingAction()
 {
     return new AnnihilationLoggerStackingAction();
 }
 
-bool AnnihilationLoggerMode::getVoxel(const G4ThreeVector & pos, int * index)
+bool ModeAnnihilationLogger::getVoxel(const G4ThreeVector & pos, int * index)
 {
     for (int i = 0; i < 3; i++)
         index[i] = floor( (pos[i] - Origin[i]) / BinSize[i] );
@@ -85,14 +85,14 @@ bool AnnihilationLoggerMode::getVoxel(const G4ThreeVector & pos, int * index)
     return true;
 }
 
-void AnnihilationLoggerMode::fillPosition(const G4ThreeVector & pos)
+void ModeAnnihilationLogger::fillPosition(const G4ThreeVector & pos)
 {
     int index[3];
     bool ok = getVoxel(pos, index);
     if (ok) Activity[index[0]][index[1]][index[2]]++;
 }
 
-void AnnihilationLoggerMode::doWriteToJson(json11::Json::object &json) const
+void ModeAnnihilationLogger::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
     json["NumEvents"] = NumEvents;
@@ -118,7 +118,7 @@ void AnnihilationLoggerMode::doWriteToJson(json11::Json::object &json) const
     }
 }
 
-void AnnihilationLoggerMode::initArray()
+void ModeAnnihilationLogger::initArray()
 {
     // X
     Activity.resize(NumBins[0]);
@@ -134,7 +134,7 @@ void AnnihilationLoggerMode::initArray()
     }
 }
 
-void AnnihilationLoggerMode::saveArray()
+void ModeAnnihilationLogger::saveArray()
 {
     SessionManager& SM = SessionManager::getInstance();
 

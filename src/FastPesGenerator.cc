@@ -1,11 +1,8 @@
 #include "FastPesGenerator.hh"
 #include "SessionManager.hh"
 #include "G4Proton.hh"
-//#include "G4Track.hh"
-//#include "G4RandomTools.hh"
 #include "out.hh"
-//#include "Randomize.hh"
-#include "PesGenerationMode.hh"
+#include "ModePesGenerator_MC.hh"
 
 G4bool FastPesGeneratorModel::IsApplicable(const G4ParticleDefinition & particle)
 {
@@ -20,10 +17,11 @@ G4bool FastPesGeneratorModel::ModelTrigger(const G4FastTrack & fastTrack)
     if (track->GetParentID() != 0) return false;
 
     SessionManager & SM = SessionManager::getInstance();
-    PesGenerationMode * PGM = static_cast<PesGenerationMode*>(SM.SimMode);
+    ModePesGenerator_MC * PGM = static_cast<ModePesGenerator_MC*>(SM.SimMode);
     return PGM->modelTrigger(track);
 }
 
+// disabled in the model by returning "false"
 void FastPesGeneratorModel::DoIt(const G4FastTrack &, G4FastStep & step)
 {
     //out("PES doit");

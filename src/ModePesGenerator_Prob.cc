@@ -1,4 +1,4 @@
-#include "PesProbabilityMode.hh"
+#include "ModePesGenerator_Prob.hh"
 #include "SessionManager.hh"
 #include "StackingAction.hh"
 #include "out.hh"
@@ -9,9 +9,9 @@
 #include "G4RandomTools.hh"
 #include "Randomize.hh"
 
-PesProbabilityMode::PesProbabilityMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
+ModePesGenerator_Prob::ModePesGenerator_Prob(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
                                        const std::vector<std::pair<double,double>> & acquisitionFromTos) :
-    PesGenerationMode(numEvents, "dummy.txt", false),
+    ModePesGenerator_MC(numEvents, "dummy.txt", false),
     BinSize(binSize), NumBins(numBins), Origin(origin),
     TimeWindows(acquisitionFromTos)
 {
@@ -43,7 +43,7 @@ PesProbabilityMode::PesProbabilityMode(int numEvents, std::array<double, 3> binS
     //    exit(1);
 }
 
-void PesProbabilityMode::initProbArrays()
+void ModePesGenerator_Prob::initProbArrays()
 {
     for (PesGenRecord & r : BaseRecords)
     {
@@ -63,13 +63,13 @@ void PesProbabilityMode::initProbArrays()
     }
 }
 
-void PesProbabilityMode::run()
+void ModePesGenerator_Prob::run()
 {
-    PesGenerationMode::run();
+    ModePesGenerator_MC::run();
     saveArrays();
 }
 
-void PesProbabilityMode::readFromJson(const json11::Json & json)
+void ModePesGenerator_Prob::readFromJson(const json11::Json & json)
 {
     jstools::readInt(json, "NumEvents",   NumEvents);
 
@@ -97,7 +97,7 @@ void PesProbabilityMode::readFromJson(const json11::Json & json)
     initProbArrays();
 }
 
-void PesProbabilityMode::doWriteToJson(json11::Json::object & json) const
+void ModePesGenerator_Prob::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
 
@@ -121,7 +121,7 @@ void PesProbabilityMode::doWriteToJson(json11::Json::object & json) const
     }
 }
 
-bool PesProbabilityMode::getVoxel(const G4ThreeVector & pos, int * index)
+bool ModePesGenerator_Prob::getVoxel(const G4ThreeVector & pos, int * index)
 {
     for (int i = 0; i < 3; i++)
         index[i] = floor( (pos[i] - Origin[i]) / BinSize[i] );
@@ -131,7 +131,7 @@ bool PesProbabilityMode::getVoxel(const G4ThreeVector & pos, int * index)
     return true;
 }
 
-void PesProbabilityMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
+void ModePesGenerator_Prob::addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
 {
     // check maybe start and finish are in the same voxel
     int From[3];
@@ -158,7 +158,7 @@ void PesProbabilityMode::addPath(const G4ThreeVector & posFrom, const G4ThreeVec
     }
 }
 
-void PesProbabilityMode::addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
+void ModePesGenerator_Prob::addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double>> & path)
 {
     int From[3];
     bool ok1 = getVoxel(posFrom, From);
@@ -213,7 +213,7 @@ void PesProbabilityMode::addPathA(const G4ThreeVector & posFrom, const G4ThreeVe
         path.push_back( {From[0], From[1], From[2], (1.0 - newK) * totLength} );
 }
 
-double PesProbabilityMode::calculateTimeFactor(double t0, double decayTime)
+double ModePesGenerator_Prob::calculateTimeFactor(double t0, double decayTime)
 {
     double timeFactor = 0;
 
@@ -234,14 +234,14 @@ double PesProbabilityMode::calculateTimeFactor(double t0, double decayTime)
     return timeFactor;
 }
 
-bool PesProbabilityMode::isValidVoxel(int * coords) const
+bool ModePesGenerator_Prob::isValidVoxel(int * coords) const
 {
     for (int i = 0; i < 3; i++)
         if (coords[i] < 0 || coords[i] >= NumBins[i]) return false;
     return true;
 }
 
-bool PesProbabilityMode::doTrigger(const G4Track * track)
+bool ModePesGenerator_Prob::doTrigger(const G4Track * track)
 {
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (Records.empty()) return false;
@@ -263,7 +263,7 @@ bool PesProbabilityMode::doTrigger(const G4Track * track)
     return false;
 }
 
-void PesProbabilityMode::saveArrays()
+void ModePesGenerator_Prob::saveArrays()
 {
     SessionManager & SM = SessionManager::getInstance();
     for (PesGenRecord & r : BaseRecords)

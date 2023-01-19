@@ -2,10 +2,10 @@
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
-#include "PesGenerationMode.hh"
-#include "ActivityGenerationMode.hh"
-#include "PesProbabilityMode.hh"
-#include "AnnihilationLoggerMode.hh"
+#include "ModePesGenerator_MC.hh"
+#include "ModeActivityGenerator.hh"
+#include "ModePesGenerator_Prob.hh"
+#include "ModeAnnihilationLogger.hh"
 #include "Hist1D.hh"
 #include "out.hh"
 #include "jstools.hh"
@@ -25,23 +25,24 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
     SimModeBase * sm = nullptr;
 
-    if      (Type == "ModeGui")             sm = new ModeGui();
-    else if (Type == "ModeShowEvent")       sm = new ModeShowEvent(0);
-    else if (Type == "ModeDoseExtractor")   sm = new ModeDoseExtractor(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
-    else if (Type == "ModeParticleLogger")  sm = new ModeParticleLogger(0, "dummy.txt", false);
-    else if (Type == "ModeDepositionScint") sm = new ModeDepositionScint(0, "dummy.txt", false);
-    else if (Type == "ModeTracing")         sm = new ModeTracing();
+      // misc mode
+    if      (Type == "ModeGui")                  sm = new ModeGui();
+    else if (Type == "ModeShowEvent")            sm = new ModeShowEvent(0);
+    else if (Type == "ModeParticleLogger")       sm = new ModeParticleLogger(0, "dummy.txt", false);
+    else if (Type == "ModeTracing")              sm = new ModeTracing();
+      // main functionality
+    else if (Type == "ModeDoseExtractor")        sm = new ModeDoseExtractor(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+    else if (Type == "ModeDepositionScint")      sm = new ModeDepositionScint(0, "dummy.txt", false);
+    else if (Type == "ModePesGenerator_MC")      sm = new ModePesGenerator_MC(0, "dummy.txt", false);
+    else if (Type == "ModePesGenerator_Prob")    sm = new ModePesGenerator_Prob(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}});
+    else if (Type == "ModeActivityGenerator")    sm = new ModeActivityGenerator(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
+    else if (Type == "ModeAnnihilationLogger")   sm = new ModeAnnihilationLogger(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
       // tests
     else if (Type == "ModeTestScintPositions")   sm = new ModeTestScintPositions();
     else if (Type == "ModeTestAcollinearity")    sm = new ModeTestAcollinearity(0, 0, 1, "dummy.txt");
     else if (Type == "ModeTestAnnihilations")    sm = new ModeTestAnnihilations(0, 0, "dummy.txt", false);
     else if (Type == "ModeTestLysoNatRad")       sm = new ModeTestLysoNatRad(0, 0, "dummy.txt");
     else if (Type == "ModeTestDepositionStat")   sm = new ModeTestDepositionStat(0, 0.01, {0.05, 0.1});
-
-    else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
-    else if (Type == "ActivityGenerationMode")sm = new ActivityGenerationMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
-    else if (Type == "PesProbabilityMode")    sm = new PesProbabilityMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}});
-    else if (Type == "AnnihilationLoggerMode")sm = new AnnihilationLoggerMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
     else
     {
         out("Unknown simulation mode type!");

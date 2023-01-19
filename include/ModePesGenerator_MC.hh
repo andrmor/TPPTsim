@@ -11,12 +11,12 @@
 class G4Track;
 
 // this class is also the base class for PesProbabilityMode and ActivityGenerationMode!
-class PesGenerationMode : public SimModeBase
+class ModePesGenerator_MC : public SimModeBase
 {
 public:
-    PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput); // Brute-force approach which logs generated PES
+    ModePesGenerator_MC(int numEvents, const std::string & outputFileName, bool binaryOutput); // Brute-force approach which logs generated PES
 
-    std::string getTypeName() const override {return "PesGenerationMode";}
+    std::string getTypeName() const override {return "ModePesGenerator_MC";}
     G4UserTrackingAction * getTrackingAction() override;
     G4UserStackingAction * getStackingAction() override;
 

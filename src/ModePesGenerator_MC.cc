@@ -1,4 +1,4 @@
-#include "PesGenerationMode.hh"
+#include "ModePesGenerator_MC.hh"
 #include "SessionManager.hh"
 #include "StackingAction.hh"
 #include "out.hh"
@@ -9,7 +9,7 @@
 #include "G4RandomTools.hh"
 #include "Randomize.hh"
 
-PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFileName, bool binaryOutput) :
+ModePesGenerator_MC::ModePesGenerator_MC(int numEvents, const std::string & outputFileName, bool binaryOutput) :
     SimModeBase(), NumEvents(numEvents)
 {
     SessionManager & SM = SessionManager::getInstance();
@@ -34,7 +34,7 @@ PesGenerationMode::PesGenerationMode(int numEvents, const std::string & outputFi
     //    exit(0);
 }
 
-void PesGenerationMode::loadCrossSections(const std::string & fileName)
+void ModePesGenerator_MC::loadCrossSections(const std::string & fileName)
 {
     std::ifstream inStream(fileName);
     if (!inStream.is_open())
@@ -96,23 +96,23 @@ void PesGenerationMode::loadCrossSections(const std::string & fileName)
 }
 
 #include "TrackingAction.hh"
-G4UserTrackingAction * PesGenerationMode::getTrackingAction()
+G4UserTrackingAction * ModePesGenerator_MC::getTrackingAction()
 {
     return new PesGeneratorTrackingAction();
 }
 
-G4UserStackingAction * PesGenerationMode::getStackingAction()
+G4UserStackingAction * ModePesGenerator_MC::getStackingAction()
 {
     return new PesGeneratorStackingAction();
 }
 
-void PesGenerationMode::preInit()
+void ModePesGenerator_MC::preInit()
 {
     SessionManager::getInstance().FastPESGeneration = true;
 }
 
 #include "G4MTRunManager.hh"
-void PesGenerationMode::run()
+void ModePesGenerator_MC::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -128,7 +128,7 @@ void PesGenerationMode::run()
     SM.runManager->BeamOn(NumEvents);
 }
 
-void PesGenerationMode::exploreMaterials()
+void ModePesGenerator_MC::exploreMaterials()
 {
     MaterialRecords.clear();
 
@@ -166,7 +166,7 @@ void PesGenerationMode::exploreMaterials()
     }
 }
 
-void PesGenerationMode::updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity)
+void ModePesGenerator_MC::updateMatRecords(int iMat, int Z, int A, double IsotopeNumberDensity)
 {
     for (const PesGenRecord & rec : BaseRecords)
     {
@@ -179,7 +179,7 @@ void PesGenerationMode::updateMatRecords(int iMat, int Z, int A, double IsotopeN
     }
 }
 
-void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const
+void ModePesGenerator_MC::saveRecord(const std::string & Pes, double X, double Y, double Z, double Time) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -209,7 +209,7 @@ void PesGenerationMode::saveRecord(const std::string & Pes, double X, double Y, 
     //out("->",Pes, "(",X,Y,Z,")", Time);
 }
 
-void PesGenerationMode::readFromJson(const json11::Json & json)
+void ModePesGenerator_MC::readFromJson(const json11::Json & json)
 {
     jstools::readInt(json, "NumEvents",   NumEvents);
 
@@ -218,7 +218,7 @@ void PesGenerationMode::readFromJson(const json11::Json & json)
     jstools::readBool  (json, "BinaryOutput",   SM.bBinOutput);
 }
 
-void PesGenerationMode::doWriteToJson(json11::Json::object & json) const
+void ModePesGenerator_MC::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
 
@@ -227,7 +227,7 @@ void PesGenerationMode::doWriteToJson(json11::Json::object & json) const
     json["BinaryOutput"]   = SM.bBinOutput;
 }
 
-void PesGenerationMode::onEventStarted()
+void ModePesGenerator_MC::onEventStarted()
 {
     SessionManager & SM = SessionManager::getInstance();
     if (SM.bBinOutput)
@@ -241,7 +241,7 @@ void PesGenerationMode::onEventStarted()
     CurrentEvent++;
 }
 
-bool PesGenerationMode::modelTrigger(const G4Track * track)
+bool ModePesGenerator_MC::modelTrigger(const G4Track * track)
 {
     //const int StepNumber = track->GetCurrentStepNumber();
     //out("PES call", StepNumber, bNewTrackStarted); // cannot use the step number: proton can be created outside the phantom region which is invisible for this call
@@ -269,7 +269,7 @@ bool PesGenerationMode::modelTrigger(const G4Track * track)
     return false;
 }
 
-bool PesGenerationMode::doTrigger(const G4Track * track)
+bool ModePesGenerator_MC::doTrigger(const G4Track * track)
 {
     const double stepLength = track->GetTrackLength() - LastTrackLength;
     const double meanEnergy = 0.5 * (track->GetKineticEnergy() + LastEnergy);

@@ -8,10 +8,10 @@
 #include "DicomPhantom.hh"
 #include "DetComp.hh"
 #include "out.hh"
-#include "PesGenerationMode.hh"
-#include "ActivityGenerationMode.hh"
+#include "ModePesGenerator_MC.hh"
+#include "ModeActivityGenerator.hh"
 #include "ActivityProfiler.hh"
-#include "AnnihilationLoggerMode.hh"
+#include "ModeAnnihilationLogger.hh"
 #include "SourcePesHistogramFiles.hh"
 #include "SourceAnnihilHistFile.hh"
 
