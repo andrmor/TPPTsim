@@ -30,6 +30,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "ModeShowEvent")            sm = new ModeShowEvent(0);
     else if (Type == "ModeParticleLogger")       sm = new ModeParticleLogger(0, "dummy.txt", false);
     else if (Type == "ModeTracing")              sm = new ModeTracing();
+    else if (Type == "ModeEnergyCalibration")    sm = new ModeEnergyCalibration(0, 1, "dummy.txt");
       // main functionality
     else if (Type == "ModeDoseExtractor")        sm = new ModeDoseExtractor(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
     else if (Type == "ModeDepositionScint")      sm = new ModeDepositionScint(0, "dummy.txt", false);
@@ -215,13 +216,13 @@ void ModeDoseExtractor::saveArray()
 
 // ---
 
-EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName) :
+ModeEnergyCalibration::ModeEnergyCalibration(int numEvents, double binSize, const std::string & fileName) :
     SimModeBase(), NumEvents(numEvents), BinSize(binSize), FileName(fileName)
 {
     init();
 }
 
-void EnergyCalibrationMode::init()
+void ModeEnergyCalibration::init()
 {
     if (BinSize <= 0)
     {
@@ -248,7 +249,7 @@ void EnergyCalibrationMode::init()
 }
 
 #include "SourceMode.hh"
-void EnergyCalibrationMode::run()
+void ModeEnergyCalibration::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -276,7 +277,7 @@ void EnergyCalibrationMode::run()
     calibrate();
 }
 
-double EnergyCalibrationMode::extractRange()  // returns zero if failed
+double ModeEnergyCalibration::extractRange()  // returns zero if failed
 {
     size_t iMax = 0;
     double max = 0;
@@ -310,7 +311,7 @@ double EnergyCalibrationMode::extractRange()  // returns zero if failed
     return range;
 }
 
-void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
+void ModeEnergyCalibration::loadMdaData(const std::string & fileName)
 {
     std::ifstream inStream(fileName);
     if (!inStream.is_open())
@@ -339,7 +340,7 @@ void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
     }
 }
 
-void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
+void ModeEnergyCalibration::loadSavedRanges(const std::string & fileName)
 {
     std::ifstream inStream(fileName);
     if (!inStream.is_open())
@@ -368,12 +369,12 @@ void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
     //out(Ranges.size());
 }
 
-G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
+G4UserSteppingAction * ModeEnergyCalibration::getSteppingAction()
 {
     return new SteppingAction_EnCal();
 }
 
-void EnergyCalibrationMode::readFromJson(const json11::Json & json)
+void ModeEnergyCalibration::readFromJson(const json11::Json & json)
 {
     jstools::readInt   (json, "NumEvents", NumEvents);
     jstools::readDouble(json, "BinSize",   BinSize);
@@ -382,7 +383,7 @@ void EnergyCalibrationMode::readFromJson(const json11::Json & json)
     init();
 }
 
-void EnergyCalibrationMode::fill(double depo, double yPos)
+void ModeEnergyCalibration::fill(double depo, double yPos)
 {
     const size_t iBin = -yPos / BinSize;
     if (iBin >= Deposition.size()) return;
@@ -390,14 +391,14 @@ void EnergyCalibrationMode::fill(double depo, double yPos)
     Deposition[iBin] += depo;
 }
 
-void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
+void ModeEnergyCalibration::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
     json["BinSize"]   = BinSize;
     json["FileName"]  = FileName;
 }
 
-void EnergyCalibrationMode::saveRangeData()
+void ModeEnergyCalibration::saveRangeData()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -423,7 +424,7 @@ void EnergyCalibrationMode::saveRangeData()
     outStream.close();
 }
 
-void EnergyCalibrationMode::calibrate()
+void ModeEnergyCalibration::calibrate()
 {
     SessionManager & SM = SessionManager::getInstance();
 

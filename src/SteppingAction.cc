@@ -80,7 +80,7 @@ void SteppingAction_EnCal::UserSteppingAction(const G4Step * step)
     const G4StepPoint * preP  = step->GetPreStepPoint();
 
     SessionManager & SM = SessionManager::getInstance();
-    EnergyCalibrationMode * Mode = static_cast<EnergyCalibrationMode*>(SM.SimMode);
+    ModeEnergyCalibration * Mode = static_cast<ModeEnergyCalibration*>(SM.SimMode);
 
     const double yPos = 0.5 * (preP->GetPosition()[1] + postP->GetPosition()[1]);
     Mode->fill(depo, yPos);

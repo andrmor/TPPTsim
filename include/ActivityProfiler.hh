@@ -8,6 +8,8 @@
 #include <string>
 #include <array>
 
+// OBSOLETE !
+
 struct BeamTimeWindow
 {
     BeamTimeWindow(double from, double to) : From(from), To(to) {}

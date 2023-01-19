@@ -94,13 +94,13 @@ protected:
 
 // ---
 
-class EnergyCalibrationMode : public SimModeBase
+class ModeEnergyCalibration : public SimModeBase
 {
 public:
-    EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName);
+    ModeEnergyCalibration(int numEvents, double binSize, const std::string & fileName);
 
     void run() override;
-    std::string getTypeName() const override {return "EnergyCalibrationMode";}
+    std::string getTypeName() const override {return "ModeEnergyCalibration";}
     G4UserSteppingAction * getSteppingAction() override;
     void readFromJson(const json11::Json & json) override;
 
