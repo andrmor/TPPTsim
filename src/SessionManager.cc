@@ -562,7 +562,7 @@ void SessionManager::loadConfig(const std::string & fileName)
     {
         json11::Json::object js;
         jstools::readObject(json, "SourceMode", js);
-        SourceMode = SourceModeFactory::makeSourceModeInstance(js);
+        SourceMode = SourceModeFactory::makeSourceInstance(js);
     }
 
     // Simulation mode

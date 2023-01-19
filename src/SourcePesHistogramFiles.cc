@@ -1,4 +1,4 @@
-#include "PesHistogramSource.hh"
+#include "SourcePesHistogramFiles.hh"
 #include "SessionManager.hh"
 #include "ActivityLoader.hh"
 #include "out.hh"
@@ -13,13 +13,13 @@
 #include <iostream>
 #include <fstream>
 
-PesHistogramSource::PesHistogramSource(const std::string & directory, double multiplier, bool generateUniformOverBin) :
+SourcePesHistogramFiles::SourcePesHistogramFiles(const std::string & directory, double multiplier, bool generateUniformOverBin) :
     SourceModeBase(nullptr, nullptr), Directory(directory), Multiplier(multiplier), GenerateUniformOverBin(generateUniformOverBin)
 {
     init();
 }
 
-PesHistogramSource::PesHistogramSource(const json11::Json & json) :
+SourcePesHistogramFiles::SourcePesHistogramFiles(const json11::Json & json) :
     SourceModeBase(nullptr, nullptr)
 {
     doReadFromJson(json);
@@ -28,7 +28,7 @@ PesHistogramSource::PesHistogramSource(const json11::Json & json) :
     init();
 }
 
-void PesHistogramSource::init()
+void SourcePesHistogramFiles::init()
 {
     IsotopeBase.push_back({ "C11",  {"6_12_C11.txt", "8_16_C11.txt"} });
     IsotopeBase.push_back({ "O15",  {"8_16_O15.txt"} });
@@ -45,7 +45,7 @@ void PesHistogramSource::init()
     ParticleGun->SetParticleMomentumDirection({0,0,1.0});
 }
 
-void PesHistogramSource::checkInputData()
+void SourcePesHistogramFiles::checkInputData()
 {
     for (auto it = IsotopeBase.begin(); it < IsotopeBase.end(); ++it)
     {
@@ -72,7 +72,7 @@ void PesHistogramSource::checkInputData()
     }
 }
 
-void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
+void SourcePesHistogramFiles::GeneratePrimaries(G4Event * anEvent)
 {
     if (CurrentRecord >= IsotopeBase.size()) return; // finished with all events
 
@@ -126,7 +126,7 @@ void PesHistogramSource::GeneratePrimaries(G4Event * anEvent)
     }
 }
 
-double PesHistogramSource::CountEvents()
+double SourcePesHistogramFiles::CountEvents()
 {
     int numEvents = 0;
     for (const PesDataRecord & rec : IsotopeBase) numEvents += rec.SpatialFiles.size();
@@ -134,14 +134,14 @@ double PesHistogramSource::CountEvents()
     return numEvents;
 }
 
-void PesHistogramSource::doWriteToJson(json11::Json::object & json) const
+void SourcePesHistogramFiles::doWriteToJson(json11::Json::object & json) const
 {
     json["Directory"]              = Directory;
     json["Multiplier"]             = Multiplier;
     json["GenerateUniformOverBin"] = GenerateUniformOverBin;
 }
 
-void PesHistogramSource::doReadFromJson(const json11::Json & json)
+void SourcePesHistogramFiles::doReadFromJson(const json11::Json & json)
 {
     jstools::readString(json, "Directory",              Directory);
     jstools::readDouble(json, "Multiplier",             Multiplier);

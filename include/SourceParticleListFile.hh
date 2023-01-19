@@ -11,18 +11,18 @@
 
 class G4ParticleDefinition;
 
-class FromFileSource : public SourceModeBase
+class SourceParticleListFile : public SourceModeBase
 {
 public:
-    FromFileSource(const std::string & fileName, bool bBinaryFile);
-    FromFileSource(const json11::Json & json);
-    ~FromFileSource();
+    SourceParticleListFile(const std::string & fileName, bool bBinaryFile);
+    SourceParticleListFile(const json11::Json & json);
+    ~SourceParticleListFile();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
     double CountEvents() override;
 
-    std::string getTypeName() const override {return "FromFileSource";}
+    std::string getTypeName() const override {return "SourceParticleListFile";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

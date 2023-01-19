@@ -1,4 +1,4 @@
-#include "GammaPairFromAnnihilHist.hh"
+#include "SourceAnnihilHistFile.hh"
 #include "DefinedParticles.hh"
 #include "TimeGenerator.hh"
 #include "ActivityLoader.hh"
@@ -8,14 +8,14 @@
 #include "G4SystemOfUnits.hh"
 #include "G4RandomTools.hh"
 
-GammaPairFromAnnihilHist::GammaPairFromAnnihilHist(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin) :
+SourceAnnihilHistFile::SourceAnnihilHistFile(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin) :
     SourceModeBase(new GammaPair(0.511*MeV), new UniformTime(0, TimeSpan*ns)),
     HistogramFileName(histogramFileName), ActivityMultiplier(activityMultiplier), GenerateUniformOverBin(generateUniformOverBin)
 {
     init();
 }
 
-GammaPairFromAnnihilHist::GammaPairFromAnnihilHist(const json11::Json & json) :
+SourceAnnihilHistFile::SourceAnnihilHistFile(const json11::Json & json) :
     SourceModeBase(new GammaPair(0.511*MeV), new UniformTime(0, TimeSpan*ns))
 {
     doReadFromJson(json);
@@ -24,7 +24,7 @@ GammaPairFromAnnihilHist::GammaPairFromAnnihilHist(const json11::Json & json) :
     init();
 }
 
-void GammaPairFromAnnihilHist::init()
+void SourceAnnihilHistFile::init()
 {
     ActivityLoader::load(HistogramFileName, ActivityData, Binning);
     if (ActivityData.empty())
@@ -34,7 +34,7 @@ void GammaPairFromAnnihilHist::init()
     }
 }
 
-void GammaPairFromAnnihilHist::GeneratePrimaries(G4Event * anEvent)
+void SourceAnnihilHistFile::GeneratePrimaries(G4Event * anEvent)
 {
     if (CurrentIy >= ActivityData.front().size()) return;
 
@@ -68,19 +68,19 @@ void GammaPairFromAnnihilHist::GeneratePrimaries(G4Event * anEvent)
     CurrentIy++;
 }
 
-double GammaPairFromAnnihilHist::CountEvents()
+double SourceAnnihilHistFile::CountEvents()
 {
     return ActivityData.size();
 }
 
-void GammaPairFromAnnihilHist::doWriteToJson(json11::Json::object &json) const
+void SourceAnnihilHistFile::doWriteToJson(json11::Json::object &json) const
 {
     json["HistogramFileName"]      = HistogramFileName;
     json["ActivityMultiplier"]     = ActivityMultiplier;
     json["GenerateUniformOverBin"] = GenerateUniformOverBin;
 }
 
-void GammaPairFromAnnihilHist::doReadFromJson(const json11::Json &json)
+void SourceAnnihilHistFile::doReadFromJson(const json11::Json &json)
 {
     jstools::readString(json, "HistogramFileName",      HistogramFileName);
     jstools::readDouble(json, "ActivityMultiplier",     ActivityMultiplier);
