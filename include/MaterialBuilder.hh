@@ -3,7 +3,8 @@
 
 #include "json11.hh"
 
-enum class EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater, Bone, Brain, Blood, Muscle, Tissue};
+enum class EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater,
+                      BONE_COMPACT_ICRU, BRAIN_ICRP, BLOOD_ICRP, MUSCLE_SKELETAL_ICRP, TISSUE_SOFT_ICRP};
 
 class G4Material;
 

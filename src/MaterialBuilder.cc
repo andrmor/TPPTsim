@@ -72,19 +72,19 @@ G4Material * MaterialBuilder::build(EMaterial material)
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
         break;
-    case EMaterial::Bone :
+    case EMaterial::BONE_COMPACT_ICRU :
         mat = man->FindOrBuildMaterial("G4_BONE_COMPACT_ICRU");
         break;
-    case EMaterial::Brain :
+    case EMaterial::BRAIN_ICRP :
         mat = man->FindOrBuildMaterial("G4_BRAIN_ICRP");
         break;
-    case EMaterial::Blood :
+    case EMaterial::BLOOD_ICRP :
         mat = man->FindOrBuildMaterial("G4_BLOOD_ICRP");
         break;
-    case EMaterial::Muscle :
+    case EMaterial::MUSCLE_SKELETAL_ICRP :
         mat = man->FindOrBuildMaterial("G4_MUSCLE_SKELETAL_ICRP");
         break;
-    case EMaterial::Tissue :
+    case EMaterial::TISSUE_SOFT_ICRP :
         mat = man->FindOrBuildMaterial("G4_TISSUE_SOFT_ICRP");
         break;
     default:;
@@ -108,8 +108,15 @@ void MaterialBuilder::writeToJson(EMaterial material, json11::Json::object & jso
     case EMaterial::HDPE      : matStr = "HDPE";      break;
     case EMaterial::PE        : matStr = "PE";        break;
     case EMaterial::Graphite  : matStr = "Graphite";  break;
+
     case EMaterial::GelTissue : matStr = "GelTissue"; break;
     case EMaterial::GelWater  : matStr = "GelWater";  break;
+
+    case EMaterial::BONE_COMPACT_ICRU    : matStr = "BONE_COMPACT_ICRU";    break;
+    case EMaterial::BRAIN_ICRP           : matStr = "BRAIN_ICRP";           break;
+    case EMaterial::BLOOD_ICRP           : matStr = "BLOOD_ICRP";           break;
+    case EMaterial::MUSCLE_SKELETAL_ICRP : matStr = "MUSCLE_SKELETAL_ICRP"; break;
+    case EMaterial::TISSUE_SOFT_ICRP     : matStr = "TISSUE_SOFT_ICRP";     break;
     default:
         out("Not implemented material in MaterialBuilder::writeToJson");
         exit(11);
@@ -127,8 +134,16 @@ void MaterialBuilder::readFromJson(const json11::Json & json, EMaterial & materi
     else if (matStr == "HDPE")      material = EMaterial::HDPE;
     else if (matStr == "PE")        material = EMaterial::PE;
     else if (matStr == "Graphite")  material = EMaterial::Graphite;
+
     else if (matStr == "GelTissue") material = EMaterial::GelTissue;
     else if (matStr == "GelWater")  material = EMaterial::GelWater;
+
+    else if (matStr == "BONE_COMPACT_ICRU")    material = EMaterial::BONE_COMPACT_ICRU;
+    else if (matStr == "BRAIN_ICRP")           material = EMaterial::BRAIN_ICRP;
+    else if (matStr == "BLOOD_ICRP")           material = EMaterial::BLOOD_ICRP;
+    else if (matStr == "MUSCLE_SKELETAL_ICRP") material = EMaterial::MUSCLE_SKELETAL_ICRP;
+    else if (matStr == "TISSUE_SOFT_ICRP")     material = EMaterial::TISSUE_SOFT_ICRP;
+
     else
     {
         out("Unknown material in MaterialBuilder::readFromJson");
