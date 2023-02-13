@@ -7,7 +7,7 @@ class ModePesGenerator_Prob : public ModePesGenerator_MC
 {
 public:
     ModePesGenerator_Prob(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
-                          const std::vector<std::pair<double,double>> & acquisitionFromTos);
+                          const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs);
 
     std::string getTypeName() const override {return "ModePesGenerator_Prob";}
 
@@ -23,7 +23,7 @@ protected:
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
 
-    std::vector<std::pair<double,double>> TimeWindows;
+    std::vector<std::pair<double,double>> AcquisitionIntervals;  // pairs[from, duration]
 
     //path gives voxel indexes and trackLength
     void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path); // simplistic: slow and not very precise

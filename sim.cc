@@ -64,8 +64,8 @@ int main(int argc, char** argv)
         // Simulation mode
 //        SM.SimMode          = new ModeGui();
 //        SM.SimMode          = new ModePesGenerator_MC(1e3, "Pes1e3.dat", false);
-        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1*s, 2*s} });
-//        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, { {1*s, 2*s} });
+        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1.0*s, 1.0*s} });
+//        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, { {1.0*s, 1.0*s} });
 //        SM.SimMode          = new ModeDoseExtractor(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, "Dose.txt");
 
     // --- END of user init ---

@@ -485,9 +485,9 @@ std::vector<std::pair<double, double>> SourceMultiBeam::getTimeWindows(double ma
 
     for (const auto & beam : Beams)
     {
-        const double from = beam.TimeStart + marginFrom;
-        const double to   = beam.TimeStart + beam.TimeSpan - marginTo;
-        if (to > from) wins.push_back({from, to - from});
+        const double from     = beam.TimeStart + marginFrom;
+        const double duration = beam.TimeSpan - marginFrom - marginTo;
+        if (duration > 0) wins.push_back({from, duration});
     }
 
     return wins;

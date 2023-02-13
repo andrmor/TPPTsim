@@ -10,10 +10,10 @@
 #include "Randomize.hh"
 
 ModePesGenerator_Prob::ModePesGenerator_Prob(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
-                                       const std::vector<std::pair<double,double>> & acquisitionFromTos) :
+                                       const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs) :
     ModePesGenerator_MC(numEvents, "dummy.txt", false),
     BinSize(binSize), NumBins(numBins), Origin(origin),
-    TimeWindows(acquisitionFromTos)
+    AcquisitionIntervals(acquisitionFromDurationPairs)
 {
     bNeedOutput = false;
 
@@ -93,6 +93,15 @@ void ModePesGenerator_Prob::readFromJson(const json11::Json & json)
         for (int i = 0; i < 3; i++) Origin[i] = ar[i].number_value();
     }
 
+    AcquisitionIntervals.clear();
+    json11::Json::array ar;
+    jstools::readArray(json, "AcquisitionIntervals", ar);
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        json11::Json::array el = ar[i].array_items();
+        AcquisitionIntervals.push_back( {el[0].number_value(), el[1].number_value()} );
+    }
+
     bNeedOutput = false;
     initProbArrays();
 }
@@ -119,6 +128,16 @@ void ModePesGenerator_Prob::doWriteToJson(json11::Json::object & json) const
         for (int i = 0; i < 3; i++) ar.push_back(Origin[i]);
         json["Origin"] = ar;
     }
+
+    json11::Json::array ar;
+    for (const auto & p : AcquisitionIntervals)
+    {
+        json11::Json::array el;
+            el.push_back(p.first);
+            el.push_back(p.second);
+        ar.push_back(el);
+    }
+    json["AcquisitionIntervals"] = ar;
 }
 
 bool ModePesGenerator_Prob::getVoxel(const G4ThreeVector & pos, int * index)
@@ -217,11 +236,11 @@ double ModePesGenerator_Prob::calculateAcqusitionTimeFactor(double t0, double de
 {
     double timeFactor = 0;
 
-    for (size_t i = 0; i < TimeWindows.size(); i++)
+    for (size_t i = 0; i < AcquisitionIntervals.size(); i++)
     {
-        double timeTo = TimeWindows[i].second - t0;
+        double timeTo = AcquisitionIntervals[i].first + AcquisitionIntervals[i].second - t0;
         if (timeTo  <= 0) continue;
-        double timeFrom = TimeWindows[i].first - t0;
+        double timeFrom = AcquisitionIntervals[i].first - t0;
         if (timeFrom < 0) timeFrom = 0;
 
         const double from = exp(-timeFrom/decayTime);

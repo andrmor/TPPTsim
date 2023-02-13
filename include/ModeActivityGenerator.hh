@@ -17,7 +17,7 @@ class ModeActivityGenerator : public ModePesGenerator_Prob
 public:
     ModeActivityGenerator(int numEvents,
                            std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
-                           const std::vector<std::pair<double,double>> & acquisitionFromTos,
+                           const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs,
                            const std::string & fileName);
 
     std::string getTypeName() const override {return "ModeActivityGenerator";}

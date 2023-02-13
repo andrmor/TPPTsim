@@ -7,9 +7,9 @@
 
 ModeActivityGenerator::ModeActivityGenerator(int numEvents,
                                                std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
-                                               const std::vector<std::pair<double,double>> & acquisitionFromTos,
+                                               const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs,
                                                const std::string & fileName) :
-    ModePesGenerator_Prob(numEvents, binSize, numBins, origin, acquisitionFromTos),
+    ModePesGenerator_Prob(numEvents, binSize, numBins, origin, acquisitionFromDurationPairs),
     FileName(fileName)
 {
     initActivityArray();
@@ -42,15 +42,6 @@ void ModeActivityGenerator::readFromJson(const json11::Json & json)
     ModePesGenerator_Prob::readFromJson(json);
     initActivityArray();
 
-    TimeWindows.clear();
-    json11::Json::array ar;
-    jstools::readArray(json, "TimeWindows", ar);
-    for (size_t i = 0; i < ar.size(); i++)
-    {
-        json11::Json::array el = ar[i].array_items();
-        TimeWindows.push_back( {el[0].number_value(), el[1].number_value()} );
-    }
-
     jstools::readString(json, "FileName", FileName);
 }
 
@@ -58,15 +49,6 @@ void ModeActivityGenerator::doWriteToJson(json11::Json::object & json) const
 {
     ModePesGenerator_Prob::doWriteToJson(json);
 
-    json11::Json::array ar;
-    for (const auto & p : TimeWindows)
-    {
-        json11::Json::array el;
-            el.push_back(p.first);
-            el.push_back(p.second);
-        ar.push_back(el);
-    }
-    json["TimeWindows"] = ar;
     json["FileName"] = FileName;
 }
 
