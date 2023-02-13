@@ -48,22 +48,25 @@ int main(int argc, char** argv)
         SM.Debug            = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/tmp";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/Proposal/tmp";
 
         // Phantom
-        SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PMMA);
+        SM.Phantom = new PhantomCylinder(25.4, 100.0, EMaterial::PMMA);
 
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
-        SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
+//        SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
         // Source
-        SM.SourceMode       = new SourceBeam(new Proton(130.0*MeV), new UniformTime(0, 1e10), {0*mm, 150.0*mm, 0*mm}, {0,-1.0,0});
+        SM.SourceMode       = new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
 
         // Simulation mode
-        SM.SimMode          = new ModeGui();
-        //SM.SimMode          = new ModePesGenerator_MC(1e5, "Pes1e5.dat", false);
+//        SM.SimMode          = new ModeGui();
+//        SM.SimMode          = new ModePesGenerator_MC(1e3, "Pes1e3.dat", false);
+        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1*s, 2*s} });
+//        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, { {1*s, 2*s} });
+//        SM.SimMode          = new ModeDoseExtractor(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, "Dose.txt");
 
     // --- END of user init ---
     }

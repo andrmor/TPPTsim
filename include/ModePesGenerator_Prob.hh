@@ -7,7 +7,7 @@ class ModePesGenerator_Prob : public ModePesGenerator_MC
 {
 public:
     ModePesGenerator_Prob(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
-                       const std::vector<std::pair<double,double>> & acquisitionFromTos);
+                          const std::vector<std::pair<double,double>> & acquisitionFromTos);
 
     std::string getTypeName() const override {return "ModePesGenerator_Prob";}
 
@@ -29,7 +29,7 @@ protected:
     void addPath(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int,int,int, double>> & path); // simplistic: slow and not very precise
     void addPathA(const G4ThreeVector & posFrom, const G4ThreeVector & posTo, std::vector<std::tuple<int, int, int, double> > & path); // use this one!
 
-    double calculateTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
+    double calculateAcqusitionTimeFactor(double t0, double decayTime); // potentially bottleneck -> find a way to use a LUT
 
 private:
     bool doTrigger(const G4Track * track) override;

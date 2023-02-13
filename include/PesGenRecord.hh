@@ -15,7 +15,7 @@ public:
 
     std::string PES;     // "C11";
 
-    double      DecayTime = 0;     // decay time in seconds = tauHalf / log(2)
+    double      DecayTime = 0;     // decay time in ns = tauHalf_ns / log(2)
 
     std::vector<std::pair<double,double>> CrossSection; // [MeV] [millibarn]
 

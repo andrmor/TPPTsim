@@ -85,7 +85,7 @@ bool ModeActivityGenerator::doTrigger(const G4Track *track)
     {
         const double cs = r.getCrossSection(meanEnergy);
         const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
-        const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
+        const double timeFractionInWindows = calculateAcqusitionTimeFactor(track->GetGlobalTime(), r.DecayTime);
 
         for (size_t i = 0; i < Path.size(); i++)
         {

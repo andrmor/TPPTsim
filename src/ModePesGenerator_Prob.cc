@@ -213,7 +213,7 @@ void ModePesGenerator_Prob::addPathA(const G4ThreeVector & posFrom, const G4Thre
         path.push_back( {From[0], From[1], From[2], (1.0 - newK) * totLength} );
 }
 
-double ModePesGenerator_Prob::calculateTimeFactor(double t0, double decayTime)
+double ModePesGenerator_Prob::calculateAcqusitionTimeFactor(double t0, double decayTime)
 {
     double timeFactor = 0;
 
@@ -254,7 +254,7 @@ bool ModePesGenerator_Prob::doTrigger(const G4Track * track)
     {
         const double cs = r.getCrossSection(meanEnergy);
         const double DProbPerMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
-        const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
+        const double timeFractionInWindows = calculateAcqusitionTimeFactor(track->GetGlobalTime(), r.DecayTime);
 
         for (size_t i = 0; i < Path.size(); i++)
             (*r.ProbArray)[std::get<0>(Path[i])][std::get<1>(Path[i])][std::get<2>(Path[i])] += std::get<3>(Path[i]) * DProbPerMM * timeFractionInWindows;

@@ -66,7 +66,8 @@ void ModePesGenerator_MC::loadCrossSections(const std::string & fileName)
                 out("Unexpected format of a reaction line in the file with the PES cross-sections");
                 exit(2);
             }
-            currentRecord.DecayTime /= log(2.0); // half-life to decay time
+            currentRecord.DecayTime /= log(2.0); // half-life to decay time in s
+            currentRecord.DecayTime *= 1e9;      // in ns
 
             currentRecord.CrossSection.clear();
             fillingRecord = true;
