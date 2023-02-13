@@ -73,23 +73,37 @@ void ModePesGenerator_Prob::readFromJson(const json11::Json & json)
 {
     jstools::readInt(json, "NumEvents",   NumEvents);
 
-    // !!!*** control array sizes = 3
     // BinSize
     {
         json11::Json::array ar;
         jstools::readArray(json, "BinSize", ar);
+        if (ar.size() != 3)
+        {
+            out("Bad size of BinSize array");
+            exit(22);
+        }
         for (int i = 0; i < 3; i++) BinSize[i] = ar[i].number_value();
     }
     // NumBins
     {
         json11::Json::array ar;
         jstools::readArray(json, "NumBins", ar);
+        if (ar.size() != 3)
+        {
+            out("Bad size of NumBins array");
+            exit(22);
+        }
         for (int i = 0; i < 3; i++) NumBins[i] = ar[i].int_value();
     }
     // Origin
     {
         json11::Json::array ar;
         jstools::readArray(json, "Origin", ar);
+        if (ar.size() != 3)
+        {
+            out("Bad size of Origin array");
+            exit(22);
+        }
         for (int i = 0; i < 3; i++) Origin[i] = ar[i].number_value();
     }
 
@@ -99,6 +113,11 @@ void ModePesGenerator_Prob::readFromJson(const json11::Json & json)
     for (size_t i = 0; i < ar.size(); i++)
     {
         json11::Json::array el = ar[i].array_items();
+        if (el.size() != 2)
+        {
+            out("Bad size of AcquisitionIntervals array");
+            exit(22);
+        }
         AcquisitionIntervals.push_back( {el[0].number_value(), el[1].number_value()} );
     }
 

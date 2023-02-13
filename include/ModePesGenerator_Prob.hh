@@ -8,6 +8,7 @@ class ModePesGenerator_Prob : public ModePesGenerator_MC
 public:
     ModePesGenerator_Prob(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
                           const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs);
+                          // assumes that acquisitionFromDurationPairs do not overlap!
 
     std::string getTypeName() const override {return "ModePesGenerator_Prob";}
 

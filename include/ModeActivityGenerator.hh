@@ -19,6 +19,7 @@ public:
                            std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
                            const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs,
                            const std::string & fileName);
+                           // assumes that acquisitionFromDurationPairs do not overlap!
 
     std::string getTypeName() const override {return "ModeActivityGenerator";}
 
