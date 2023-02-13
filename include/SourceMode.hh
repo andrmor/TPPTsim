@@ -241,7 +241,7 @@ public:
     std::string getTypeName() const override {return "SourceMultiBeam";}
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::vector<std::pair<double,double>> getTimeWindows(double marginFrom, double marginTo) const; // returns vector of pairs[from, duration]
+    std::vector<std::pair<double,double>> getTimeWindows(double delayAfter, double marginBefore) const; // only for beamlets consecutive in time; returns vector of pairs[from, duration]
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

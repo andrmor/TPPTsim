@@ -479,14 +479,14 @@ void SourceMultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do inte
     iParticle++;
 }
 
-std::vector<std::pair<double, double>> SourceMultiBeam::getTimeWindows(double marginFrom, double marginTo) const
+std::vector<std::pair<double, double>> SourceMultiBeam::getTimeWindows(double delayAfter, double marginBefore) const
 {
     std::vector<std::pair<double, double>> wins;
 
-    for (const auto & beam : Beams)
+    for (size_t iB = 0; iB < Beams.size() - 1; iB++)
     {
-        const double from     = beam.TimeStart + marginFrom;
-        const double duration = beam.TimeSpan - marginFrom - marginTo;
+        const double from     = Beams[iB].TimeStart + Beams[iB].TimeSpan + delayAfter;
+        const double duration = Beams[iB+1].TimeStart - marginBefore;
         if (duration > 0) wins.push_back({from, duration});
     }
 
