@@ -59,10 +59,15 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
         // Source
-        SM.SourceMode       = new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
+        SM.SourceMode       = new SourceMixer({ {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0},
+                                                {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0},
+                                                {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0}
+                                              });
+        //SM.SourceMode       = new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
+        //SM.SourceMode       = new SourceMixer(std::vector<std::pair<SourceModeBase*,double>>{ {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0} });
 
         // Simulation mode
-//        SM.SimMode          = new ModeGui();
+        //SM.SimMode          = new ModeGui();
 //        SM.SimMode          = new ModePesGenerator_MC(1e3, "Pes1e3.dat", false);
         //SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1.0*s, 1.0*s} });
         SM.SimMode          = new ModeActivityGenerator(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1.0*s, 1.0*s} }, "act.dat");
