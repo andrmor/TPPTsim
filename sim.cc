@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 //    SM.SimMode          = new ModeDoseExtractor(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
 //    SM.SimMode          = new ModeDepositionScint(SM.SourceMode->CountEvents(), "FromProb-1000m.txt", false);
 //    SM.SimMode          = new ModePesGenerator_MC(SM.SourceMode->CountEvents(), "Pes.dat", false);
-//    SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e20} });
+//    SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e20*s} });
 //    SM.SimMode          = new ModeAnnihilationLogger(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, "test.txt");
 //    SM.SimMode          = new ModeShowEvent(119);
 //    SM.SimMode          = new ModeTestAcollinearity(10000, 2.0, 100, "AcolTest.txt");
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 //    SM.SimMode          = new ModeParticleLogger(1e3, "FirstStage.bin", true);
 //    SM.SimMode          = new ModeTestLysoNatRad(1000000, 500, "natRadEnergyDistr.txt");
 //    SM.SimMode          = new ModeTestDepositionStat(1e6, 0.01, {0.05, 0.1});
-//    SM.SimMode          = new ModeActivityGenerator(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10} }, "multiNew.dat");
+//    SM.SimMode          = new ModeActivityGenerator(SM.SourceMode->CountEvents(), {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5},  { {0, 1e10*s} }, "multiNew.dat");
 //    SM.SimMode           = new ModeEnergyCalibration(50000, 1, "Convertion.txt");
 
 // Obsolete detector components

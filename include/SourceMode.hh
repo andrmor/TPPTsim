@@ -29,7 +29,7 @@ public:
     SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator); // transfers ownership
     virtual ~SourceModeBase();
 
-    void initialize();
+    virtual void initialize();
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
@@ -40,7 +40,7 @@ public:
     void writeToJson(json11::Json::object & json) const;
     void readFromJson(const json11::Json & json);
 
-    void setParticleEnergy(double energy);
+    virtual void setParticleEnergy(double energy);
 
 protected:
     virtual void customPostInit() {}
@@ -58,6 +58,31 @@ protected:
 protected:
     G4ThreeVector generateDirectionIsotropic();
     void generateSecondGamma(G4Event * anEvent);
+};
+
+// ---
+
+class SourceMixer : public SourceModeBase
+{
+public:
+    SourceMixer(std::vector<std::pair<SourceModeBase*,double>> sourcesAndStatWeights);
+    SourceMixer(const json11::Json & json);
+
+    void initialize() override;
+    void setParticleEnergy(double energy) override;
+
+    std::string getTypeName() const override {return "SourceMixer";}
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
+
+    void init();
+
+    std::vector<std::pair<SourceModeBase*,double>> SourcesAndWeights;
+    double SumWeight = 0;
 };
 
 // ---

@@ -1078,3 +1078,105 @@ void SourceNa22Point::doReadFromJson(const json11::Json & json)
     jstools::readDouble(json, "OriginY", Origin[1]);
     jstools::readDouble(json, "OriginZ", Origin[2]);
 }
+
+// ---
+
+SourceMixer::SourceMixer(std::vector<std::pair<SourceModeBase *, double>> sourcesAndStatWeights) :
+    SourceModeBase(nullptr, nullptr), SourcesAndWeights(sourcesAndStatWeights)
+{
+    init();
+}
+
+SourceMixer::SourceMixer(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    init();
+}
+
+void SourceMixer::initialize()
+{
+    for (auto & p : SourcesAndWeights)
+        p.first->initialize();
+}
+
+void SourceMixer::setParticleEnergy(double energy)
+{
+    for (auto & p : SourcesAndWeights)
+        p.first->setParticleEnergy(energy);
+}
+
+void SourceMixer::init()
+{
+    SumWeight = 0;
+    for (const auto & p : SourcesAndWeights)
+        SumWeight += p.second;
+
+
+    if (SourcesAndWeights.empty())
+    {
+        out("SourceMixer: no sources were defined");
+        exit(21);
+    }
+    if (SumWeight <= 0)
+    {
+        out("SourceMixer: sum of stat weights for all sources should be positive");
+        exit(21);
+    }
+}
+
+void SourceMixer::GeneratePrimaries(G4Event *anEvent)
+{
+    double rnd = SumWeight * G4UniformRand();
+
+    for (const auto & source : SourcesAndWeights)
+    {
+        const double & statWeight = source.second;
+        if (rnd <= statWeight)
+        {
+            source.first->GeneratePrimaries(anEvent);
+            return;
+        }
+        rnd -= statWeight;
+    }
+}
+
+void SourceMixer::doWriteToJson(json11::Json::object & json) const
+{
+    json11::Json::array ar;
+
+    for (const auto & p : SourcesAndWeights)
+    {
+        json11::Json::object js;
+
+            json11::Json::object sjs;
+            p.first->writeToJson(sjs);
+        js["Source"] = sjs;
+        js["StatWeight"] = p.second;
+
+        ar.push_back(js);
+    }
+
+    json["Sources"] = ar;
+}
+
+void SourceMixer::doReadFromJson(const json11::Json &json)
+{
+    SourcesAndWeights.clear();
+
+    json11::Json::array ar;
+    jstools::readArray(json, "Sources", ar);
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        json11::Json::object js = ar[i].object_items();
+
+        double statWeight;
+        jstools::readDouble(js, "StatWeight", statWeight);
+
+        json11::Json::object sjs;
+        jstools::readObject(js, "Source", sjs);
+        SourceModeBase * source = SourceModeFactory::makeSourceInstance(sjs);
+
+        SourcesAndWeights.push_back({source, statWeight});
+    }
+}
