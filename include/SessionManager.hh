@@ -110,7 +110,7 @@ class SessionManager
 
      // Step limiter
         bool   UseStepLimiter     = false;
-        double PhantomStepLimt    = 10000.0*mm;
+        double PhantomStepLimit    = 10000.0*mm;
 
      // Misc
         double activityLYSO    = 281.0; // decays per second per cm3

@@ -39,7 +39,7 @@ int main(int argc, char** argv)
         SM.Seed = 1000;                // WARNING: the seed can be overriden with a command line argument, e.g. sim -s 123456
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
-        SM.UseStepLimiter     = true; SM.PhantomStepLimt = 0.5*mm;
+        SM.UseStepLimiter     = true; SM.PhantomStepLimit = 0.5*mm;
 
         SM.CutPhantomGamma    = 10.0*mm; SM.CutPhantomElectron = 10.0*mm; SM.CutPhantomPositron = 0.1*mm;
         SM.CutScintGamma      =  0.1*mm; SM.CutScintElectron   =  0.1*mm; SM.CutScintPositron   = 0.1*mm;

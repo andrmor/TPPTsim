@@ -213,7 +213,7 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
 
     if (UseStepLimiter)
     {
-        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimt);
+        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimit);
         regPhantom->SetUserLimits(stepLimit);
     }
 }
