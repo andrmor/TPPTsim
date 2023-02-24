@@ -72,6 +72,9 @@ G4Material * MaterialBuilder::build(EMaterial material)
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
         break;
+    case EMaterial::WATER :
+        mat = man->FindOrBuildMaterial("G4_WATER");
+        break;
     case EMaterial::BONE_COMPACT_ICRU :
         mat = man->FindOrBuildMaterial("G4_BONE_COMPACT_ICRU");
         break;
@@ -108,6 +111,7 @@ void MaterialBuilder::writeToJson(EMaterial material, json11::Json::object & jso
     case EMaterial::HDPE      : matStr = "HDPE";      break;
     case EMaterial::PE        : matStr = "PE";        break;
     case EMaterial::Graphite  : matStr = "Graphite";  break;
+    case EMaterial::WATER     : matStr = "WATER";     break;
 
     case EMaterial::GelTissue : matStr = "GelTissue"; break;
     case EMaterial::GelWater  : matStr = "GelWater";  break;
@@ -134,6 +138,7 @@ void MaterialBuilder::readFromJson(const json11::Json & json, EMaterial & materi
     else if (matStr == "HDPE")      material = EMaterial::HDPE;
     else if (matStr == "PE")        material = EMaterial::PE;
     else if (matStr == "Graphite")  material = EMaterial::Graphite;
+    else if (matStr == "WATER")     material = EMaterial::WATER;
 
     else if (matStr == "GelTissue") material = EMaterial::GelTissue;
     else if (matStr == "GelWater")  material = EMaterial::GelWater;
