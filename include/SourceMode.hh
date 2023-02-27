@@ -184,7 +184,7 @@ protected:
 class UniformProfile : public ProfileBase
 {
 public:
-    UniformProfile(double dx, double dy) : ProfileBase(), DX(dx), DY(dy) {}
+    UniformProfile(double fullSizeX, double fullSizeY) : ProfileBase(), DX(fullSizeX), DY(fullSizeY) {}
     UniformProfile(const json11::Json & json);
 
     std::string getTypeName() const override {return "Uniform";}
@@ -193,6 +193,21 @@ public:
 protected:
     double DX = 0;
     double DY = 0;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+    void readFromJson(const json11::Json & json);
+};
+class RoundProfile : public ProfileBase
+{
+public:
+    RoundProfile(double diameter) : ProfileBase(), Diameter(diameter) {}
+    RoundProfile(const json11::Json & json);
+
+    std::string getTypeName() const override {return "Round";}
+    void generateOffset(G4ThreeVector & pos) const override;
+
+protected:
+    double Diameter = 0;
 
     void doWriteToJson(json11::Json::object & json) const override;
     void readFromJson(const json11::Json & json);

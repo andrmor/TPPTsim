@@ -993,6 +993,37 @@ void UniformProfile::readFromJson(const json11::Json &json)
     jstools::readDouble(json, "DY", DY);
 }
 
+RoundProfile::RoundProfile(const json11::Json & json)
+{
+    readFromJson(json);
+}
+
+void RoundProfile::generateOffset(G4ThreeVector & pos) const
+{
+    double offX, offY;
+    do
+    {
+        offX = -0.5 * Diameter + Diameter * G4UniformRand();
+        offY = -0.5 * Diameter + Diameter * G4UniformRand();
+    }
+    while (offX*offX + offY*offY > 0.25*Diameter*Diameter);
+
+    G4ThreeVector posLoc(offX, offY, 0);
+    posLoc.rotateUz(Direction);
+
+    pos += posLoc;
+}
+
+void RoundProfile::doWriteToJson(json11::Json::object &json) const
+{
+    json["Diameter"] = Diameter;
+}
+
+void RoundProfile::readFromJson(const json11::Json &json)
+{
+    jstools::readDouble(json, "Diameter", Diameter);
+}
+
 GaussProfile::GaussProfile(const json11::Json & json) : ProfileBase()
 {
     readFromJson(json);
