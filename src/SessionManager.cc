@@ -443,8 +443,6 @@ void SessionManager::saveConfig(const std::string & fileName) const
     json["WorkingDirectory"] = WorkingDirectory;
 
     json["Verbose"] = Verbose;
-    json["Debug"]   = Debug;
-
     json["ShowEventNumber"]  = ShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
 
@@ -535,8 +533,6 @@ void SessionManager::loadConfig(const std::string & fileName)
     }
 
     jstools::readBool(json, "Verbose", Verbose);
-    jstools::readBool(json, "Debug",   Debug);
-
     jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
     jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
 

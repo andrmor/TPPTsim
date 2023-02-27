@@ -25,8 +25,7 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         Mode->Hits++;
 
         const G4TouchableHandle & touch = postP->GetTouchableHandle(); //to get the physical volumes
-        int iScint    = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
-        int iAssembly = touch->GetVolume(1)->GetCopyNo(); //container/master of the volume (encapsulation)
+        const int iScint = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
 
         G4ThreeVector globCenterPos = touch->GetHistory()->GetTopTransform().Inverse().TransformPoint(G4ThreeVector(0,0,0.5*SM.ScintSizeZ)); //local to global
         double delta = 0;
@@ -40,14 +39,13 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         Mode->SumDelta += delta;
         if (delta > Mode->MaxDelta) Mode->MaxDelta = delta;
 
-        if (SM.Debug)
-        {
+        /*
+            int iAssembly = touch->GetVolume(1)->GetCopyNo(); //container/master of the volume (encapsulation)
             out("Index of the scintillator:",iScint, " Index of the assembly:",iAssembly);
             out("Volume center position:", globCenterPos[0], globCenterPos[1], globCenterPos[2]);
             out("   --> from ScintPos:  ",SM.ScintRecords[iScint].FacePos[0], SM.ScintRecords[iScint].FacePos[1], SM.ScintRecords[iScint].FacePos[2]); //it's faster (only once in detector construction)
             out("       --> Delta", delta, "mm");
-
-        }
+        */
     }
 }
 

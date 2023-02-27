@@ -45,7 +45,6 @@ int main(int argc, char** argv)
         SM.CutScintGamma      =  0.1*mm; SM.CutScintElectron   =  0.1*mm; SM.CutScintPositron   = 0.1*mm;
 
         SM.Verbose          = false;
-        SM.Debug            = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
         SM.WorkingDirectory  = "/home/andr/WORK/TPPT/ProposalOfKarol/ThirdRound";

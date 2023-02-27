@@ -92,7 +92,6 @@ class SessionManager
         int  SeedOverride     = 0;
         bool UseSeedOverride  = false;
         bool Verbose          = false;
-        bool Debug            = false;
         bool ShowEventNumber  = false;
         int  EvNumberInterval = 1000;
 
