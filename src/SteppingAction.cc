@@ -16,7 +16,7 @@
 void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
 {
     SessionManager & SM = SessionManager::getInstance();
-    SimModeScintPosTest * Mode = static_cast<SimModeScintPosTest*>(SM.SimMode);
+    ModeTestScintPositions * Mode = static_cast<ModeTestScintPositions*>(SM.SimMode);
 
     const G4StepPoint * postP  = step->GetPostStepPoint();
 
@@ -25,8 +25,7 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         Mode->Hits++;
 
         const G4TouchableHandle & touch = postP->GetTouchableHandle(); //to get the physical volumes
-        int iScint    = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
-        int iAssembly = touch->GetVolume(1)->GetCopyNo(); //container/master of the volume (encapsulation)
+        const int iScint = touch->GetVolume(0)->GetCopyNo(); //this volume (scintillator)
 
         G4ThreeVector globCenterPos = touch->GetHistory()->GetTopTransform().Inverse().TransformPoint(G4ThreeVector(0,0,0.5*SM.ScintSizeZ)); //local to global
         double delta = 0;
@@ -40,14 +39,13 @@ void SteppingAction_ScintPosTest::UserSteppingAction(const G4Step * step)
         Mode->SumDelta += delta;
         if (delta > Mode->MaxDelta) Mode->MaxDelta = delta;
 
-        if (SM.Debug)
-        {
+        /*
+            int iAssembly = touch->GetVolume(1)->GetCopyNo(); //container/master of the volume (encapsulation)
             out("Index of the scintillator:",iScint, " Index of the assembly:",iAssembly);
             out("Volume center position:", globCenterPos[0], globCenterPos[1], globCenterPos[2]);
             out("   --> from ScintPos:  ",SM.ScintRecords[iScint].FacePos[0], SM.ScintRecords[iScint].FacePos[1], SM.ScintRecords[iScint].FacePos[2]); //it's faster (only once in detector construction)
             out("       --> Delta", delta, "mm");
-
-        }
+        */
     }
 }
 
@@ -63,7 +61,7 @@ void SteppingAction_Dose::UserSteppingAction(const G4Step * step)
     const G4StepPoint * preP  = step->GetPreStepPoint();
 
     SessionManager & SM = SessionManager::getInstance();
-    DoseExtractorMode * Mode = static_cast<DoseExtractorMode*>(SM.SimMode);
+    ModeDoseExtractor * Mode = static_cast<ModeDoseExtractor*>(SM.SimMode);
 
     Mode->fill(depo, 0.5*(preP->GetPosition() + postP->GetPosition()));
 }
@@ -80,7 +78,7 @@ void SteppingAction_EnCal::UserSteppingAction(const G4Step * step)
     const G4StepPoint * preP  = step->GetPreStepPoint();
 
     SessionManager & SM = SessionManager::getInstance();
-    EnergyCalibrationMode * Mode = static_cast<EnergyCalibrationMode*>(SM.SimMode);
+    ModeEnergyCalibration * Mode = static_cast<ModeEnergyCalibration*>(SM.SimMode);
 
     const double yPos = 0.5 * (preP->GetPosition()[1] + postP->GetPosition()[1]);
     Mode->fill(depo, yPos);
@@ -166,7 +164,7 @@ void SteppingAction_AcollinearityTester::UserSteppingAction(const G4Step *step)
     //step->GetTrack()->SetTrackStatus(fStopAndKill);
     */
 
-    SimModeAcollinTest * Mode = static_cast<SimModeAcollinTest*>(SM.SimMode);
+    ModeTestAcollinearity * Mode = static_cast<ModeTestAcollinearity*>(SM.SimMode);
     Mode->addDirection(vec, step->GetTrack()->GetParentID(), preP->GetKineticEnergy());
 }
 
@@ -191,7 +189,7 @@ void SteppingAction_AnnihilationTester::UserSteppingAction(const G4Step * step)
     if (proc->GetProcessType() != fElectromagnetic) return;
     if (proc->GetProcessSubType() != 5) return;
 
-    SimModeAnnihilTest * Mode = static_cast<SimModeAnnihilTest*>(SM.SimMode);
+    ModeTestAnnihilations * Mode = static_cast<ModeTestAnnihilations*>(SM.SimMode);
     const double time = postP->GetGlobalTime()/s;
     if (time < Mode->TimeStart) return;
 
@@ -223,7 +221,7 @@ void SteppingAction_NatRadTester::UserSteppingAction(const G4Step * step)
     const int iScint = (bTransport ? preP ->GetPhysicalVolume()->GetCopyNo()
                                    : postP->GetPhysicalVolume()->GetCopyNo() );
 
-    SimModeNatRadTest * Mode = static_cast<SimModeNatRadTest*>(SM.SimMode);
+    ModeTestLysoNatRad * Mode = static_cast<ModeTestLysoNatRad*>(SM.SimMode);
     Mode->addEnergy(iScint, depo);
 }
 
@@ -253,6 +251,6 @@ void SteppingAction_DepoStatMode::UserSteppingAction(const G4Step * step)
 
     const int iScint = referenceVolume->GetCopyNo();
 
-    DepoStatMode * Mode = static_cast<DepoStatMode*>(SM.SimMode);
+    ModeTestDepositionStat * Mode = static_cast<ModeTestDepositionStat*>(SM.SimMode);
     Mode->addRecord(iScint, depo, postP->GetGlobalTime());
 }

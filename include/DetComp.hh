@@ -13,7 +13,7 @@ class DetComp
 public:
     static constexpr auto Scintillators     = "Scintillators";
     static constexpr auto GDML              = "GDML";
-    static constexpr auto FirstStageMonitor = "FirstStageMonitor";
+    static constexpr auto ParticleLogger    = "ParticleLogger";
     static constexpr auto Base              = "Base";
     static constexpr auto ClosedStructure   = "ClosedStructure";
     static constexpr auto SIPM              = "SIPM";
@@ -24,11 +24,12 @@ public:
     // Do not forget to add new types to the ValidComponents list below!!!
 
 private:
-    const std::vector<std::string> ValidComponents = {Scintillators, GDML, FirstStageMonitor, Base, ClosedStructure,
+    const std::vector<std::string> ValidComponents = {Scintillators, GDML, ParticleLogger, Base, ClosedStructure,
                                                       SIPM, PCB, CopperStructure, CoolingAssemblies, Nozzle};
 
 public:
     void set(const std::vector<std::string> & components);
+    void add(const std::vector<std::string> & components);
     void add(const std::string & component);
 
     bool isValid(const std::string & component) const;

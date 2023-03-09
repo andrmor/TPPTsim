@@ -63,7 +63,7 @@ void SessionManager::startSession()
         out("Simulation mode not provided!");
         exit(3);
     }
-    if (!PhantomMode)
+    if (!Phantom)
     {
         out("Phantom mode not provided!");
         exit(4);
@@ -109,7 +109,7 @@ void SessionManager::startSession()
 
 SessionManager::~SessionManager()
 {
-    delete PhantomMode;
+    delete Phantom;
     delete SourceMode;
     delete SimMode;
 }
@@ -213,7 +213,7 @@ void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
 
     if (UseStepLimiter)
     {
-        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimt);
+        G4UserLimits * stepLimit = new G4UserLimits(PhantomStepLimit);
         regPhantom->SetUserLimits(stepLimit);
     }
 }
@@ -443,16 +443,14 @@ void SessionManager::saveConfig(const std::string & fileName) const
     json["WorkingDirectory"] = WorkingDirectory;
 
     json["Verbose"] = Verbose;
-    json["Debug"]   = Debug;
-
     json["ShowEventNumber"]  = ShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
 
     // Phantom
     {
         json11::Json::object js;
-        PhantomMode->writeToJson(js);
-        json["PhantomMode"] = js;
+        Phantom->writeToJson(js);
+        json["Phantom"] = js;
     }
 
     // Detector composition
@@ -535,16 +533,14 @@ void SessionManager::loadConfig(const std::string & fileName)
     }
 
     jstools::readBool(json, "Verbose", Verbose);
-    jstools::readBool(json, "Debug",   Debug);
-
     jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
     jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
 
     // Phantom
     {
         json11::Json::object js;
-        jstools::readObject(json, "PhantomMode", js);
-        PhantomMode = PhantomModeFactory::makePhantomModeInstance(js);
+        jstools::readObject(json, "Phantom", js);
+        Phantom = PhantomModeFactory::makePhantomModeInstance(js);
     }
 
     // Detector composition
@@ -562,7 +558,7 @@ void SessionManager::loadConfig(const std::string & fileName)
     {
         json11::Json::object js;
         jstools::readObject(json, "SourceMode", js);
-        SourceMode = SourceModeFactory::makeSourceModeInstance(js);
+        SourceMode = SourceModeFactory::makeSourceInstance(js);
     }
 
     // Simulation mode

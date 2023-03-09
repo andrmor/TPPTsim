@@ -47,11 +47,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if (SM.detectorContains(DetComp::GDML)) addGDML();
 
-    G4LogicalVolume * phantom = SM.PhantomMode->definePhantom(logicWorld);
+    G4LogicalVolume * phantom = SM.Phantom->definePhantom(logicWorld);
     if (phantom) SM.createPhantomRegion(phantom);
 
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
-    if (SM.detectorContains(DetComp::FirstStageMonitor)) addFSM();
+    if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
     if (SM.detectorContains(DetComp::Base))              addBase();
     if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
     if (SM.detectorContains(DetComp::SIPM))              addSIPM();
@@ -189,22 +189,22 @@ void DetectorConstruction::addGDML()
 #endif
 }
 
-void DetectorConstruction::addFSM()
+void DetectorConstruction::addParticleLogger()
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    double OuterRadius = 0.5 * SM.InnerDiam - 2.0*mm;
+    double OuterRadius = 0.5 * SM.InnerDiam - 7.0*mm;
     double InnerRadius = OuterRadius - 1.0*mm;
     double Height      = 5.0 * SM.EncapsSizeX; // Margarida, please calculate the minimum size
 
-    G4VSolid          * solidFSM = new G4Tubs("FSM_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
-    G4LogicalVolume   * logicFSM = new G4LogicalVolume(solidFSM, WorldMat, "FSM");
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicFSM, "FSM_PV", logicWorld, false, 0);
-    logicFSM->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    G4VSolid          * solidPL = new G4Tubs("ParticleLogger_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
+    G4LogicalVolume   * logicPL = new G4LogicalVolume(solidPL, WorldMat, "ParticleLogger");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPL, "ParticleLogger_PV", logicWorld, false, 0);
+    logicPL->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
 
     G4VSensitiveDetector * pSD_FSM = new SensitiveDetectorFSM("SD_FSM");
     G4SDManager::GetSDMpointer()->AddNewDetector(pSD_FSM);
-    logicFSM->SetSensitiveDetector(pSD_FSM);
+    logicPL->SetSensitiveDetector(pSD_FSM);
 }
 
 void DetectorConstruction::addScintillators()

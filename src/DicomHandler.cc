@@ -593,7 +593,8 @@ void DicomHandler::processFiles(const G4String & path, const G4String & converti
                                 const std::vector<std::string> & sliceFiles)
 {
     driverPath = path;
-    fCt2DensityFile = driverPath + '/' + convertionFileName;
+    //fCt2DensityFile = driverPath + '/' + convertionFileName;
+    fCt2DensityFile = convertionFileName;
     fCompression = lateralCompression;
     fNFiles = sliceFiles.size();
 

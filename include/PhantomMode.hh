@@ -1,6 +1,7 @@
 #ifndef PhantomMode_h
 #define PhantomMode_h
 
+#include "MaterialBuilder.hh"
 #include "json11.hh"
 
 #include <string>
@@ -40,22 +41,13 @@ class PhantomNone : public PhantomModeBase
 
 // ---
 
-class PhantomPMMA : public PhantomModeBase
+class PhantomCylinder : public PhantomModeBase
 {
 public:
-    std::string getTypeName() const override {return "PhantomPMMA";}
-    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
-};
+    PhantomCylinder(double diameter, double length, EMaterial material);
+    PhantomCylinder(){}
 
-class PhantomCustomBox : public PhantomModeBase
-{
-public:
-    enum EMaterial {PMMA, HDPE, PE, Graphite, GelTissue, GelWater, Bone, Brain, Blood, Muscle, Tissue};
-
-    PhantomCustomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
-    PhantomCustomBox(){}
-
-    std::string getTypeName() const override {return "PhantomCustomBox";}
+    std::string getTypeName() const override {return "PhantomCylinder";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
     void readFromJson(const json11::Json & json) override;
@@ -63,19 +55,29 @@ public:
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
 
-    double SizeX = 100;
-    double SizeY = 100;
-    double SizeZ = 100;
-    EMaterial Material = HDPE;
+    double Diameter = 200.0;
+    double Length   = 200.0;
+    EMaterial Material = EMaterial::PMMA;
 };
 
-// ---
-
-class PhantomTinyCube : public PhantomModeBase
+class PhantomBox : public PhantomModeBase
 {
 public:
-    std::string getTypeName() const override {return "PhantomTinyCube";}
+    PhantomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
+    PhantomBox(){}
+
+    std::string getTypeName() const override {return "PhantomBox";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    double SizeX = 100.0;
+    double SizeY = 100.0;
+    double SizeZ = 100.0;
+    EMaterial Material = EMaterial::PMMA;
 };
 
 // ---

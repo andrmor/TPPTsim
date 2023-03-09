@@ -16,17 +16,17 @@ struct PesDataRecord
     std::vector<std::string> SpatialFiles;
 };
 
-class PesHistogramSource : public SourceModeBase
+class SourcePesHistogramFiles : public SourceModeBase
 {
 public:
-    PesHistogramSource(const std::string & directory, double multiplier, bool generateUniformOverBin);  // if not uniform, use bin center
-    PesHistogramSource(const json11::Json & json);
+    SourcePesHistogramFiles(const std::string & directory, double multiplier, bool generateUniformOverBin);  // if not uniform, use bin center
+    SourcePesHistogramFiles(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
     double CountEvents() override;
 
-    std::string getTypeName() const override {return "PesHistogramSource";}
+    std::string getTypeName() const override {return "SourcePesHistogramFiles";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

@@ -2,10 +2,10 @@
 #include "SimMode.hh"
 #include "SteppingAction.hh"
 #include "SensitiveDetectorScint.hh"
-#include "PesGenerationMode.hh"
-#include "ActivityGenerationMode.hh"
-#include "PesProbabilityMode.hh"
-#include "AnnihilationLoggerMode.hh"
+#include "ModePesGenerator_MC.hh"
+#include "ModeActivityGenerator.hh"
+#include "ModePesGenerator_Prob.hh"
+#include "ModeAnnihilationLogger.hh"
 #include "Hist1D.hh"
 #include "out.hh"
 #include "jstools.hh"
@@ -25,22 +25,25 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
     SimModeBase * sm = nullptr;
 
-    if      (Type == "SimModeGui")            sm = new SimModeGui();
-    else if (Type == "SimModeShowEvent")      sm = new SimModeShowEvent(0);
-    else if (Type == "DoseExtractorMode")     sm = new DoseExtractorMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
-    else if (Type == "SimModeScintPosTest")   sm = new SimModeScintPosTest();
-    else if (Type == "SimModeSingleEvents")   sm = new SimModeSingleEvents(0);
-    else if (Type == "SimModeMultipleEvents") sm = new SimModeMultipleEvents(0, "dummy.txt", false);
-    else if (Type == "SimModeTracing")        sm = new SimModeTracing();
-    else if (Type == "SimModeAcollinTest")    sm = new SimModeAcollinTest(0, 0, 1, "dummy.txt");
-    else if (Type == "SimModeAnnihilTest")    sm = new SimModeAnnihilTest(0, 0, "dummy.txt", false);
-    else if (Type == "SimModeNatRadTest")     sm = new SimModeNatRadTest(0, 0, "dummy.txt");
-    else if (Type == "SimModeFirstStage")     sm = new SimModeFirstStage(0, "dummy.txt", false);
-    else if (Type == "PesGenerationMode")     sm = new PesGenerationMode(0, "dummy.txt", false);
-    else if (Type == "ActivityGenerationMode")sm = new ActivityGenerationMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
-    else if (Type == "DepoStatMode")          sm = new DepoStatMode(0, 0.01, {0.05, 0.1});
-    else if (Type == "PesProbabilityMode")    sm = new PesProbabilityMode(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}});
-    else if (Type == "AnnihilationLoggerMode")sm = new AnnihilationLoggerMode(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+      // misc mode
+    if      (Type == "ModeGui")                  sm = new ModeGui();
+    else if (Type == "ModeShowEvent")            sm = new ModeShowEvent(0);
+    else if (Type == "ModeParticleLogger")       sm = new ModeParticleLogger(0, "dummy.txt", false);
+    else if (Type == "ModeTracing")              sm = new ModeTracing();
+    else if (Type == "ModeEnergyCalibration")    sm = new ModeEnergyCalibration(0, 1, "dummy.txt");
+      // main functionality
+    else if (Type == "ModeDoseExtractor")        sm = new ModeDoseExtractor(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+    else if (Type == "ModeDepositionScint")      sm = new ModeDepositionScint(0, "dummy.txt", false);
+    else if (Type == "ModePesGenerator_MC")      sm = new ModePesGenerator_MC(0, "dummy.txt", false);
+    else if (Type == "ModePesGenerator_Prob")    sm = new ModePesGenerator_Prob(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}});
+    else if (Type == "ModeActivityGenerator")    sm = new ModeActivityGenerator(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
+    else if (Type == "ModeAnnihilationLogger")   sm = new ModeAnnihilationLogger(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
+      // tests
+    else if (Type == "ModeTestScintPositions")   sm = new ModeTestScintPositions();
+    else if (Type == "ModeTestAcollinearity")    sm = new ModeTestAcollinearity(0, 0, 1, "dummy.txt");
+    else if (Type == "ModeTestAnnihilations")    sm = new ModeTestAnnihilations(0, 0, "dummy.txt", false);
+    else if (Type == "ModeTestLysoNatRad")       sm = new ModeTestLysoNatRad(0, 0, "dummy.txt");
+    else if (Type == "ModeTestDepositionStat")   sm = new ModeTestDepositionStat(0, 0.01, {0.05, 0.1});
     else
     {
         out("Unknown simulation mode type!");
@@ -62,13 +65,13 @@ void SimModeBase::writeToJson(json11::Json::object & json) const
 
 // ---
 
-SimModeGui::SimModeGui()
+ModeGui::ModeGui()
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeGui::run()
+void ModeGui::run()
 {
     SessionManager& SM = SessionManager::getInstance();
     SM.startGUI();
@@ -76,13 +79,13 @@ void SimModeGui::run()
 
 // ---
 
-DoseExtractorMode::DoseExtractorMode(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
+ModeDoseExtractor::ModeDoseExtractor(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
     NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin), FileName(fileName)
 {
     init();
 }
 
-void DoseExtractorMode::init()
+void ModeDoseExtractor::init()
 {
     bNeedGui    = false;
     bNeedOutput = true;
@@ -100,19 +103,19 @@ void DoseExtractorMode::init()
     }
 }
 
-void DoseExtractorMode::run()
+void ModeDoseExtractor::run()
 {
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
     saveArray();
 }
 
-G4UserSteppingAction * DoseExtractorMode::getSteppingAction()
+G4UserSteppingAction * ModeDoseExtractor::getSteppingAction()
 {
     return new SteppingAction_Dose();
 }
 
-void DoseExtractorMode::readFromJson(const json11::Json & json)
+void ModeDoseExtractor::readFromJson(const json11::Json & json)
 {
     SessionManager & SM = SessionManager::getInstance();
     jstools::readInt(json, "NumEvents", NumEvents);
@@ -140,7 +143,7 @@ void DoseExtractorMode::readFromJson(const json11::Json & json)
     init();
 }
 
-void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
+void ModeDoseExtractor::writeBinningToJson(json11::Json::object & json) const
 {
     //BinSize
     {
@@ -162,7 +165,7 @@ void DoseExtractorMode::writeBinningToJson(json11::Json::object & json) const
     }
 }
 
-void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
+void ModeDoseExtractor::doWriteToJson(json11::Json::object & json) const
 {
     SessionManager & SM = SessionManager::getInstance();
     json["NumEvents"] = NumEvents;
@@ -171,7 +174,7 @@ void DoseExtractorMode::doWriteToJson(json11::Json::object & json) const
     writeBinningToJson(json);
 }
 
-void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos)
+void ModeDoseExtractor::fill(double energy, const G4ThreeVector & pos)
 {
     std::array<int,3> index; // on stack, fast
     const bool ok = getVoxel(pos, index);
@@ -180,7 +183,7 @@ void DoseExtractorMode::fill(double energy, const G4ThreeVector & pos)
     DepositionMeV[index[0]][index[1]][index[2]] += energy;
 }
 
-bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
+bool ModeDoseExtractor::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -190,7 +193,7 @@ bool DoseExtractorMode::getVoxel(const G4ThreeVector & pos, std::array<int,3> & 
     return true;
 }
 
-void DoseExtractorMode::saveArray()
+void ModeDoseExtractor::saveArray()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -213,13 +216,13 @@ void DoseExtractorMode::saveArray()
 
 // ---
 
-EnergyCalibrationMode::EnergyCalibrationMode(int numEvents, double binSize, const std::string & fileName) :
+ModeEnergyCalibration::ModeEnergyCalibration(int numEvents, double binSize, const std::string & fileName) :
     SimModeBase(), NumEvents(numEvents), BinSize(binSize), FileName(fileName)
 {
     init();
 }
 
-void EnergyCalibrationMode::init()
+void ModeEnergyCalibration::init()
 {
     if (BinSize <= 0)
     {
@@ -246,7 +249,7 @@ void EnergyCalibrationMode::init()
 }
 
 #include "SourceMode.hh"
-void EnergyCalibrationMode::run()
+void ModeEnergyCalibration::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -274,7 +277,7 @@ void EnergyCalibrationMode::run()
     calibrate();
 }
 
-double EnergyCalibrationMode::extractRange()  // returns zero if failed
+double ModeEnergyCalibration::extractRange()  // returns zero if failed
 {
     size_t iMax = 0;
     double max = 0;
@@ -308,7 +311,7 @@ double EnergyCalibrationMode::extractRange()  // returns zero if failed
     return range;
 }
 
-void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
+void ModeEnergyCalibration::loadMdaData(const std::string & fileName)
 {
     std::ifstream inStream(fileName);
     if (!inStream.is_open())
@@ -337,7 +340,7 @@ void EnergyCalibrationMode::loadMdaData(const std::string & fileName)
     }
 }
 
-void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
+void ModeEnergyCalibration::loadSavedRanges(const std::string & fileName)
 {
     std::ifstream inStream(fileName);
     if (!inStream.is_open())
@@ -366,12 +369,12 @@ void EnergyCalibrationMode::loadSavedRanges(const std::string & fileName)
     //out(Ranges.size());
 }
 
-G4UserSteppingAction * EnergyCalibrationMode::getSteppingAction()
+G4UserSteppingAction * ModeEnergyCalibration::getSteppingAction()
 {
     return new SteppingAction_EnCal();
 }
 
-void EnergyCalibrationMode::readFromJson(const json11::Json & json)
+void ModeEnergyCalibration::readFromJson(const json11::Json & json)
 {
     jstools::readInt   (json, "NumEvents", NumEvents);
     jstools::readDouble(json, "BinSize",   BinSize);
@@ -380,7 +383,7 @@ void EnergyCalibrationMode::readFromJson(const json11::Json & json)
     init();
 }
 
-void EnergyCalibrationMode::fill(double depo, double yPos)
+void ModeEnergyCalibration::fill(double depo, double yPos)
 {
     const size_t iBin = -yPos / BinSize;
     if (iBin >= Deposition.size()) return;
@@ -388,14 +391,14 @@ void EnergyCalibrationMode::fill(double depo, double yPos)
     Deposition[iBin] += depo;
 }
 
-void EnergyCalibrationMode::doWriteToJson(json11::Json::object & json) const
+void ModeEnergyCalibration::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
     json["BinSize"]   = BinSize;
     json["FileName"]  = FileName;
 }
 
-void EnergyCalibrationMode::saveRangeData()
+void ModeEnergyCalibration::saveRangeData()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -421,7 +424,7 @@ void EnergyCalibrationMode::saveRangeData()
     outStream.close();
 }
 
-void EnergyCalibrationMode::calibrate()
+void ModeEnergyCalibration::calibrate()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -470,38 +473,38 @@ void EnergyCalibrationMode::calibrate()
 
 // ---
 
-SimModeShowEvent::SimModeShowEvent(int EventToShow) : iEvent(EventToShow)
+ModeShowEvent::ModeShowEvent(int EventToShow) : iEvent(EventToShow)
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeShowEvent::run()
+void ModeShowEvent::run()
 {
     SessionManager& SM = SessionManager::getInstance();
     if (iEvent != 0) SM.runManager->BeamOn(iEvent);
-    SimModeGui::run();
+    ModeGui::run();
 }
 
-void SimModeShowEvent::readFromJson(const json11::Json & json)
+void ModeShowEvent::readFromJson(const json11::Json & json)
 {
     jstools::readInt(json, "iEvent", iEvent);
 }
 
-void SimModeShowEvent::doWriteToJson(json11::Json::object & json) const
+void ModeShowEvent::doWriteToJson(json11::Json::object & json) const
 {
     json["iEvent"] = iEvent;
 }
 
 // ---
 
-SimModeScintPosTest::SimModeScintPosTest()
+ModeTestScintPositions::ModeTestScintPositions()
 {
     bNeedGui    = false;
     bNeedOutput = false;
 }
 
-void SimModeScintPosTest::run()
+void ModeTestScintPositions::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -512,88 +515,14 @@ void SimModeScintPosTest::run()
     out("\n---Test results---\nTotal hits of the scintillators:", Hits, "Max delta:", MaxDelta, " Average delta:", SumDelta, "\n\n");
 }
 
-G4UserSteppingAction * SimModeScintPosTest::getSteppingAction()
+G4UserSteppingAction * ModeTestScintPositions::getSteppingAction()
 {
     return new SteppingAction_ScintPosTest;
 }
 
 // ---
 
-SimModeSingleEvents::SimModeSingleEvents(int numEvents) : NumEvents(numEvents)
-{
-    bNeedGui    = false;
-    bNeedOutput = true;
-
-    SessionManager& SM = SessionManager::getInstance();
-    SM.FileName = "Coincidence-GammaPairs-Test1.txt";
-}
-
-void SimModeSingleEvents::run()
-{
-    SessionManager& SM = SessionManager::getInstance();
-
-    const double EnergyThreshold = 0.500*MeV;
-
-    const int NumScint = SM.countScintillators();
-    for(int i=0; i < NumScint; i++) ScintData.push_back({0,0,0});
-    std::vector<int> hits;
-
-    for (int iRun = 0; iRun < NumEvents; iRun++)
-    {
-        SM.runManager->BeamOn(1);
-
-        hits.clear();
-        for (int iScint = 0; iScint < NumScint; iScint++)
-            if (ScintData[iScint][1] > EnergyThreshold)
-                hits.push_back(iScint);
-
-        if (hits.size() == 2)
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                const int iScint = hits[i];
-                const double Time   = ScintData[iScint][0] / ns;
-                const double Energy = ScintData[iScint][1] / MeV;
-                const G4ThreeVector & Pos   = SM.ScintRecords.at(iScint).FacePos;
-                const double X = Pos[0] / mm;
-                const double Y = Pos[1] / mm;
-                const double Z = Pos[2] / mm;
-
-                out("Scint#",iScint, Time,"ns ", Energy, "MeV  xyz: (",X,Y,Z,")  Run# ",iRun);
-
-                if (SM.outStream)
-                    *SM.outStream << X << " " << Y << " " << Z << " " << Time << " " << Energy << std::endl;
-
-            }
-            out("---");
-        }
-
-        for (int i = 0; i < NumScint; i++) ScintData[i] = {0,0,0};
-    }
-
-    outFlush();
-    if (!SM.outStream) out("\nOutput stream was not created, nothing was saved");
-    else out("Data saved to file:", SM.WorkingDirectory + "/" + SM.FileName);
-}
-
-G4VSensitiveDetector * SimModeSingleEvents::getScintDetector()
-{
-    return new SensitiveDetectorScint_SingleEvents("Scint");
-}
-
-void SimModeSingleEvents::readFromJson(const json11::Json & json)
-{
-    jstools::readInt(json, "NumEvents", NumEvents);
-}
-
-void SimModeSingleEvents::doWriteToJson(json11::Json::object & json) const
-{
-    json["NumEvents"] = NumEvents;
-}
-
-// ---
-
-SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & fileName, bool binary,
+ModeDepositionScint::ModeDepositionScint(int numEvents, const std::string & fileName, bool binary,
                                              size_t maxCapacity, bool doCluster, double maxTimeDif) :
     NumEvents(numEvents), MaxCapacity(maxCapacity), bDoCluster(doCluster), MaxTimeDif(maxTimeDif)
 {
@@ -605,7 +534,7 @@ SimModeMultipleEvents::SimModeMultipleEvents(int numEvents, const std::string & 
     SM.FileName    = fileName;
 }
 
-void SimModeMultipleEvents::run()
+void ModeDepositionScint::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -626,12 +555,12 @@ void SimModeMultipleEvents::run()
     }
 }
 
-G4VSensitiveDetector *SimModeMultipleEvents::getScintDetector()
+G4VSensitiveDetector *ModeDepositionScint::getScintDetector()
 {
     return new SensitiveDetectorScint_MultipleEvents("SD");
 }
 
-void SimModeMultipleEvents::saveData()
+void ModeDepositionScint::saveData()
 {
     SessionManager& SM = SessionManager::getInstance();
     const int numScint = SM.countScintillators();
@@ -674,7 +603,7 @@ void SimModeMultipleEvents::saveData()
     }
 }
 
-void SimModeMultipleEvents::readFromJson(const json11::Json &json)
+void ModeDepositionScint::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -689,7 +618,7 @@ void SimModeMultipleEvents::readFromJson(const json11::Json &json)
     MaxCapacity = iMaxCapacity;
 }
 
-void SimModeMultipleEvents::doWriteToJson(json11::Json::object &json) const
+void ModeDepositionScint::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -719,42 +648,42 @@ bool DepositionNodeRecord::isCluster(const DepositionNodeRecord &other, double m
 
 // ---
 
-SimModeTracing::SimModeTracing()
+ModeTracing::ModeTracing()
 {
     bNeedGui    = true;
     bNeedOutput = false;
 }
 
-void SimModeTracing::run()
+void ModeTracing::run()
 {
-    SimModeGui::run();
+    ModeGui::run();
 }
 
-G4UserSteppingAction * SimModeTracing::getSteppingAction()
+G4UserSteppingAction * ModeTracing::getSteppingAction()
 {
     return new SteppingAction_Tracing;
 }
 
 // ---
 
-SimModeAcollinTest::SimModeAcollinTest(int numRuns, double range, int numBins, const std::string & fileName) :
+ModeTestAcollinearity::ModeTestAcollinearity(int numRuns, double range, int numBins, const std::string & fileName) :
     NumRuns(numRuns), NumBins(numBins), FileName(fileName)
 {
     From = 180.0 - range;
     init();
 }
 
-SimModeAcollinTest::~SimModeAcollinTest()
+ModeTestAcollinearity::~ModeTestAcollinearity()
 {
     delete Hist;
 }
 
-void SimModeAcollinTest::init()
+void ModeTestAcollinearity::init()
 {
     delete Hist; Hist = new Hist1D(NumBins, From, 180.0);
 }
 
-void SimModeAcollinTest::run()
+void ModeTestAcollinearity::run()
 {
     SessionManager& SM = SessionManager::getInstance();
 
@@ -804,12 +733,12 @@ void SimModeAcollinTest::run()
     Hist->save(SM.WorkingDirectory + '/' + FileName);
 }
 
-G4UserSteppingAction *SimModeAcollinTest::getSteppingAction()
+G4UserSteppingAction *ModeTestAcollinearity::getSteppingAction()
 {
     return new SteppingAction_AcollinearityTester;
 }
 
-void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, double energy)
+void ModeTestAcollinearity::addDirection(const G4ThreeVector & v, int parentID, double energy)
 {
     // the first gamma to track will be annihilation one, some of the following ones can be secondary ones!
     //out("ParentId:", parentID, "Energy:", energy);
@@ -822,7 +751,7 @@ void SimModeAcollinTest::addDirection(const G4ThreeVector & v, int parentID, dou
     Gammas.push_back( DirAndEnergy(v, energy) );
 }
 
-void SimModeAcollinTest::readFromJson(const json11::Json &json)
+void ModeTestAcollinearity::readFromJson(const json11::Json &json)
 {
     jstools::readInt   (json, "NumRuns",  NumRuns);
     jstools::readInt   (json, "From",     From);
@@ -832,7 +761,7 @@ void SimModeAcollinTest::readFromJson(const json11::Json &json)
     init();
 }
 
-void SimModeAcollinTest::doWriteToJson(json11::Json::object &json) const
+void ModeTestAcollinearity::doWriteToJson(json11::Json::object &json) const
 {
     json["NumRuns"]  = NumRuns;
     json["From"]     = From;
@@ -842,7 +771,7 @@ void SimModeAcollinTest::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double timeStart, const std::string & fileName, bool binary) :
+ModeTestAnnihilations::ModeTestAnnihilations(int numEvents, double timeStart, const std::string & fileName, bool binary) :
     NumEvents(numEvents), TimeStart(timeStart)
 {
     bNeedOutput = true;
@@ -852,24 +781,24 @@ SimModeAnnihilTest::SimModeAnnihilTest(int numEvents, double timeStart, const st
     SM.bBinOutput = binary;
 }
 
-void SimModeAnnihilTest::saveRecord(const G4ThreeVector & pos, double timeInSeconds)
+void ModeTestAnnihilations::saveRecord(const G4ThreeVector & pos, double timeInSeconds)
 {
     SessionManager & SM = SessionManager::getInstance();
     *SM.outStream << pos[0] << ' ' << pos[1] << ' ' << pos[2] << ' ' << timeInSeconds << '\n';
 }
 
-G4UserSteppingAction * SimModeAnnihilTest::getSteppingAction()
+G4UserSteppingAction * ModeTestAnnihilations::getSteppingAction()
 {
     return new SteppingAction_AnnihilationTester;
 }
 
-void SimModeAnnihilTest::run()
+void ModeTestAnnihilations::run()
 {
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
 }
 
-void SimModeAnnihilTest::readFromJson(const json11::Json &json)
+void ModeTestAnnihilations::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -879,7 +808,7 @@ void SimModeAnnihilTest::readFromJson(const json11::Json &json)
     jstools::readBool  (json, "Binary",    SM.bBinOutput);
 }
 
-void SimModeAnnihilTest::doWriteToJson(json11::Json::object &json) const
+void ModeTestAnnihilations::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -891,7 +820,7 @@ void SimModeAnnihilTest::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::string & fileName) :
+ModeTestLysoNatRad::ModeTestLysoNatRad(int numEvents, int numBins, const std::string & fileName) :
     NumEvents(numEvents), NumBins(numBins), FileName(fileName)
 {
     init();
@@ -911,17 +840,17 @@ SimModeNatRadTest::SimModeNatRadTest(int numEvents, int numBins, const std::stri
     */
 }
 
-void SimModeNatRadTest::init()
+void ModeTestLysoNatRad::init()
 {
     delete Hist; Hist = new Hist1D(NumBins, 0, 1.3);
 }
 
-SimModeNatRadTest::~SimModeNatRadTest()
+ModeTestLysoNatRad::~ModeTestLysoNatRad()
 {
     delete Hist;
 }
 
-void SimModeNatRadTest::run()
+void ModeTestLysoNatRad::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -946,17 +875,17 @@ void SimModeNatRadTest::run()
     Hist->save(SM.WorkingDirectory + '/' + FileName);
 }
 
-G4UserSteppingAction * SimModeNatRadTest::getSteppingAction()
+G4UserSteppingAction * ModeTestLysoNatRad::getSteppingAction()
 {
     return new SteppingAction_NatRadTester;
 }
 
-void SimModeNatRadTest::addEnergy(int iScint, double energy)
+void ModeTestLysoNatRad::addEnergy(int iScint, double energy)
 {
     Deposition[iScint] += energy;
 }
 
-void SimModeNatRadTest::readFromJson(const json11::Json &json)
+void ModeTestLysoNatRad::readFromJson(const json11::Json &json)
 {
     jstools::readInt   (json, "NumEvents", NumEvents);
     jstools::readInt   (json, "NumBins",   NumBins);
@@ -965,7 +894,7 @@ void SimModeNatRadTest::readFromJson(const json11::Json &json)
     init();
 }
 
-void SimModeNatRadTest::doWriteToJson(json11::Json::object &json) const
+void ModeTestLysoNatRad::doWriteToJson(json11::Json::object &json) const
 {
     json["NumEvents"] = NumEvents;
     json["NumBins"]   = NumBins;
@@ -974,7 +903,7 @@ void SimModeNatRadTest::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName, bool bBinary) :
+ModeParticleLogger::ModeParticleLogger(int numEvents, const std::string & fileName, bool bBinary) :
     NumEvents(numEvents)
 {
     bNeedOutput = true;
@@ -984,14 +913,14 @@ SimModeFirstStage::SimModeFirstStage(int numEvents, const std::string & fileName
     SM.bBinOutput = bBinary;
 }
 
-void SimModeFirstStage::run()
+void ModeParticleLogger::run()
 {
     CurrentEvent = 0;
     SessionManager & SM = SessionManager::getInstance();
     SM.runManager->BeamOn(NumEvents);
 }
 
-void SimModeFirstStage::saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time)
+void ModeParticleLogger::saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -1018,7 +947,7 @@ void SimModeFirstStage::saveParticle(const G4String & particle, double energy_ke
     //out("->",particle, energy, "(",PosDir[0],PosDir[1],PosDir[2],")", "(",PosDir[3],PosDir[4],PosDir[5],")",time);
 }
 
-void SimModeFirstStage::onEventStarted()
+void ModeParticleLogger::onEventStarted()
 {
     SessionManager & SM = SessionManager::getInstance();
     if (SM.bBinOutput)
@@ -1032,7 +961,7 @@ void SimModeFirstStage::onEventStarted()
     CurrentEvent++;
 }
 
-void SimModeFirstStage::readFromJson(const json11::Json &json)
+void ModeParticleLogger::readFromJson(const json11::Json &json)
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -1041,7 +970,7 @@ void SimModeFirstStage::readFromJson(const json11::Json &json)
     jstools::readBool  (json, "bBinary",   SM.bBinOutput);
 }
 
-void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
+void ModeParticleLogger::doWriteToJson(json11::Json::object &json) const
 {
     SessionManager & SM = SessionManager::getInstance();
 
@@ -1052,10 +981,10 @@ void SimModeFirstStage::doWriteToJson(json11::Json::object &json) const
 
 // ---
 
-DepoStatMode::DepoStatMode(int numEvents, double thresholdMeV, std::vector<double> ranges) :
+ModeTestDepositionStat::ModeTestDepositionStat(int numEvents, double thresholdMeV, std::vector<double> ranges) :
     SimModeBase(), NumEvents(numEvents), Threshold(thresholdMeV), Ranges(ranges) {}
 
-void DepoStatMode::run()
+void ModeTestDepositionStat::run()
 {
     initContainers();
 
@@ -1066,7 +995,7 @@ void DepoStatMode::run()
     reportResults();
 }
 
-void DepoStatMode::doWriteToJson(json11::Json::object & json) const
+void ModeTestDepositionStat::doWriteToJson(json11::Json::object & json) const
 {
     json["NumEvents"] = NumEvents;
     json["Threshold"] = Threshold;
@@ -1076,7 +1005,7 @@ void DepoStatMode::doWriteToJson(json11::Json::object & json) const
     json["Ranges"] = jar;
 }
 
-void DepoStatMode::readFromJson(const json11::Json & json)
+void ModeTestDepositionStat::readFromJson(const json11::Json & json)
 {
     jstools::readInt   (json, "NumEvents", NumEvents);
     jstools::readDouble(json, "Threshold", Threshold);
@@ -1086,7 +1015,7 @@ void DepoStatMode::readFromJson(const json11::Json & json)
     for (size_t i = 0; i < jar.size(); i++) Ranges[i] = jar[i].number_value();
 }
 
-void DepoStatMode::initContainers()
+void ModeTestDepositionStat::initContainers()
 {
     size_t num = Ranges.size();
 
@@ -1123,7 +1052,7 @@ void DepoStatMode::initContainers()
     Global_In_5plus.resize(num, 0);
 }
 
-void DepoStatMode::reportInt(const std::vector<int> & vec, int scaleBy)
+void ModeTestDepositionStat::reportInt(const std::vector<int> & vec, int scaleBy)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1132,7 +1061,7 @@ void DepoStatMode::reportInt(const std::vector<int> & vec, int scaleBy)
     }
 }
 
-void DepoStatMode::reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec)
+void ModeTestDepositionStat::reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1141,7 +1070,7 @@ void DepoStatMode::reportAvDist(const std::vector<double> & vec, const std::vect
     }
 }
 
-void DepoStatMode::saveDistHist(const std::vector<Hist1D*> & HistDist)
+void ModeTestDepositionStat::saveDistHist(const std::vector<Hist1D*> & HistDist)
 {
     const SessionManager & SM = SessionManager::getInstance();
     for (size_t i=0; i<Ranges.size(); i++)
@@ -1151,7 +1080,7 @@ void DepoStatMode::saveDistHist(const std::vector<Hist1D*> & HistDist)
     }
 }
 
-void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D *> & vecHist)
 {
     const SessionManager & SM = SessionManager::getInstance();
     for (size_t i = 0; i < Ranges.size(); i++)
@@ -1164,19 +1093,19 @@ void DepoStatMode::reportRatios(const std::vector<int> & vecStat, const std::vec
     }
 }
 
-void DepoStatMode::onEventStarted()
+void ModeTestDepositionStat::onEventStarted()
 {
     processEventData(); //previous event!
 
     EventRecord.clear();
 }
 
-G4UserSteppingAction * DepoStatMode::getSteppingAction()
+G4UserSteppingAction * ModeTestDepositionStat::getSteppingAction()
 {
     return new SteppingAction_DepoStatMode();
 }
 
-void DepoStatMode::addRecord(int iScint, double depo, double time)
+void ModeTestDepositionStat::addRecord(int iScint, double depo, double time)
 {
     //out("-->Scint:", iScint, " MeV:", depo, "  ns:", time);
 
@@ -1192,7 +1121,7 @@ void DepoStatMode::addRecord(int iScint, double depo, double time)
     EventRecord.emplace_back(DepoStatRec{iScint, depo, time});
 }
 
-void DepoStatMode::fillDepoIn(double depo, std::vector<int> & vec)
+void ModeTestDepositionStat::fillDepoIn(double depo, std::vector<int> & vec)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1202,7 +1131,7 @@ void DepoStatMode::fillDepoIn(double depo, std::vector<int> & vec)
     }
 }
 
-void DepoStatMode::fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D *> & vecHist)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1216,7 +1145,7 @@ void DepoStatMode::fillDistHist(double depoSum, const G4ThreeVector & pos1, cons
     }
 }
 
-void DepoStatMode::incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec)
+void ModeTestDepositionStat::incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1230,7 +1159,7 @@ void DepoStatMode::incrementDistance(double depo, const G4ThreeVector & v1, cons
     }
 }
 
-void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D *> & vecHist)
 {
     const double sumDepo = depo1 + depo2;
     for (size_t i = 0; i < Ranges.size(); i++)
@@ -1245,7 +1174,7 @@ void DepoStatMode::fillRatios(double depo1, double depo2, std::vector<int> & vec
     }
 }
 
-void DepoStatMode::processEventData()
+void ModeTestDepositionStat::processEventData()
 {
     const SessionManager & SM = SessionManager::getInstance();
     //for (const DepoStatRec & r : EventRecord)
@@ -1326,7 +1255,7 @@ void DepoStatMode::processEventData()
     }
 }
 
-void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In)
+void ModeTestDepositionStat::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In)
 {
     for (DepoStatRec & rec : EventRecord)
     {
@@ -1347,7 +1276,7 @@ void DepoStatMode::fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<i
     fillDepoIn(sumDepo, Global_In);
 }
 
-void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
+void ModeTestDepositionStat::groupRecords(std::vector<DepoStatRec> & records)
 {
     if (records.size() < 2)  return;
 
@@ -1369,7 +1298,7 @@ void DepoStatMode::groupRecords(std::vector<DepoStatRec> & records)
     }
 }
 
-void DepoStatMode::reportResults()
+void ModeTestDepositionStat::reportResults()
 {
     // results
     out("\n\n------------------");

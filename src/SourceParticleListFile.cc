@@ -1,4 +1,4 @@
-#include "FromFileSource.hh"
+#include "SourceParticleListFile.hh"
 #include "SessionManager.hh"
 #include "out.hh"
 #include "jstools.hh"
@@ -11,13 +11,13 @@
 #include <sstream>
 #include <fstream>
 
-FromFileSource::FromFileSource(const std::string & fileName, bool bBinaryFile) :
+SourceParticleListFile::SourceParticleListFile(const std::string & fileName, bool bBinaryFile) :
     SourceModeBase(nullptr, nullptr), FileName(fileName), bBinary(bBinaryFile)
 {
     init();
 }
 
-FromFileSource::FromFileSource(const json11::Json & json) :
+SourceParticleListFile::SourceParticleListFile(const json11::Json & json) :
     SourceModeBase(nullptr, nullptr)
 {
     doReadFromJson(json);
@@ -26,7 +26,7 @@ FromFileSource::FromFileSource(const json11::Json & json) :
     init();
 }
 
-void FromFileSource::init()
+void SourceParticleListFile::init()
 {
     if (bBinary) inStream = new std::ifstream(FileName, std::ios::in | std::ios::binary);
     else         inStream = new std::ifstream(FileName);
@@ -40,12 +40,12 @@ void FromFileSource::init()
     prepareStream();
 }
 
-FromFileSource::~FromFileSource()
+SourceParticleListFile::~SourceParticleListFile()
 {
     delete inStream;
 }
 
-void FromFileSource::prepareStream()
+void SourceParticleListFile::prepareStream()
 {
     inStream->clear();
     inStream->seekg(0);
@@ -76,7 +76,7 @@ void FromFileSource::prepareStream()
     }
 }
 
-void FromFileSource::GeneratePrimaries(G4Event * anEvent)
+void SourceParticleListFile::GeneratePrimaries(G4Event * anEvent)
 {
     if (!inStream)
     {
@@ -175,7 +175,7 @@ void FromFileSource::GeneratePrimaries(G4Event * anEvent)
     }
 }
 
-void FromFileSource::addPrimary(G4Event * anEvent)
+void SourceParticleListFile::addPrimary(G4Event * anEvent)
 {
     pd = ParticleGenerator.makeGeant4Particle(name);
 
@@ -190,7 +190,7 @@ void FromFileSource::addPrimary(G4Event * anEvent)
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
-double FromFileSource::CountEvents()
+double SourceParticleListFile::CountEvents()
 {
     if (!inStream) return 0;
 
@@ -252,13 +252,13 @@ double FromFileSource::CountEvents()
     return iCounter;
 }
 
-void FromFileSource::doWriteToJson(json11::Json::object & json) const
+void SourceParticleListFile::doWriteToJson(json11::Json::object & json) const
 {
     json["FileName"] = FileName;
     json["bBinary"]  = bBinary;
 }
 
-void FromFileSource::doReadFromJson(const json11::Json & json)
+void SourceParticleListFile::doReadFromJson(const json11::Json & json)
 {
     jstools::readString(json, "FileName", FileName);
     jstools::readBool  (json, "bBinary",  bBinary);

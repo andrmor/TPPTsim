@@ -1,7 +1,7 @@
 #include "TrackingAction.hh"
 #include "SessionManager.hh"
-#include "PesGenerationMode.hh"
-#include "AnnihilationLoggerMode.hh"
+#include "ModePesGenerator_MC.hh"
+#include "ModeAnnihilationLogger.hh"
 #include "out.hh"
 
 #include "G4Track.hh"
@@ -11,7 +11,7 @@
 void PesGeneratorTrackingAction::PreUserTrackingAction(const G4Track * /*track*/)
 {
     SessionManager & SM = SessionManager::getInstance();
-    PesGenerationMode * Mode = static_cast<PesGenerationMode*>(SM.SimMode);
+    ModePesGenerator_MC * Mode = static_cast<ModePesGenerator_MC*>(SM.SimMode);
     Mode->bNewTrackStarted = true;
 }
 
@@ -26,6 +26,6 @@ void AnnihilationLoggerTrackingAction::PostUserTrackingAction(const G4Track * tr
     //if (procName != "annihil") out(procName);
 
     SessionManager & SM = SessionManager::getInstance();
-    AnnihilationLoggerMode * mode = static_cast<AnnihilationLoggerMode*>(SM.SimMode);
+    ModeAnnihilationLogger * mode = static_cast<ModeAnnihilationLogger*>(SM.SimMode);
     mode->fillPosition(track->GetPosition());
 }

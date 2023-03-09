@@ -20,7 +20,7 @@ class SourceModeBase;
 class SourceModeFactory
 {
 public:
-    static SourceModeBase * makeSourceModeInstance(const json11::Json & json);
+    static SourceModeBase * makeSourceInstance(const json11::Json & json);
 };
 
 class SourceModeBase
@@ -29,7 +29,7 @@ public:
     SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator); // transfers ownership
     virtual ~SourceModeBase();
 
-    void initialize();
+    virtual void initialize();
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
@@ -40,7 +40,7 @@ public:
     void writeToJson(json11::Json::object & json) const;
     void readFromJson(const json11::Json & json);
 
-    void setParticleEnergy(double energy);
+    virtual void setParticleEnergy(double energy);
 
 protected:
     virtual void customPostInit() {}
@@ -62,13 +62,38 @@ protected:
 
 // ---
 
-class PointSource : public SourceModeBase
+class SourceMixer : public SourceModeBase
 {
 public:
-    PointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin);
-    PointSource(const json11::Json & json);
+    SourceMixer(std::vector<std::pair<SourceModeBase*,double>> sourcesAndStatWeights);
+    SourceMixer(const json11::Json & json);
 
-    std::string getTypeName() const override {return "PointSource";}
+    void initialize() override;
+    void setParticleEnergy(double energy) override;
+
+    std::string getTypeName() const override {return "SourceMixer";}
+
+    void GeneratePrimaries(G4Event * anEvent) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
+
+    void init();
+
+    std::vector<std::pair<SourceModeBase*,double>> SourcesAndWeights;
+    double SumWeight = 0;
+};
+
+// ---
+
+class SourcePoint : public SourceModeBase
+{
+public:
+    SourcePoint(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin);
+    SourcePoint(const json11::Json & json);
+
+    std::string getTypeName() const override {return "SourcePoint";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -79,15 +104,15 @@ protected:
 
 // ---
 
-class LineSource : public SourceModeBase
+class SourceLine : public SourceModeBase
 {
 public:
-    LineSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint);
-    LineSource(const json11::Json & json);
+    SourceLine(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint);
+    SourceLine(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "LineSource";}
+    std::string getTypeName() const override {return "SourceLine";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -99,18 +124,18 @@ protected:
 
 // ---
 
-class CylindricalSource : public SourceModeBase
+class SourceCylinder : public SourceModeBase
 {
 public:
-    CylindricalSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
+    SourceCylinder(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                       double radius, const G4ThreeVector & startPoint, const G4ThreeVector & endPoint,
                       const std::string & fileName = "");
-    CylindricalSource(const json11::Json & json);
-    ~CylindricalSource();
+    SourceCylinder(const json11::Json & json);
+    ~SourceCylinder();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "CylindricalSource";}
+    std::string getTypeName() const override {return "SourceCylinder";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -159,7 +184,7 @@ protected:
 class UniformProfile : public ProfileBase
 {
 public:
-    UniformProfile(double dx, double dy) : ProfileBase(), DX(dx), DY(dy) {}
+    UniformProfile(double fullSizeX, double fullSizeY) : ProfileBase(), DX(fullSizeX), DY(fullSizeY) {}
     UniformProfile(const json11::Json & json);
 
     std::string getTypeName() const override {return "Uniform";}
@@ -168,6 +193,21 @@ public:
 protected:
     double DX = 0;
     double DY = 0;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+    void readFromJson(const json11::Json & json);
+};
+class RoundProfile : public ProfileBase
+{
+public:
+    RoundProfile(double diameter) : ProfileBase(), Diameter(diameter) {}
+    RoundProfile(const json11::Json & json);
+
+    std::string getTypeName() const override {return "Round";}
+    void generateOffset(G4ThreeVector & pos) const override;
+
+protected:
+    double Diameter = 0;
 
     void doWriteToJson(json11::Json::object & json) const override;
     void readFromJson(const json11::Json & json);
@@ -189,16 +229,16 @@ protected:
     void readFromJson(const json11::Json & json);
 };
 
-class PencilBeam : public SourceModeBase
+class SourceBeam : public SourceModeBase
 {
 public:
-    PencilBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
+    SourceBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                const G4ThreeVector & origin, const G4ThreeVector & direction,
                int numParticles = 1, ProfileBase * spread = nullptr);
-    PencilBeam(const json11::Json & json);
-    ~PencilBeam();
+    SourceBeam(const json11::Json & json);
+    ~SourceBeam();
 
-    std::string getTypeName() const override {return "PencilBeam";}
+    std::string getTypeName() const override {return "SourceBeam";}
     void GeneratePrimaries(G4Event * anEvent) override;
 
 protected:
@@ -229,19 +269,19 @@ struct BeamRecord
 
 // Beam is aligned with Y axis (downwards) and starts from Y = StartBeamFromY
 // Divergence is determined using the apex position = Origin
-class MultiBeam : public SourceModeBase
+class SourceMultiBeam : public SourceModeBase
 {
 public:
-    MultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles);
-    MultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
-    MultiBeam(const json11::Json & json);
+    SourceMultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles);
+    SourceMultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
+    SourceMultiBeam(const json11::Json & json);
 
     double CountEvents() override {return NumParticles;}
 
-    std::string getTypeName() const override {return "MultiBeam";}
+    std::string getTypeName() const override {return "SourceMultiBeam";}
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::vector<std::pair<double,double>> getTimeWindows(double marginFrom, double marginTo) const;
+    std::vector<std::pair<double,double>> getTimeWindows(double delayAfter, double marginBefore) const; // only for beamlets consecutive in time; returns vector of pairs[from, duration]
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -267,20 +307,20 @@ protected:
 
 // ---
 
-class MaterialLimitedSource : public SourceModeBase
+class SourceMaterialLimited : public SourceModeBase
 {
 public:
-    MaterialLimitedSource(ParticleBase * particle,
+    SourceMaterialLimited(ParticleBase * particle,
                           TimeGeneratorBase * timeGenerator,
                           const G4ThreeVector & origin, const G4ThreeVector & boundingBoxFullSize,
                           const G4String & material,
                           G4String fileName_EmissionPositions = "");
-    MaterialLimitedSource(const json11::Json & json);
-    ~MaterialLimitedSource();
+    SourceMaterialLimited(const json11::Json & json);
+    ~SourceMaterialLimited();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "MaterialLimitedSource";}
+    std::string getTypeName() const override {return "SourceMaterialLimited";}
 
 protected:
     void init();
@@ -301,16 +341,16 @@ protected:
 
 // ---
 
-class NaturalLysoSource : public SourceModeBase
+class SourceLysoNatural : public SourceModeBase
 {
 public:
-    NaturalLysoSource(double timeFrom, double timeTo);
-    NaturalLysoSource(const json11::Json & json);
-    ~NaturalLysoSource();
+    SourceLysoNatural(double timeFrom, double timeTo);
+    SourceLysoNatural(const json11::Json & json);
+    ~SourceLysoNatural();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "NaturalLysoSource";}
+    std::string getTypeName() const override {return "SourceLysoNatural";}
 
 protected:
     void init();
@@ -331,15 +371,15 @@ protected:
 
 // ---
 
-class Na22point : public SourceModeBase
+class SourceNa22Point : public SourceModeBase
 {
 public:
-    Na22point(double timeFrom, double timeTo, const G4ThreeVector & origin);
-    Na22point(const json11::Json & json);
+    SourceNa22Point(double timeFrom, double timeTo, const G4ThreeVector & origin);
+    SourceNa22Point(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "Na22point";}
+    std::string getTypeName() const override {return "SourceNa22Point";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
@@ -352,16 +392,16 @@ protected:
 
 // ---
 
-class BlurredPointSource : public PointSource
+class SourcePointBlurred : public SourcePoint
 {
 public:
-    BlurredPointSource(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, G4String fileName);
-    BlurredPointSource(const json11::Json & json);
-    ~BlurredPointSource();
+    SourcePointBlurred(ParticleBase * particle, TimeGeneratorBase * timeGenerator, const G4ThreeVector & origin, G4String distributionFileName, int numBins, double range);
+    SourcePointBlurred(const json11::Json & json);
+    ~SourcePointBlurred();
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "BlurredPointSource";}
+    std::string getTypeName() const override {return "SourcePointBlurred";}
 
 protected:
     void init();
@@ -369,7 +409,9 @@ protected:
     void doReadFromJson(const json11::Json & json);
 
     std::string FileName;
-    Hist1DSampler * Sampler   = nullptr;
+    int NumBins = 21;
+    double Range = 10.0;
+    Hist1DSampler * Sampler = nullptr;
 };
 
 // --

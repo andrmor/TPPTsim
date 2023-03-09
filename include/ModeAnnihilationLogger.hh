@@ -7,14 +7,14 @@
 #include <string>
 #include <array>
 
-class AnnihilationLoggerMode : public SimModeBase
+class ModeAnnihilationLogger : public SimModeBase
 {
 public:
-    AnnihilationLoggerMode(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
+    ModeAnnihilationLogger(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
 
     void run() override;
 
-    std::string getTypeName() const override {return "AnnihilationLoggerMode";}
+    std::string getTypeName() const override {return "ModeAnnihilationLogger";}
 
     void readFromJson(const json11::Json & json) override;
 

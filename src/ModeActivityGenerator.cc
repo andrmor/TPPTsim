@@ -1,21 +1,21 @@
-#include "ActivityGenerationMode.hh"
+#include "ModeActivityGenerator.hh"
 #include "SessionManager.hh"
 #include "out.hh"
 #include "jstools.hh"
 
 #include "G4MTRunManager.hh"
 
-ActivityGenerationMode::ActivityGenerationMode(int numEvents,
+ModeActivityGenerator::ModeActivityGenerator(int numEvents,
                                                std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
-                                               const std::vector<std::pair<double,double>> & acquisitionFromTos,
+                                               const std::vector<std::pair<double,double>> & acquisitionFromDurationPairs,
                                                const std::string & fileName) :
-    PesProbabilityMode(numEvents, binSize, numBins, origin, acquisitionFromTos),
+    ModePesGenerator_Prob(numEvents, binSize, numBins, origin, acquisitionFromDurationPairs),
     FileName(fileName)
 {
     initActivityArray();
 }
 
-void ActivityGenerationMode::initActivityArray()
+void ModeActivityGenerator::initActivityArray()
 {
     // X
     Activity.resize(NumBins[0]);
@@ -31,46 +31,28 @@ void ActivityGenerationMode::initActivityArray()
     }
 }
 
-void ActivityGenerationMode::run()
+void ModeActivityGenerator::run()
 {
-    PesGenerationMode::run(); // PesGenerationMode indeed
+    ModePesGenerator_MC::run(); // it is ModePesGenerator_MC indeed!
     saveData();
 }
 
-void ActivityGenerationMode::readFromJson(const json11::Json & json)
+void ModeActivityGenerator::readFromJson(const json11::Json & json)
 {
-    PesProbabilityMode::readFromJson(json);
+    ModePesGenerator_Prob::readFromJson(json);
     initActivityArray();
-
-    TimeWindows.clear();
-    json11::Json::array ar;
-    jstools::readArray(json, "TimeWindows", ar);
-    for (size_t i = 0; i < ar.size(); i++)
-    {
-        json11::Json::array el = ar[i].array_items();
-        TimeWindows.push_back( {el[0].number_value(), el[1].number_value()} );
-    }
 
     jstools::readString(json, "FileName", FileName);
 }
 
-void ActivityGenerationMode::doWriteToJson(json11::Json::object & json) const
+void ModeActivityGenerator::doWriteToJson(json11::Json::object & json) const
 {
-    PesProbabilityMode::doWriteToJson(json);
+    ModePesGenerator_Prob::doWriteToJson(json);
 
-    json11::Json::array ar;
-    for (const auto & p : TimeWindows)
-    {
-        json11::Json::array el;
-            el.push_back(p.first);
-            el.push_back(p.second);
-        ar.push_back(el);
-    }
-    json["TimeWindows"] = ar;
     json["FileName"] = FileName;
 }
 
-bool ActivityGenerationMode::doTrigger(const G4Track *track)
+bool ModeActivityGenerator::doTrigger(const G4Track *track)
 {
     const std::vector<PesGenRecord> & Records = MaterialRecords[LastMaterial];
     if (Records.empty()) return false;
@@ -85,7 +67,7 @@ bool ActivityGenerationMode::doTrigger(const G4Track *track)
     {
         const double cs = r.getCrossSection(meanEnergy);
         const double DProbByMM = 1e-25 * cs * r.NumberDensity; // millibarn = 0.001e-28m2 -> 0.001e-22mm2 -> 1e-25 mm2
-        const double timeFractionInWindows = calculateTimeFactor(track->GetGlobalTime()/s, r.DecayTime);
+        const double timeFractionInWindows = calculateAcqusitionTimeFactor(track->GetGlobalTime(), r.DecayTime);
 
         for (size_t i = 0; i < Path.size(); i++)
         {
@@ -100,7 +82,7 @@ bool ActivityGenerationMode::doTrigger(const G4Track *track)
     return false;
 }
 
-void ActivityGenerationMode::saveData()
+void ModeActivityGenerator::saveData()
 {
     SessionManager& SM = SessionManager::getInstance();
     std::string fullFileName = SM.WorkingDirectory + '/' + FileName;
@@ -117,7 +99,7 @@ void ActivityGenerationMode::saveData()
     else out("\nSaving array data to file", fullFileName);
 
     json11::Json::object json;
-    PesProbabilityMode::doWriteToJson(json);
+    ModePesGenerator_Prob::doWriteToJson(json);
     json11::Json aa(json);
     std::string str = '#' + aa.dump();
     stream << str << '\n';

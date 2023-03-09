@@ -71,7 +71,7 @@ class SessionManager
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
-        PhantomModeBase  * PhantomMode   = nullptr;
+        PhantomModeBase  * Phantom   = nullptr;
 
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;
@@ -92,7 +92,6 @@ class SessionManager
         int  SeedOverride     = 0;
         bool UseSeedOverride  = false;
         bool Verbose          = false;
-        bool Debug            = false;
         bool ShowEventNumber  = false;
         int  EvNumberInterval = 1000;
 
@@ -110,7 +109,7 @@ class SessionManager
 
      // Step limiter
         bool   UseStepLimiter     = false;
-        double PhantomStepLimt    = 10000.0*mm;
+        double PhantomStepLimit    = 10000.0*mm;
 
      // Misc
         double activityLYSO    = 281.0; // decays per second per cm3
