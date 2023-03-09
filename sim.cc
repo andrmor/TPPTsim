@@ -47,36 +47,24 @@ int main(int argc, char** argv)
         SM.Verbose          = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/ProposalOfKarol/ThirdRound";
+        SM.WorkingDirectory  = "/home/andr/WORK/tmp";
 
         // Phantom
-        SM.Phantom = new PhantomCylinder(25.4, 100.0, EMaterial::G4_WATER);
+        SM.Phantom = new PhantomCylinder(100.0, 100.0, EMaterial::G4_WATER);
 
         // Detector components
-//        SM.DetectorComposition.add(DetComp::Scintillators);
-//        SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
+        SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
         // Source
-//        SM.SourceMode       = new SourceMixer({ {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0},
-//                                                {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0},
-//                                                {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 1e8), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0}
-//                                              });
-
         SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
-        //SM.SourceMode       = new SourceMixer(std::vector<std::pair<SourceModeBase*,double>>{ {new SourceBeam(new Proton(87.0*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}), 1.0} });
 
         // Simulation mode
-//        SM.SimMode          = new ModeGui();
-        //SM.SimMode          = new ModePesGenerator_MC(1e3, "Pes1e3.dat", false);
+        SM.SimMode          = new ModeGui();
 //        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {0.1*s, 1.0*s} });
-        //SM.SimMode          = new ModeActivityGenerator(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {1.0*s, 1.0*s} }, "act.dat");
-//        SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "act.dat");
-        //SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {101, 101, 101}, {-50.5, -50.5, -50}, { {0.1*s, 1.0e10*s} });
-//        SM.SimMode          = new ModePesGenerator_Prob(1e5, {100.0, 100.0, 1.0}, {1, 1, 100}, {-50.5, -50.5, -50}, { {0.1*s, 155.0*s} });
-        //SM.SimMode          = new ModeDoseExtractor(1e5, {1.0, 1.0, 1.0}, {101, 101, 100}, {-50.5, -50.5, -50}, "DoseWater.txt");
-        SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "DoseWater.txt");
-//        SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 1.0}, {1, 1, 100}, {-50.5, -50.5, -50}, "Dose.txt");
+//        SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
+//        SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
 
     // --- END of user init ---
     }
