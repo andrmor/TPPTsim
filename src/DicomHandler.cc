@@ -588,13 +588,30 @@ float DicomHandler::Pixel2density(G4int pixel)
   return density;
 }
 
+bool isFileExist(const std::string & fileName)
+{
+    std::ifstream f(fileName);
+    return f.good();
+}
+
 void DicomHandler::processFiles(const G4String & path, const G4String & convertionFileName, int lateralCompression,
                                 const std::vector<std::pair<std::string, float> > & materialUpperDens,
                                 const std::vector<std::string> & sliceFiles)
 {
     driverPath = path;
-    //fCt2DensityFile = driverPath + '/' + convertionFileName;
-    fCt2DensityFile = convertionFileName;
+
+    // use CT2Density file if it exists in the driver dir, otherwise the standard one
+    if (isFileExist(driverPath + '/' + convertionFileName))
+    {
+        out("CT to Density conversion: Using user file in the phantom data");
+        fCt2DensityFile = driverPath + '/' + convertionFileName;
+    }
+    else
+    {
+        out("CT to Density conversion: Using the default file in the run directory");
+        fCt2DensityFile = convertionFileName;
+    }
+
     fCompression = lateralCompression;
     fNFiles = sliceFiles.size();
 
