@@ -64,7 +64,7 @@ public:
 class ModeDoseExtractor : public SimModeBase
 {
 public:
-    ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
+    ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName, bool EnergyDeposition = false);
 
     void fill(double energy, const G4ThreeVector & pos, double density);
 
@@ -81,6 +81,7 @@ protected:
     std::array<int,    3> NumBins;
     std::array<double, 3> Origin;  // center coordinates of the frame
     std::string           FileName;
+    bool                  EnergyDepositionOption = false; // collect energy depsosition (do not divide by voxel mass)
 
     double VoxelVolume;  // mm3
 

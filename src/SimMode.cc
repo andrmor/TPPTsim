@@ -80,8 +80,10 @@ void ModeGui::run()
 
 // ---
 
-ModeDoseExtractor::ModeDoseExtractor(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin, const std::string & fileName) :
-    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin), FileName(fileName)
+ModeDoseExtractor::ModeDoseExtractor(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
+                                     const std::string & fileName, bool EnergyDepositionMode) :
+    NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin),
+    FileName(fileName), EnergyDepositionOption(EnergyDepositionMode)
 {
     init();
 }
@@ -124,6 +126,7 @@ void ModeDoseExtractor::readFromJson(const json11::Json & json)
     SessionManager & SM = SessionManager::getInstance();
     jstools::readInt(json, "NumEvents", NumEvents);
     jstools::readString(json, "FileName", SM.FileName);
+    jstools::readBool(json, "EnergyDepositionOption", EnergyDepositionOption);
 
     //BinSize
     {
@@ -174,22 +177,28 @@ void ModeDoseExtractor::doWriteToJson(json11::Json::object & json) const
     SessionManager & SM = SessionManager::getInstance();
     json["NumEvents"] = NumEvents;
     json["FileName"] = SM.FileName;
+    json["EnergyDepositionOption"] = EnergyDepositionOption;
 
     writeBinningToJson(json);
 }
 
 void ModeDoseExtractor::fill(double energy, const G4ThreeVector & pos, double density)
 {
-    const double densityKgPerMM3 = density / (kg/mm3);
-    if (densityKgPerMM3 < 1e-10) return; // vacuum
-
     std::array<int,3> index; // on stack, fast
     const bool ok = getVoxel(pos, index);
     if (!ok) return;
 
-    //DepositionMeV[index[0]][index[1]][index[2]] += energy;
-    const double deltaDose = (energy/joule) / ( densityKgPerMM3 * VoxelVolume );
-    Dose[index[0]][index[1]][index[2]] += deltaDose;
+    if (EnergyDepositionOption)
+        Dose[index[0]][index[1]][index[2]] += energy;
+    else
+    {
+        const double densityKgPerMM3 = density / (kg/mm3);
+        if (densityKgPerMM3 > 1e-10) // ignore vacuum
+        {
+            const double deltaDose = (energy/joule) / ( densityKgPerMM3 * VoxelVolume );
+            Dose[index[0]][index[1]][index[2]] += deltaDose;
+        }
+    }
 }
 
 bool ModeDoseExtractor::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)

@@ -50,7 +50,8 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/tmp";
 
         // Phantom
-        SM.Phantom = new PhantomCylinder(100.0, 100.0, EMaterial::G4_WATER);
+        //SM.Phantom = new PhantomCylinder(100.0, 100.0, EMaterial::G4_WATER);
+        SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
 
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -116,7 +117,7 @@ int main(int argc, char** argv)
 //    SM.SimMode          = new ModeTestScintPositions();
 //    SM.SimMode          = new ModeParticleLogger(20, "TestParticleSaver.txt", false);
 //    SM.SimMode          = new ModeTracing();
-//    SM.SimMode          = new ModeDoseExtractor(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt");
+//    SM.SimMode          = new ModeDoseExtractor(1e5, {1,1,1}, {121,120,121}, {-60.5, -60, -60.5}, "DoseEspana.txt", false);
 //    SM.SimMode          = new ModeDepositionScint(SM.SourceMode->CountEvents(), "FromProb-1000m.txt", false);
 //    SM.SimMode          = new ModePesGenerator_MC(SM.SourceMode->CountEvents(), "Pes.dat", false);
 //    SM.SimMode          = new ModePesGenerator_Prob(1e5, {1.0, 1.0, 1.0}, {201, 201, 201}, {-100.5, -100, -100.5}, { {0, 1e20*s} });
