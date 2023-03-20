@@ -82,8 +82,8 @@ int main(int argc, char** argv)
 //    SM.Phantom = new PhantomCylinder(200.0*mm, 200.0*mm, EMaterial::PMMA);
 //    SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PE);
 //    SM.Phantom = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
-//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0}, {180.0,0,0});
-//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0}, {180.0,0,0});
+//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0}, {180.0*deg,0,0});
+//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0}, {180.0*deg,0,0});
 // "Custom" phantom
 //    SM.Phantom = new PhantomEnergyCalibration;
 //    SM.Phantom = new PhantomEspana();

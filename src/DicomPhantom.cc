@@ -384,10 +384,10 @@ G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
     G4Tubs          * solid          = new G4Tubs("PhTube", 0, PhantRadius * mm, NumVoxZ * VoxHalfSizeZ * mm, 0, 360 * deg);
     G4LogicalVolume * PhantomLogical = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
-    const G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
+    const G4ThreeVector pos(PosInWorld[0], PosInWorld[1], PosInWorld[2]);
     G4RotationMatrix * rot  = nullptr;
     if (RotInWorld[0] != 0 || RotInWorld[1] != 0 || RotInWorld[2] != 0)
-        rot = new CLHEP::HepRotation(RotInWorld[0]*deg, RotInWorld[1]*deg, RotInWorld[2]*deg);
+        rot = new CLHEP::HepRotation(RotInWorld[0], RotInWorld[1], RotInWorld[2]);
     new G4PVPlacement(rot, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
 
     if (ContainerInvisible) PhantomLogical->SetVisAttributes(false);

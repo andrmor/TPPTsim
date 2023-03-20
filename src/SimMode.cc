@@ -81,7 +81,7 @@ void ModeGui::run()
 // ---
 
 ModeDoseExtractor::ModeDoseExtractor(int numEvents, std::array<double, 3> binSize, std::array<int, 3> numBins, std::array<double, 3> origin,
-                                     const std::string & fileName, bool EnergyDepositionMode) :
+                                     std::string fileName, bool EnergyDepositionMode) :
     NumEvents(numEvents), BinSize(binSize), NumBins(numBins), Origin(origin),
     FileName(fileName), EnergyDepositionOption(EnergyDepositionMode)
 {

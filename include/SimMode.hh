@@ -64,7 +64,8 @@ public:
 class ModeDoseExtractor : public SimModeBase
 {
 public:
-    ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName, bool EnergyDeposition = false);
+    ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin,
+                      std::string fileName, bool EnergyDeposition = false);
 
     void fill(double energy, const G4ThreeVector & pos, double density);
 
