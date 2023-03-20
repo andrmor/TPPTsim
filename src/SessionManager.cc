@@ -570,3 +570,9 @@ void SessionManager::loadConfig(const std::string & fileName)
 
     out("Load success!", "\n^^^^^^^^^^^^^\n");
 }
+
+std::string SessionManager::generateName(const std::string & baseName, const std::string & suffix) const
+{
+    // e.g. generateName("base", "txt") when seed is 100 --> "base_100.txt"
+    return baseName + '_' + std::to_string(Seed) + '.' + suffix;
+}

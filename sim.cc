@@ -136,3 +136,6 @@ int main(int argc, char** argv)
 // Obsolete detector components
 //    SM.DetectorComposition.add(DetComp::GDML); SM.GdmlFileName = "detector.gdml";
 //    SM.DetectorComposition.add(DetComp::Nozzle);
+
+// Automatic name generation using seed
+//    std::string filename = SM.generateName("base", "txt")   // e.g. SM.generateName("base", "txt") when seed is 100 --> "base_100.txt"

@@ -68,6 +68,8 @@ class SessionManager
         void saveConfig(const std::string & fileName) const;
         void loadConfig(const std::string & fileName);
 
+        std::string generateName(const std::string & baseName, const std::string & suffix) const; // e.g. ("base", "txt") when Seed is 100 --> "base_100.txt"
+
      // Main settings
         SourceModeBase   * SourceMode    = nullptr;
         SimModeBase      * SimMode       = nullptr;
