@@ -66,7 +66,7 @@ class ModeDoseExtractor : public SimModeBase
 public:
     ModeDoseExtractor(int numEvents, std::array<double,3> binSize, std::array<int,3> numBins, std::array<double,3> origin, const std::string & fileName);
 
-    void fill(double energy, const G4ThreeVector & pos);
+    void fill(double energy, const G4ThreeVector & pos, double density);
 
     void run() override;
     std::string getTypeName() const override {return "ModeDoseExtractor";}
@@ -82,7 +82,9 @@ protected:
     std::array<double, 3> Origin;  // center coordinates of the frame
     std::string           FileName;
 
-    std::vector<std::vector<std::vector<double>>> DepositionMeV;
+    double VoxelVolume;  // mm3
+
+    std::vector<std::vector<std::vector<double>>> Dose;
 
     void init();
 

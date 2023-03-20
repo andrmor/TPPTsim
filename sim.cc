@@ -61,10 +61,10 @@ int main(int argc, char** argv)
         SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
 
         // Simulation mode
-        SM.SimMode          = new ModeGui();
+//        SM.SimMode          = new ModeGui();
 //        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {0.1*s, 1.0*s} });
 //        SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
-//        SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
+        SM.SimMode          = new ModeDoseExtractor(1, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
 
     // --- END of user init ---
     }

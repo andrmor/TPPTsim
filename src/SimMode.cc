@@ -12,6 +12,7 @@
 
 #include "G4String.hh"
 #include "G4RunManager.hh"
+#include "G4SystemOfUnits.hh"
 
 #include <iostream>
 #include <sstream>
@@ -94,13 +95,16 @@ void ModeDoseExtractor::init()
     SM.FileName = FileName;
     SM.bBinOutput = false;
 
-    DepositionMeV.resize(NumBins[0]);
-    for (std::vector<std::vector<double>> & ary : DepositionMeV)
+    Dose.resize(NumBins[0]);
+    for (std::vector<std::vector<double>> & ary : Dose)
     {
         ary.resize(NumBins[1]);
         for (std::vector<double> & arz : ary)
             arz = std::vector<double>(NumBins[2], 0);
     }
+
+    VoxelVolume = 1.0;
+    for (int i = 0; i < 3; i++) VoxelVolume *= BinSize[i]; // mm3
 }
 
 void ModeDoseExtractor::run()
@@ -174,13 +178,18 @@ void ModeDoseExtractor::doWriteToJson(json11::Json::object & json) const
     writeBinningToJson(json);
 }
 
-void ModeDoseExtractor::fill(double energy, const G4ThreeVector & pos)
+void ModeDoseExtractor::fill(double energy, const G4ThreeVector & pos, double density)
 {
+    const double densityKgPerMM3 = density / (kg/mm3);
+    if (densityKgPerMM3 < 1e-10) return; // vacuum
+
     std::array<int,3> index; // on stack, fast
     const bool ok = getVoxel(pos, index);
     if (!ok) return;
 
-    DepositionMeV[index[0]][index[1]][index[2]] += energy;
+    //DepositionMeV[index[0]][index[1]][index[2]] += energy;
+    const double deltaDose = (energy/joule) / ( densityKgPerMM3 * VoxelVolume );
+    Dose[index[0]][index[1]][index[2]] += deltaDose;
 }
 
 bool ModeDoseExtractor::getVoxel(const G4ThreeVector & pos, std::array<int,3> & index)
@@ -203,7 +212,7 @@ void ModeDoseExtractor::saveArray()
     std::string str = '#' + aa.dump();
     *SM.outStream << str << '\n';
 
-    for (std::vector<std::vector<double>> & ary : DepositionMeV)
+    for (std::vector<std::vector<double>> & ary : Dose)
     {
         for (std::vector<double> & arz : ary)
         {
