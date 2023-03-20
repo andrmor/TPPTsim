@@ -27,11 +27,11 @@
 #include <cmath>
 #include <algorithm>
 
-PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo,
-                           int lateralCompression, double containerRadius, const std::vector<double> & posInWorld) :
+PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo, int lateralCompression,
+                           double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld) :
                            DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
                            LateralCompression(lateralCompression),
-                           PhantRadius(containerRadius), PosInWorld(posInWorld)
+                           PhantRadius(containerRadius), PosInWorld(posInWorld), RotInWorld(rotInWorld)
 {
     ContainerInvisible = true;
     UseFalseColors     = false;
@@ -78,9 +78,19 @@ void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
     json["LateralCompression"] = LateralCompression;
     json["PhantRadius"] = PhantRadius;
 
-    json11::Json::array jar;
-    for (int i = 0; i < 3; i++) jar.push_back(PosInWorld[i]);
-    json["PosInWorld"] = jar;
+    // position
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(PosInWorld[i]);
+        json["PosInWorld"] = jar;
+    }
+
+    // orientation
+    {
+        json11::Json::array jar;
+        for (int i = 0; i < 3; i++) jar.push_back(RotInWorld[i]);
+        json["RotInWorld"] = jar;
+    }
 }
 
 void PhantomDICOM::readFromJson(const json11::Json & json)
@@ -92,9 +102,20 @@ void PhantomDICOM::readFromJson(const json11::Json & json)
     jstools::readInt(json, "LateralCompression", LateralCompression);
     jstools::readDouble(json, "PhantRadius", PhantRadius);
 
-    json11::Json::array jar;
-    jstools::readArray(json, "PosInWorld", jar);
-    for (int i = 0; i < 3; i++) PosInWorld[i] = jar[i].number_value();
+    // position
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "PosInWorld", jar);
+        for (int i = 0; i < 3; i++) PosInWorld[i] = jar[i].number_value();
+    }
+
+    // orientation
+    {
+        json11::Json::array jar;
+        jstools::readArray(json, "RotInWorld", jar);
+        for (int i = 0; i < 3; i++) RotInWorld[i] = jar[i].number_value();
+    }
+
 }
 
 void PhantomDICOM::buildMaterials()
@@ -364,8 +385,10 @@ G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
     G4LogicalVolume * PhantomLogical = new G4LogicalVolume(solid, AirMat, "PhContL", 0, 0, 0);
 
     const G4ThreeVector pos(PosInWorld[0]*mm, PosInWorld[1]*mm, PosInWorld[2]*mm);
-
-    new G4PVPlacement(nullptr, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
+    G4RotationMatrix * rot  = nullptr;
+    if (RotInWorld[0] != 0 || RotInWorld[1] != 0 || RotInWorld[2] != 0)
+        rot = new CLHEP::HepRotation(RotInWorld[0]*deg, RotInWorld[1]*deg, RotInWorld[2]*deg);
+    new G4PVPlacement(rot, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
 
     if (ContainerInvisible) PhantomLogical->SetVisAttributes(false);
     else                    PhantomLogical->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));

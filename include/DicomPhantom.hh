@@ -19,8 +19,8 @@ class PhantomDICOM : public PhantomModeBase
 {
 public:
     // lateral compression other than 1 strongly compromoises accuracy -> intended only for visualization
-    PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo,
-                 int lateralCompression, double containerRadius, const std::vector<double> & posInWorld);
+    PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo, int lateralCompression,
+                 double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld);
 
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
     std::string       getTypeName() const override {return "PhantomDICOM";}
@@ -29,16 +29,17 @@ public:
 protected:
     void              doWriteToJson(json11::Json::object & json) const override;
 
-    std::string         DataDir;
-    std::string         SliceFileBase;
-    int                 SliceFrom;
-    int                 SliceTo;
-    int                 LateralCompression;
-    double              PhantRadius;
-    std::vector<double> PosInWorld;
+    std::string          DataDir;
+    std::string          SliceFileBase;
+    int                  SliceFrom;
+    int                  SliceTo;
+    int                  LateralCompression;
+    double               PhantRadius;
+    std::array<double,3> PosInWorld;
+    std::array<double,3> RotInWorld;
 
-    bool                ContainerInvisible;
-    bool                UseFalseColors;
+    bool                 ContainerInvisible;
+    bool                 UseFalseColors;
 
     std::vector<std::pair<std::string, float>> MatUpperDens;
     std::map<G4String, G4VisAttributes*>       ColourMap;     // --->PERSISTENT: in use during gui session!

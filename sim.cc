@@ -50,8 +50,7 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/tmp";
 
         // Phantom
-        //SM.Phantom = new PhantomCylinder(100.0, 100.0, EMaterial::G4_WATER);
-        SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
+        SM.Phantom = new PhantomCylinder(100.0, 100.0, EMaterial::G4_WATER);
 
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
@@ -62,10 +61,10 @@ int main(int argc, char** argv)
         SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
 
         // Simulation mode
-//        SM.SimMode          = new ModeGui();
+        SM.SimMode          = new ModeGui();
 //        SM.SimMode          = new ModePesGenerator_Prob(1e5, {1000.0, 1000.0, 1000.0}, {1, 1, 1}, {-500, -500, -500}, { {0.1*s, 1.0*s} });
 //        SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
-        SM.SimMode          = new ModeDoseExtractor(1, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
+//        SM.SimMode          = new ModeDoseExtractor(1, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
 
     // --- END of user init ---
     }
@@ -83,8 +82,8 @@ int main(int argc, char** argv)
 //    SM.Phantom = new PhantomCylinder(200.0*mm, 200.0*mm, EMaterial::PMMA);
 //    SM.Phantom = new PhantomBox(90.0, 300.0, 90.0, EMaterial::PE);
 //    SM.Phantom = new PhantomDerenzo(200.0, 100.0, {1.8, 2.0, 2.2, 2.5, 3.0, 6.0}, 10.0, 5.0, 60.0);
-//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0});
-//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0});
+//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 84, 252, 8, 155.0, {0,0,0}, {180.0,0,0});
+//    SM.Phantom = new PhantomDICOM("/home/andr/WORK/TPPT/DicomPhant", "headCT_", 150, 210, 2, 155.0, {0,0,0}, {180.0,0,0});
 // "Custom" phantom
 //    SM.Phantom = new PhantomEnergyCalibration;
 //    SM.Phantom = new PhantomEspana();
