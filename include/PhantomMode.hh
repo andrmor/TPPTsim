@@ -44,8 +44,9 @@ class PhantomNone : public PhantomModeBase
 class PhantomCylinder : public PhantomModeBase
 {
 public:
+    PhantomCylinder(double diameter, double length, std::string g4_material_name);
     PhantomCylinder(double diameter, double length, EMaterial material);
-    PhantomCylinder(){}
+    PhantomCylinder();
 
     std::string getTypeName() const override {return "PhantomCylinder";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
@@ -57,14 +58,16 @@ protected:
 
     double Diameter = 200.0;
     double Length   = 200.0;
-    EMaterial Material = EMaterial::PMMA;
+
+    MaterialBuilder * MatBuilder = nullptr;
 };
 
 class PhantomBox : public PhantomModeBase
 {
 public:
+    PhantomBox(double sizeX, double sizeY, double sizeZ, std::string g4_material_name);
     PhantomBox(double sizeX, double sizeY, double sizeZ, EMaterial material);
-    PhantomBox(){}
+    PhantomBox();
 
     std::string getTypeName() const override {return "PhantomBox";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
@@ -77,7 +80,8 @@ protected:
     double SizeX = 100.0;
     double SizeY = 100.0;
     double SizeZ = 100.0;
-    EMaterial Material = EMaterial::PMMA;
+
+    MaterialBuilder * MatBuilder = nullptr;
 };
 
 // ---

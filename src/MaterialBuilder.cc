@@ -7,12 +7,35 @@
 #include "G4NistManager.hh"
 #include "G4SystemOfUnits.hh"
 
-G4Material * MaterialBuilder::build(EMaterial material)
+MaterialBuilder::MaterialBuilder(const json11::Json & json)
+{
+    readFromJson(json);
+}
+
+G4Material * MaterialBuilder::build()
 {
     G4NistManager * man = G4NistManager::Instance();
-    G4Material * mat = nullptr;
 
-    switch (material)
+    if ( StandardMaterial.empty() && (CustomMaterial == EMaterial::Undefined) )  // paranoic
+    {
+        out("Material builder was not configured!");
+        exit(10);
+    }
+
+    if (CustomMaterial == EMaterial::Undefined)
+    {
+        G4Material * mat = man->FindOrBuildMaterial(StandardMaterial);
+        if (!mat)
+        {
+            out("Unknown material name:", StandardMaterial);
+            exit(10);
+        }
+        //out("-->Ionization potential for the phantom material:", mat->GetIonisation()->GetMeanExcitationEnergy()/eV, "eV");
+        return mat;
+    }
+
+    G4Material * mat = nullptr;
+    switch (CustomMaterial)
     {
     case EMaterial::PMMA :
         {
@@ -63,86 +86,72 @@ G4Material * MaterialBuilder::build(EMaterial material)
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
         break;
-    case EMaterial::G4_WATER :
-        mat = man->FindOrBuildMaterial("G4_WATER");
-        break;
-    case EMaterial::G4_BONE_COMPACT_ICRU :
-        mat = man->FindOrBuildMaterial("G4_BONE_COMPACT_ICRU");
-        break;
-    case EMaterial::G4_BRAIN_ICRP :
-        mat = man->FindOrBuildMaterial("G4_BRAIN_ICRP");
-        break;
-    case EMaterial::G4_BLOOD_ICRP :
-        mat = man->FindOrBuildMaterial("G4_BLOOD_ICRP");
-        break;
-    case EMaterial::G4_MUSCLE_SKELETAL_ICRP :
-        mat = man->FindOrBuildMaterial("G4_MUSCLE_SKELETAL_ICRP");
-        break;
-    case EMaterial::G4_TISSUE_SOFT_ICRP :
-        mat = man->FindOrBuildMaterial("G4_TISSUE_SOFT_ICRP");
-        break;
     default:;
     }
 
     if (!mat)
     {
-        out("Error in material selection of PhantomCustomMatBox");
+        out("Error in material selection (MaterialBuilder::build)");
         exit(10);
     }
     //out("-->Ionization potential for the phantom material:", mat->GetIonisation()->GetMeanExcitationEnergy()/eV, "eV");
     return mat;
 }
 
-void MaterialBuilder::writeToJson(EMaterial material, json11::Json::object & json)
+void MaterialBuilder::writeToJson(json11::Json::object & json)
 {
-    std::string matStr;
-    switch (material)
+    if ( StandardMaterial.empty() && (CustomMaterial == EMaterial::Undefined) )  // paranoic
     {
-    case EMaterial::PMMA      : matStr = "PMMA";      break;
-    case EMaterial::HDPE      : matStr = "HDPE";      break;
-    case EMaterial::Graphite  : matStr = "Graphite";  break;
+        out("Material builder was not configured!");
+        exit(10);
+    }
 
-    case EMaterial::GelTissue : matStr = "GelTissue"; break;
-    case EMaterial::GelWater  : matStr = "GelWater";  break;
+    std::string matStr;
 
-    case EMaterial::G4_WATER  : matStr = "G4_WATER";  break;
+    if (CustomMaterial == EMaterial::Undefined) matStr = StandardMaterial;
+    else
+    {
+        switch (CustomMaterial)
+        {
+        case EMaterial::PMMA      : matStr = "PMMA";      break;
+        case EMaterial::HDPE      : matStr = "HDPE";      break;
+        case EMaterial::Graphite  : matStr = "Graphite";  break;
 
-    case EMaterial::G4_BONE_COMPACT_ICRU    : matStr = "G4_BONE_COMPACT_ICRU";    break;
+        case EMaterial::GelTissue : matStr = "GelTissue"; break;
+        case EMaterial::GelWater  : matStr = "GelWater";  break;
 
-    case EMaterial::G4_BRAIN_ICRP           : matStr = "G4_BRAIN_ICRP";           break;
-    case EMaterial::G4_BLOOD_ICRP           : matStr = "G4_BLOOD_ICRP";           break;
-
-    case EMaterial::G4_MUSCLE_SKELETAL_ICRP : matStr = "G4_MUSCLE_SKELETAL_ICRP"; break;
-    case EMaterial::G4_TISSUE_SOFT_ICRP     : matStr = "G4_TISSUE_SOFT_ICRP";     break;
-    default:
-        out("Not implemented material in MaterialBuilder::writeToJson");
-        exit(11);
+        default:
+            out("Not implemented material in MaterialBuilder::writeToJson");
+            exit(11);
+        }
     }
 
     json["Material"] = matStr;
 }
 
-void MaterialBuilder::readFromJson(const json11::Json & json, EMaterial & material)
+void MaterialBuilder::readFromJson(const json11::Json & json)
 {
     std::string matStr;
     jstools::readString(json, "Material", matStr);
 
-    if      (matStr == "PMMA")      material = EMaterial::PMMA;
-    else if (matStr == "HDPE")      material = EMaterial::HDPE;
-    else if (matStr == "Graphite")  material = EMaterial::Graphite;
+    if (matStr.size() > 2)
+    {
+        std::string start = matStr;
+        start.resize(3);
+        if (start == "G4_")
+        {
+            StandardMaterial = matStr;
+            CustomMaterial = EMaterial::Undefined;
+            return;
+        }
+    }
 
-    else if (matStr == "GelTissue") material = EMaterial::GelTissue;
-    else if (matStr == "GelWater")  material = EMaterial::GelWater;
-
-    else if (matStr == "G4_WATER")     material = EMaterial::G4_WATER;
-
-    else if (matStr == "G4_BONE_COMPACT_ICRU")    material = EMaterial::G4_BONE_COMPACT_ICRU;
-
-    else if (matStr == "G4_BRAIN_ICRP")           material = EMaterial::G4_BRAIN_ICRP;
-    else if (matStr == "G4_BLOOD_ICRP")           material = EMaterial::G4_BLOOD_ICRP;
-
-    else if (matStr == "G4_MUSCLE_SKELETAL_ICRP") material = EMaterial::G4_MUSCLE_SKELETAL_ICRP;
-    else if (matStr == "G4_TISSUE_SOFT_ICRP")     material = EMaterial::G4_TISSUE_SOFT_ICRP;
+    StandardMaterial.clear();
+    if      (matStr == "PMMA")      CustomMaterial = EMaterial::PMMA;
+    else if (matStr == "HDPE")      CustomMaterial = EMaterial::HDPE;
+    else if (matStr == "Graphite")  CustomMaterial = EMaterial::Graphite;
+    else if (matStr == "GelTissue") CustomMaterial = EMaterial::GelTissue;
+    else if (matStr == "GelWater")  CustomMaterial = EMaterial::GelWater;
 
     else
     {

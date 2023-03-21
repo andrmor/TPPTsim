@@ -56,14 +56,19 @@ void PhantomModeBase::writeToJson(json11::Json::object & json) const
 
 // ---
 
+PhantomCylinder::PhantomCylinder(double diameter, double length, std::string g4_material_name) :
+    Diameter(diameter), Length(length), MatBuilder(new MaterialBuilder(g4_material_name)) {}
+
 PhantomCylinder::PhantomCylinder(double diameter, double length, EMaterial material) :
-    Diameter(diameter), Length(length), Material(material) {}
+    Diameter(diameter), Length(length), MatBuilder(new MaterialBuilder(material)) {}
+
+PhantomCylinder::PhantomCylinder() : MatBuilder(new MaterialBuilder(EMaterial::Undefined)) {}
 
 G4LogicalVolume * PhantomCylinder::definePhantom(G4LogicalVolume * logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
-    G4Material * mat = MaterialBuilder::build(Material);
 
+    G4Material * mat = MatBuilder->build();
     G4VSolid          * solidPmma = new G4Tubs("Phantom_Cyl", 0, 0.5*Diameter, 0.5*Length, 0, 360.0*deg);
     G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, mat, "Phantom");
     new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_PV", logicWorld, false, 0);
@@ -77,7 +82,7 @@ void PhantomCylinder::readFromJson(const json11::Json & json)
     jstools::readDouble(json, "Diameter", Diameter);
     jstools::readDouble(json, "Length",   Length);
 
-    MaterialBuilder::readFromJson(json, Material);
+    MatBuilder->readFromJson(json);
 }
 
 void PhantomCylinder::doWriteToJson(json11::Json::object & json) const
@@ -85,19 +90,24 @@ void PhantomCylinder::doWriteToJson(json11::Json::object & json) const
     json["Diameter"] = Diameter;
     json["Length"]   = Length;
 
-    MaterialBuilder::writeToJson(Material, json);
+    MatBuilder->writeToJson(json);
 }
 
 // ---
 
+PhantomBox::PhantomBox(double sizeX, double sizeY, double sizeZ, std::string g4_material_name) :
+    SizeX(sizeX), SizeY(sizeY), SizeZ(sizeZ), MatBuilder(new MaterialBuilder(g4_material_name)) {}
+
 PhantomBox::PhantomBox(double sizeX, double sizeY, double sizeZ, EMaterial material) :
-    SizeX(sizeX), SizeY(sizeY), SizeZ(sizeZ), Material(material) {}
+    SizeX(sizeX), SizeY(sizeY), SizeZ(sizeZ), MatBuilder(new MaterialBuilder(material)) {}
+
+PhantomBox::PhantomBox() : MatBuilder(new MaterialBuilder(EMaterial::Undefined)) {}
 
 G4LogicalVolume * PhantomBox::definePhantom(G4LogicalVolume * logicWorld)
 {
     SessionManager & SM = SessionManager::getInstance();
-    G4Material * mat = MaterialBuilder::build(Material);
 
+    G4Material * mat = MatBuilder->build();
     G4VSolid          * solid = new G4Box("Phantom_Box", 0.5 * SizeX * mm, 0.5 * SizeY * mm, 0.5 * SizeZ * mm);
     G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "Phantom");
     new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, logic, "Phantom_PV", logicWorld, false, 0);
@@ -112,7 +122,7 @@ void PhantomBox::readFromJson(const json11::Json & json)
     jstools::readDouble(json, "SizeY", SizeY);
     jstools::readDouble(json, "SizeZ", SizeZ);
 
-    MaterialBuilder::readFromJson(json, Material);
+    MatBuilder->readFromJson(json);
 }
 
 void PhantomBox::doWriteToJson(json11::Json::object & json) const
@@ -121,7 +131,7 @@ void PhantomBox::doWriteToJson(json11::Json::object & json) const
     json["SizeY"] = SizeY;
     json["SizeZ"] = SizeZ;
 
-    MaterialBuilder::writeToJson(Material, json);
+    MatBuilder->writeToJson(json);
 }
 
 // ---
