@@ -5,7 +5,8 @@
 
 enum class EMaterial {Undefined,
                       PMMA, HDPE, Graphite,
-                      GelTissue, GelWater};
+                      GelTissue, GelWater,
+                      Ni400};
 
 class G4Material;
 

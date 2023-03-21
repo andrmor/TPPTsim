@@ -50,7 +50,7 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/tmp";
 
         // Phantom
-        SM.Phantom = new PhantomCylinder(100.0, 100.0, "G4_Cu");
+        SM.Phantom = new PhantomCylinder(100.0, 100.0, "G4_WATER");
 
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);

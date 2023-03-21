@@ -86,6 +86,22 @@ G4Material * MaterialBuilder::build()
             mat = man->ConstructNewMaterial("GelWater", elements, weightFrac, 1.01*g/cm3);
         }
         break;
+    case EMaterial::Ni400 :
+        {
+            std::vector<double> weightFrac;
+            std::vector<G4String> elements;
+            elements.push_back("Al"); weightFrac.push_back(0.044);
+            elements.push_back("C"); weightFrac.push_back(0.15);
+            elements.push_back("Fe"); weightFrac.push_back(1.99);
+            elements.push_back("Mn"); weightFrac.push_back(1.19);
+            elements.push_back("Ni"); weightFrac.push_back(64.3);
+            elements.push_back("P"); weightFrac.push_back(0.0038);
+            elements.push_back("S"); weightFrac.push_back(0.001);
+            elements.push_back("Si"); weightFrac.push_back(0.27);
+            elements.push_back("Zn"); weightFrac.push_back(0.003);
+            elements.push_back("Cu"); weightFrac.push_back(32.04);
+            mat = man->ConstructNewMaterial("Ni400", elements, weightFrac, 8.8*g/cm3);
+        }
     default:;
     }
 
@@ -116,9 +132,9 @@ void MaterialBuilder::writeToJson(json11::Json::object & json)
         case EMaterial::PMMA      : matStr = "PMMA";      break;
         case EMaterial::HDPE      : matStr = "HDPE";      break;
         case EMaterial::Graphite  : matStr = "Graphite";  break;
-
         case EMaterial::GelTissue : matStr = "GelTissue"; break;
         case EMaterial::GelWater  : matStr = "GelWater";  break;
+        case EMaterial::Ni400     : matStr = "Ni400";     break;
 
         default:
             out("Not implemented material in MaterialBuilder::writeToJson");
@@ -152,6 +168,7 @@ void MaterialBuilder::readFromJson(const json11::Json & json)
     else if (matStr == "Graphite")  CustomMaterial = EMaterial::Graphite;
     else if (matStr == "GelTissue") CustomMaterial = EMaterial::GelTissue;
     else if (matStr == "GelWater")  CustomMaterial = EMaterial::GelWater;
+    else if (matStr == "Ni400")     CustomMaterial = EMaterial::Ni400;
 
     else
     {
