@@ -64,7 +64,11 @@ void SteppingAction_Dose::UserSteppingAction(const G4Step * step)
     ModeDoseExtractor * Mode = static_cast<ModeDoseExtractor*>(SM.SimMode);
 
     if (!preP->GetMaterial()) return; // paranoic
-    Mode->fill(depo, 0.5*(preP->GetPosition() + postP->GetPosition()), preP->GetMaterial()->GetDensity());
+    //Mode->fill(depo, 0.5*(preP->GetPosition() + postP->GetPosition()), preP->GetMaterial()->GetDensity());
+    const double rnd = 0.001 + 0.998 * G4UniformRand();
+    Mode->fill(depo,
+               preP->GetPosition() + rnd * (postP->GetPosition() - preP->GetPosition()),
+               preP->GetMaterial()->GetDensity());
 }
 
 // ---
