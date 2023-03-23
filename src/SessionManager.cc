@@ -574,5 +574,6 @@ void SessionManager::loadConfig(const std::string & fileName)
 std::string SessionManager::generateName(const std::string & baseName, const std::string & suffix) const
 {
     // e.g. generateName("base", "txt") when seed is 100 --> "base_100.txt"
-    return baseName + '_' + std::to_string(Seed) + '.' + suffix;
+    int thisSeed = (UseSeedOverride ? SeedOverride : Seed) ;
+    return baseName + '_' + std::to_string(thisSeed) + '.' + suffix;
 }
