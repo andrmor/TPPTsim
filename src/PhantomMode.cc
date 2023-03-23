@@ -27,15 +27,16 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
 
     PhantomModeBase * ph = nullptr;
 
-    if      (Type == "PhantomNone")      ph = new PhantomNone();
-    else if (Type == "PhantomCylinder")  ph = new PhantomCylinder();
-    else if (Type == "PhantomBox")       ph = new PhantomBox();
-    else if (Type == "PhantomDerenzo")   ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
-    else if (Type == "PhantomParam")     ph = new PhantomParam();
-    else if (Type == "PhantomDICOM")     ph = new PhantomDICOM("", "", 0,0, 1, 100.0, {0,0,50.0}, {0,0,0});
-    else if (Type == "PhantomEspana")    ph = new PhantomEspana();
-    else if (Type == "PhantomBauerGel")  ph = new PhantomBauerGel();
-    else if (Type == "PhantomBauerCa")   ph = new PhantomBauerCa();
+    if      (Type == "PhantomNone")       ph = new PhantomNone();
+    else if (Type == "PhantomCylinder")   ph = new PhantomCylinder();
+    else if (Type == "PhantomBox")        ph = new PhantomBox();
+    else if (Type == "PhantomDerenzo")    ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
+    else if (Type == "PhantomParam")      ph = new PhantomParam();
+    else if (Type == "PhantomDICOM")      ph = new PhantomDICOM("", "", 0,0, 1, 100.0, {0,0,50.0}, {0,0,0});
+    else if (Type == "PhantomEspana")     ph = new PhantomEspana();
+    else if (Type == "PhantomBauerGel")   ph = new PhantomBauerGel();
+    else if (Type == "PhantomBauerCa")    ph = new PhantomBauerCa();
+    else if (Type == "PhantomMarekWater") ph = new PhantomMarekWater();
     else
     {
         out("Unknown phantom type!");
@@ -428,6 +429,28 @@ G4LogicalVolume * PhantomRT::definePhantom(G4LogicalVolume * logicWorld)
     lt->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
     new G4PVPlacement(nullptr, {0, 20.0, 0}, lt, "ltp", logicWorld, false, 0);
     */
+
+    return logicPmma;
+}
+
+G4LogicalVolume * PhantomMarekWater::definePhantom(G4LogicalVolume * logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+    G4Material * matWater = man->FindOrBuildMaterial("G4_WATER");
+
+    G4VSolid          * solidPmma = new G4Tubs("Phantom_Outer", 0, 0.5*37.8, 0.5*104.2, 0, 360.0*deg);
+    G4LogicalVolume   * logicPmma = new G4LogicalVolume(solidPmma, matPMMA, "Phantom_Outer");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPmma, "Phantom_Outer_PV", logicWorld, false, 0);
+    logicPmma->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * solidWater = new G4Tubs("Phantom_Inner", 0, 0.5*30.6, 0.5*100.0, 0, 360.0*deg);
+    G4LogicalVolume   * logicWater = new G4LogicalVolume(solidWater, matWater, "Phantom_inner");
+    new G4PVPlacement(nullptr, {0, 0, -0.8}, logicWater, "Phantom_Inner_PV", logicPmma, false, 0);
+    logicWater->SetVisAttributes(G4VisAttributes(G4Colour(0, 1.0, 0)));
 
     return logicPmma;
 }

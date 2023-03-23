@@ -161,4 +161,11 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
+class PhantomMarekWater : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomMarekWater";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
 #endif // PhantomMode_h
