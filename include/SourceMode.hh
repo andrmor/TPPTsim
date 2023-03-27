@@ -13,8 +13,9 @@ class G4ParticleGun;
 class G4Event;
 class G4Material;
 class G4Navigator;
-class Hist1D;
-class Hist1DSampler;
+class Hist1DRegular;
+class Hist1DSamplerRegular;
+class RandomSampler;
 class SourceModeBase;
 
 class SourceModeFactory
@@ -248,8 +249,8 @@ protected:
     void readFromJson(const json11::Json & json);
 
     // runtime
-    Hist1DSampler * XSampler = nullptr;
-    Hist1DSampler * YSampler = nullptr;
+    RandomSampler * XSampler = nullptr;
+    RandomSampler * YSampler = nullptr;
     std::ofstream * logStream = nullptr;
 
     void init();
@@ -392,7 +393,7 @@ protected:
 
     //run-time
     G4Navigator   * Navigator = nullptr;
-    Hist1DSampler * Sampler   = nullptr;
+    Hist1DSamplerRegular * Sampler   = nullptr;
 };
 
 // ---
@@ -437,7 +438,7 @@ protected:
     std::string FileName;
     int NumBins = 21;
     double Range = 10.0;
-    Hist1DSampler * Sampler = nullptr;
+    Hist1DSamplerRegular * Sampler = nullptr;
 };
 
 // --

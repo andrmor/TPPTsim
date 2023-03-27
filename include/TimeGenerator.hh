@@ -5,7 +5,7 @@
 
 #include <string>
 
-class Hist1D;
+class Hist1DRegular;
 class TimeGeneratorBase;
 
 class TimeGeneratorFactory
@@ -85,7 +85,7 @@ protected:
     double HalfLife  = 0;
     double DecayTime = 0;
 
-    Hist1D * Hist = nullptr;
+    Hist1DRegular * Hist = nullptr;
 };
 
 #endif // TimeGenerator_h

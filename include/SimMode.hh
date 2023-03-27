@@ -12,7 +12,7 @@ class G4UserSteppingAction;
 class G4UserStackingAction;
 class G4UserTrackingAction;
 class G4VSensitiveDetector;
-class Hist1D;
+class Hist1DRegular;
 
 class SimModeBase;
 
@@ -250,7 +250,7 @@ protected:
     int NumBins = 100;
     std::string FileName  = "dummy.txt";
 
-    Hist1D * Hist = nullptr;
+    Hist1DRegular * Hist = nullptr;
     std::vector<DirAndEnergy> Gammas;
 
     int ParentTrackId = -1;
@@ -301,7 +301,7 @@ protected:
     int         NumBins   = 100;
     std::string FileName  = "dummy.txt";
 
-    Hist1D    * Hist      = nullptr;
+    Hist1DRegular    * Hist      = nullptr;
     std::vector<double> Deposition;
 };
 
@@ -376,9 +376,9 @@ protected:
     std::vector<double> Two_Same_AverageDist_Second_In;
     std::vector<int>    Two_Same_Sum_In;
     std::vector<double> Two_Same_AverageDist_Sum_In;
-    std::vector<Hist1D*>Two_Same_HistDist;
+    std::vector<Hist1DRegular*>Two_Same_HistDist;
     std::vector<int>    Two_Same_FirstSmaller_In;
-    std::vector<Hist1D*>Two_Same_HistFirstOverSum;
+    std::vector<Hist1DRegular*>Two_Same_HistFirstOverSum;
     std::vector<int>    Two_Dif_First_In;
     std::vector<int>    Two_Dif_Second_In;
     std::vector<double> Two_Dif_AverageDist_First_In;
@@ -409,12 +409,12 @@ private:
     void initContainers();
     void reportInt(const std::vector<int> & vec, int scaleBy);
     void reportAvDist(const std::vector<double> & vec, const std::vector<int> & scaleVec);
-    void saveDistHist(const std::vector<Hist1D *> & HistDist);
-    void reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D*> & vecHist);
+    void saveDistHist(const std::vector<Hist1DRegular *> & HistDist);
+    void reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1DRegular*> & vecHist);
     void fillDepoIn(double depo, std::vector<int> & vec);
-    void fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D*> & vecHist);
+    void fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1DRegular*> & vecHist);
     void incrementDistance(double depo, const G4ThreeVector & v1, const G4ThreeVector & v2, std::vector<double> & vec);
-    void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D*> & vecHist);
+    void fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1DRegular*> & vecHist);
     void fillInByGrouping(std::vector<int> & NoGroup_In, std::vector<int> & Assembly_In, std::vector<int> & Global_In);
     void groupRecords(std::vector<DepoStatRec> & records);
     void reportResults();

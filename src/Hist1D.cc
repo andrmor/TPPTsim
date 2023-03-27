@@ -5,7 +5,7 @@
 #include <ios>
 #include <algorithm>
 
-Hist1D::Hist1D(int numBins, double from, double to) :
+Hist1DRegular::Hist1DRegular(int numBins, double from, double to) :
     NumBins(numBins), From(from), To(to)
 {
     if (NumBins <= 0) NumBins = 1;
@@ -16,7 +16,7 @@ Hist1D::Hist1D(int numBins, double from, double to) :
     for (int iBin = 0; iBin < NumBins; iBin++) Data[iBin] = 0;
 }
 
-void Hist1D::fill(double value, double weight)
+void Hist1DRegular::fill(double value, double weight)
 {
     int index = (value - From) / Step;
 
@@ -25,7 +25,7 @@ void Hist1D::fill(double value, double weight)
     else                       Data[index] += weight;
 }
 
-void Hist1D::report()
+void Hist1DRegular::report()
 {
     int sum = 0;
     for (int iBin = 0; iBin < NumBins; iBin++)
@@ -41,7 +41,7 @@ void Hist1D::report()
     std::cout << "Overflows: "  << NumOverflows << std::endl;
 }
 
-void Hist1D::save(const std::string & fileName)
+void Hist1DRegular::save(const std::string & fileName)
 {
     std::ofstream outStream;
 
@@ -62,7 +62,7 @@ void Hist1D::save(const std::string & fileName)
 // ---
 
 //Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed) : Hist(hist)
-Hist1DSampler::Hist1DSampler(const Hist1D & hist) : Hist(hist)
+Hist1DSamplerRegular::Hist1DSamplerRegular(const Hist1DRegular & hist) : Hist(hist)
 {
     //randEngine.seed(seed);
 
@@ -79,9 +79,9 @@ Hist1DSampler::Hist1DSampler(const Hist1D & hist) : Hist(hist)
 }
 
 #include "G4RandomTools.hh"
-double Hist1DSampler::getRandom()
+double Hist1DSamplerRegular::getRandom()
 {
-    //const double rndm = urd(randEngine);  // [0, 1)
+        //const double rndm = urd(randEngine);  // [0, 1)
     const double rndm = G4UniformRand(); // (0,1)
     auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
 
@@ -89,6 +89,42 @@ double Hist1DSampler::getRandom()
                                                  : res->index);
 
     const double dBin = (Hist.To - Hist.From) / Hist.NumBins;
-    //return Hist.From + dBin * (indexAbove - urd(randEngine));
+        //return Hist.From + dBin * (indexAbove - urd(randEngine));
     return Hist.From + dBin * (indexAbove - G4UniformRand());
+}
+
+// ----------------- VARIABLE BIN SAMPLER ----------------------
+
+RandomSampler::RandomSampler(const std::vector<std::pair<double, double>> & distribution) :
+    Distribution(distribution)
+{
+    double acc = 0;
+    const size_t size = distribution.size();
+    for (size_t iBin = 0; iBin < size; iBin++)
+    {
+        Cumulative.push_back(SamplerRec(iBin, acc));
+
+        double binLength = 1.0;
+        if (iBin != size-1)
+            binLength = distribution[iBin+1].first - distribution[iBin].first;
+
+        acc += distribution[iBin].second * binLength;
+    }
+
+    if (acc != 0)
+        for (SamplerRec & rec : Cumulative)
+            rec.val /= acc;
+}
+
+double RandomSampler::getRandom()
+{
+    const double rndm = G4UniformRand(); // (0,1)
+    auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
+
+    size_t indexAbove = (res == Cumulative.end() ? Cumulative.size()-1
+                                                 : res->index);
+
+    const double from = Distribution[indexAbove-1].first;
+    const double to   = Distribution[indexAbove].first;
+    return from + (to - from) * G4UniformRand();
 }

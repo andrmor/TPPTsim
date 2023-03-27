@@ -660,11 +660,11 @@ void SourceLysoNatural::init()
     //out("---Max scint radius:", ScintMaxRadius);
 
     ElectronSpectrum = {{0,3881}, {6,3888}, {12,3969}, {18,4009}, {24,3979}, {30,3994}, {36,3860}, {42,3828}, {48,3753}, {54,3698}, {60,3810}, {66,3706}, {72,3735}, {78,3628}, {84,3569}, {90,3641}, {96,3623}, {102,3618}, {108,3593}, {114,3471}, {120,3547}, {126,3406}, {132,3472}, {138,3279}, {144,3365}, {150,3362}, {156,3299}, {162,3142}, {168,3176}, {174,3070}, {180,3070}, {186,3038}, {192,3094}, {198,2947}, {204,2866}, {210,2872}, {216,2897}, {222,2779}, {228,2669}, {234,2700}, {240,2556}, {246,2498}, {252,2529}, {258,2562}, {264,2400}, {270,2218}, {276,2264}, {282,2197}, {288,2155}, {294,2007}, {300,2084}, {306,1946}, {312,1864}, {318,1775}, {324,1784}, {330,1794}, {336,1702}, {342,1625}, {348,1509}, {354,1516}, {360,1476}, {366,1343}, {372,1332}, {378,1236}, {384,1214}, {390,1219}, {396,1122}, {402,1070}, {408,1025}, {414,917}, {420,913}, {426,832}, {432,770}, {438,758}, {444,695}, {450,626}, {456,629}, {462,567}, {468,523}, {474,472}, {480,399}, {486,389}, {492,340}, {498,285}, {504,250}, {510,245}, {516,231}, {522,179}, {528,131}, {534,145}, {540,114}, {546,77}, {552,67}, {558,57}, {564,28}, {570,16}, {576,13}, {582,5}, {588,2}, {594,0}};
-    Hist1D hist(100, 0, 600.0);
+    Hist1DRegular hist(100, 0, 600.0);
     for (const auto & pair : ElectronSpectrum)
         hist.fill(pair.first+0.001, pair.second);
 
-    Sampler = new Hist1DSampler(hist);
+    Sampler = new Hist1DSamplerRegular(hist);
 }
 
 SourceLysoNatural::~SourceLysoNatural()
@@ -748,7 +748,7 @@ SourcePointBlurred::SourcePointBlurred(const json11::Json & json) :
 
 void SourcePointBlurred::init()
 {
-    Hist1D dist(NumBins, -Range, Range);
+    Hist1DRegular dist(NumBins, -Range, Range);
     std::ifstream * inStream = new std::ifstream(FileName);
     std::vector<std::pair<double,double>> Input;
     std::string line;
@@ -765,7 +765,7 @@ void SourcePointBlurred::init()
     for (const auto & pair : Input)
         dist.fill(pair.first+0.001, pair.second);
 
-    Sampler = new Hist1DSampler(dist);
+    Sampler = new Hist1DSamplerRegular(dist);
 }
 
 SourcePointBlurred::~SourcePointBlurred()
@@ -1088,19 +1088,10 @@ CustomProfile::~CustomProfile()
     }
 }
 
-void makeSampler(const std::vector<std::pair<double,double>> & dist, Hist1DSampler* & sampler)
-{
-    Hist1D hist(dist.size(), dist.front().first, dist.back().first);
-
-    for (const auto & pair : dist) hist.fill(pair.first+0.00000001, pair.second);
-
-    sampler = new Hist1DSampler(hist); // sampler copies hist
-}
-
 void CustomProfile::init()
 {
-    makeSampler(DistX, XSampler);
-    makeSampler(DistY, YSampler);
+    XSampler = new RandomSampler(DistX);
+    YSampler = new RandomSampler(DistY);
 
     if (DoLogPositions)
     {

@@ -4,18 +4,21 @@
 #include <vector>
 #include <string>
 
-class Hist1D
+class Hist1DRegular
 {
 public:
-    friend class Hist1DSampler;
+    friend class Hist1DSamplerRegular;
 
-    Hist1D(int numBins, double from, double to);
-    virtual ~Hist1D(){}
+    Hist1DRegular(int numBins, double from, double to);
+    virtual ~Hist1DRegular(){}
 
     void fill(double value, double weight = 1.0);
 
     void report();
     void save(const std::string & fileName);
+
+    double & operator[](size_t index) {return Data[index];}
+    const double & operator[](size_t index) const {return Data[index];}
 
 protected:
     int NumBins = 100;
@@ -43,21 +46,34 @@ struct SamplerRec
 };
 
 //#include <random>
-class Hist1DSampler
+class Hist1DSamplerRegular
 {
 public:
     //Hist1DSampler(const Hist1D & hist, long seed);
-    Hist1DSampler(const Hist1D & hist);
-    virtual ~Hist1DSampler(){}
+    Hist1DSamplerRegular(const Hist1DRegular & hist);
+    virtual ~Hist1DSamplerRegular(){}
 
     double getRandom();
 
 protected:
-    const Hist1D Hist; // make a copy since original might be already destroyed when random s are generated
+    const Hist1DRegular Hist; // make a copy since original might be already destroyed when random s are generated
     std::vector<SamplerRec> Cumulative;
 
     //std::mt19937_64 randEngine;
     //std::uniform_real_distribution<double> urd;  // [0,1)
+
+};
+
+class RandomSampler
+{
+public:
+    RandomSampler(const std::vector<std::pair<double,double>> & distribution);
+
+    double getRandom();
+
+protected:
+    std::vector<std::pair<double,double>> Distribution;
+    std::vector<SamplerRec> Cumulative;
 
 };
 

@@ -698,7 +698,7 @@ ModeTestAcollinearity::~ModeTestAcollinearity()
 
 void ModeTestAcollinearity::init()
 {
-    delete Hist; Hist = new Hist1D(NumBins, From, 180.0);
+    delete Hist; Hist = new Hist1DRegular(NumBins, From, 180.0);
 }
 
 void ModeTestAcollinearity::run()
@@ -860,7 +860,7 @@ ModeTestLysoNatRad::ModeTestLysoNatRad(int numEvents, int numBins, const std::st
 
 void ModeTestLysoNatRad::init()
 {
-    delete Hist; Hist = new Hist1D(NumBins, 0, 1.3);
+    delete Hist; Hist = new Hist1DRegular(NumBins, 0, 1.3);
 }
 
 ModeTestLysoNatRad::~ModeTestLysoNatRad()
@@ -1046,11 +1046,11 @@ void ModeTestDepositionStat::initContainers()
     Two_Same_AverageDist_Sum_In.resize(num, 0);
     Two_Same_HistDist.resize(num, nullptr);
     for (size_t i = 0; i < num; i++)
-        Two_Same_HistDist[i] = new Hist1D(100, 0, 30.0);
+        Two_Same_HistDist[i] = new Hist1DRegular(100, 0, 30.0);
     Two_Same_FirstSmaller_In.resize(num, 0);
     Two_Same_HistFirstOverSum.resize(num, nullptr);
     for (size_t i = 0; i < num; i++)
-        Two_Same_HistFirstOverSum[i] = new Hist1D(100, 0, 1.0);
+        Two_Same_HistFirstOverSum[i] = new Hist1DRegular(100, 0, 1.0);
     Two_Dif_First_In.resize(num, 0);
     Two_Dif_Second_In.resize(num, 0);
     Two_Dif_AverageDist_First_In.resize(num, 0);
@@ -1088,7 +1088,7 @@ void ModeTestDepositionStat::reportAvDist(const std::vector<double> & vec, const
     }
 }
 
-void ModeTestDepositionStat::saveDistHist(const std::vector<Hist1D*> & HistDist)
+void ModeTestDepositionStat::saveDistHist(const std::vector<Hist1DRegular*> & HistDist)
 {
     const SessionManager & SM = SessionManager::getInstance();
     for (size_t i=0; i<Ranges.size(); i++)
@@ -1098,7 +1098,7 @@ void ModeTestDepositionStat::saveDistHist(const std::vector<Hist1D*> & HistDist)
     }
 }
 
-void ModeTestDepositionStat::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::reportRatios(const std::vector<int> & vecStat, const std::vector<int> & scaleVec, std::vector<Hist1DRegular *> & vecHist)
 {
     const SessionManager & SM = SessionManager::getInstance();
     for (size_t i = 0; i < Ranges.size(); i++)
@@ -1149,7 +1149,7 @@ void ModeTestDepositionStat::fillDepoIn(double depo, std::vector<int> & vec)
     }
 }
 
-void ModeTestDepositionStat::fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::fillDistHist(double depoSum, const G4ThreeVector & pos1, const G4ThreeVector & pos2, std::vector<Hist1DRegular *> & vecHist)
 {
     for (size_t i = 0; i < Ranges.size(); i++)
     {
@@ -1177,7 +1177,7 @@ void ModeTestDepositionStat::incrementDistance(double depo, const G4ThreeVector 
     }
 }
 
-void ModeTestDepositionStat::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1D *> & vecHist)
+void ModeTestDepositionStat::fillRatios(double depo1, double depo2, std::vector<int> & vecStat, std::vector<Hist1DRegular *> & vecHist)
 {
     const double sumDepo = depo1 + depo2;
     for (size_t i = 0; i < Ranges.size(); i++)
