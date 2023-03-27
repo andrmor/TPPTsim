@@ -1113,7 +1113,6 @@ void CustomProfile::generateOffset(G4ThreeVector & pos) const
 {
     double offX = XSampler->getRandom();
     double offY = YSampler->getRandom();
-    out(offX, offY);
 
     G4ThreeVector posLoc(offX, offY, 0);
     posLoc.rotateUz(Direction);
