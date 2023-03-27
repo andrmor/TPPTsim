@@ -1049,12 +1049,12 @@ void GaussProfile::readFromJson(const json11::Json &json)
 
 // ---
 
-void readDistFromFile(std::vector<std::pair<double,double>> & dist, const std::string & fileName)
+CustomRaidalProfile::CustomRaidalProfile(std::string fileDistribution, bool logPositions) : ProfileBase(), DoLogPositions(logPositions)
 {
-    std::ifstream inStream(fileName);
+    std::ifstream inStream(fileDistribution);
     std::string line;
 
-    dist.clear();
+    Distribution.clear();
     while (!inStream.eof())
     {
         getline(inStream, line);
@@ -1062,24 +1062,19 @@ void readDistFromFile(std::vector<std::pair<double,double>> & dist, const std::s
         std::stringstream ss(line);
         double position, probability;
         ss >> position >> probability;
-        dist.push_back( {position,probability} );
+        Distribution.push_back( {position,probability} );
     }
-}
 
-CustomProfile::CustomProfile(std::string fileDistributionX, std::string fileDistributionY) : ProfileBase()
-{
-    readDistFromFile(DistX, fileDistributionX);
-    readDistFromFile(DistY, fileDistributionY);
     init();
 }
 
-CustomProfile::CustomProfile(const json11::Json & json)
+CustomRaidalProfile::CustomRaidalProfile(const json11::Json & json)
 {
     readFromJson(json);
     init();
 }
 
-CustomProfile::~CustomProfile()
+CustomRaidalProfile::~CustomRaidalProfile()
 {
     if (logStream)
     {
@@ -1088,10 +1083,18 @@ CustomProfile::~CustomProfile()
     }
 }
 
-void CustomProfile::init()
+void CustomRaidalProfile::init()
 {
-    XSampler = new RandomSampler(DistX);
-    YSampler = new RandomSampler(DistY);
+    std::vector<std::pair<double,double>> correctedDist(Distribution);
+    for (size_t i = 0; i < correctedDist.size()-1; i++)
+    {
+        double areaTo   = correctedDist[i+1].first * correctedDist[i+1].first;
+        double areaFrom = correctedDist[i].first   * correctedDist[i].first;
+        correctedDist[i].second *= (areaTo - areaFrom);
+        out(correctedDist[i].first, Distribution[i].second, correctedDist[i].second);
+    }
+
+    Sampler = new RandomSampler(correctedDist);
 
     if (DoLogPositions)
     {
@@ -1100,12 +1103,14 @@ void CustomProfile::init()
     }
 }
 
-void CustomProfile::generateOffset(G4ThreeVector & pos) const
+void CustomRaidalProfile::generateOffset(G4ThreeVector & pos) const
 {
-    double offX = XSampler->getRandom();
-    double offY = YSampler->getRandom();
+    double radius = Sampler->getRandom();
+    double phi = 2.0 * 3.1415926535 * G4UniformRand();
 
-    G4ThreeVector posLoc(offX, offY, 0);
+    G4ThreeVector posLoc(radius, 0, 0);
+    posLoc.rotateZ(phi);
+
     posLoc.rotateUz(Direction);
 
     pos += posLoc;
@@ -1113,44 +1118,41 @@ void CustomProfile::generateOffset(G4ThreeVector & pos) const
     if (logStream) *logStream << pos[0] << ' ' << pos[1] << ' ' << pos[2] << '\n';
 }
 
-void writeDistToJson(const std::vector<std::pair<double,double>> & dist, json11::Json::array & ar)
+void CustomRaidalProfile::doWriteToJson(json11::Json::object & json) const
 {
-    for (const auto & pair : dist)
+    json11::Json::array ar;
+    for (const auto & pair : Distribution)
     {
         json11::Json::array el;
             el.push_back(pair.first);
             el.push_back(pair.second);
         ar.push_back(el);
     }
+    json["Distribution"] = ar;
+
+    json["LogPositions"] = DoLogPositions;
 }
 
-void CustomProfile::doWriteToJson(json11::Json::object & json) const
+void CustomRaidalProfile::readFromJson(const json11::Json & json)
 {
-    json11::Json::array arX; writeDistToJson(DistX, arX); json["DistributionX"] = arX;
-    json11::Json::array arY; writeDistToJson(DistY, arY); json["DistributionY"] = arY;
-}
+    json11::Json::array ar;
+    jstools::readArray(json, "Distribution", ar);
 
-void readDistFromJson(std::vector<std::pair<double,double>> & dist, const json11::Json::array & ar)
-{
-    dist.clear();
+    Distribution.clear();
     for (size_t i = 0; i < ar.size(); i++)
     {
         json11::Json::array el = ar[i].array_items();
         if (el.size() != 2)
         {
-            out("Custom distribution json should have lines of two numbers");
+            out("Custom distribution json should have sub-arrays of two numbers");
             exit(111);
         }
         const double pos = el[0].number_value();
         const double sw  = el[1].number_value();
-        dist.push_back( {pos, sw} );
+        Distribution.push_back( {pos, sw} );
     }
-}
 
-void CustomProfile::readFromJson(const json11::Json & json)
-{
-    json11::Json::array arX; jstools::readArray(json, "DistributionX", arX); readDistFromJson(DistX, arX);
-    json11::Json::array arY; jstools::readArray(json, "DistributionY", arY); readDistFromJson(DistY, arY);
+    jstools::readBool(json, "LogPositions", DoLogPositions);
 }
 
 // ---

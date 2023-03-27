@@ -229,28 +229,26 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void readFromJson(const json11::Json & json);
 };
-class CustomProfile : public ProfileBase
+class CustomRaidalProfile : public ProfileBase
 {
 public:
-    // file should contain pairs [Position_mm, StatWeight] for the entire range (from minus to plus), recommend to start from and stop with the positions with zero weight
-    CustomProfile(std::string fileDistributionX, std::string fileDistributionY);
-    CustomProfile(const json11::Json & json);
-    ~CustomProfile();
+    // file should contain pairs [RadialDistance_mm, StatWeight] for the range starting from 0 and ending with the position with zero weight
+    CustomRaidalProfile(std::string fileDistribution, bool logPositions);
+    CustomRaidalProfile(const json11::Json & json);
+    ~CustomRaidalProfile();
 
-    std::string getTypeName() const override {return "Custom";}
+    std::string getTypeName() const override {return "CustomRadial";}
     void generateOffset(G4ThreeVector & pos) const override;
 
 protected:
-    const bool DoLogPositions = true;
-    std::vector<std::pair<double,double>> DistX;
-    std::vector<std::pair<double,double>> DistY;
+    std::vector<std::pair<double,double>> Distribution;
+    bool DoLogPositions = true;
 
     void doWriteToJson(json11::Json::object & json) const override;
     void readFromJson(const json11::Json & json);
 
     // runtime
-    RandomSampler * XSampler = nullptr;
-    RandomSampler * YSampler = nullptr;
+    RandomSampler * Sampler = nullptr;
     std::ofstream * logStream = nullptr;
 
     void init();
