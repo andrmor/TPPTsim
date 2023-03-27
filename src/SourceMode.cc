@@ -1088,18 +1088,32 @@ CustomProfile::~CustomProfile()
     }
 }
 
+void makeSampler(const std::vector<std::pair<double,double>> & dist, Hist1DSampler* & sampler)
+{
+    Hist1D hist(dist.size(), dist.front().first, dist.back().first);
+
+    for (const auto & pair : dist) hist.fill(pair.first+0.00000001, pair.second);
+
+    sampler = new Hist1DSampler(hist); // sampler copies hist
+}
+
 void CustomProfile::init()
 {
-    Hist1D X(DistX.size(), DistX.front().first, DistX.back().first); XSampler = new Hist1DSampler(X); // sampler copies hist
-    Hist1D Y(DistY.size(), DistY.front().first, DistY.back().first); YSampler = new Hist1DSampler(Y);
+    makeSampler(DistX, XSampler);
+    makeSampler(DistY, YSampler);
 
-    if (DoLogPositions) logStream = new std::ofstream("CustomProfileGeneratedPositions.txt");
+    if (DoLogPositions)
+    {
+        SessionManager & SM = SessionManager::getInstance();
+        logStream = new std::ofstream(SM.WorkingDirectory + "/CustomProfileGeneratedPositions.txt");
+    }
 }
 
 void CustomProfile::generateOffset(G4ThreeVector & pos) const
 {
     double offX = XSampler->getRandom();
     double offY = YSampler->getRandom();
+    out(offX, offY);
 
     G4ThreeVector posLoc(offX, offY, 0);
     posLoc.rotateUz(Direction);
