@@ -15,7 +15,7 @@ class G4Material;
 class G4Navigator;
 class Hist1DRegular;
 class Hist1DSamplerRegular;
-class RandomSampler;
+class RandomRadialSampler;
 class SourceModeBase;
 
 class SourceModeFactory
@@ -248,7 +248,7 @@ protected:
     void readFromJson(const json11::Json & json);
 
     // runtime
-    RandomSampler * Sampler = nullptr;
+    RandomRadialSampler * Sampler = nullptr;
     std::ofstream * logStream = nullptr;
 
     void init();

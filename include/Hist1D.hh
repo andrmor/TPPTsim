@@ -64,10 +64,10 @@ protected:
 
 };
 
-class RandomSampler
+class RandomRadialSampler
 {
 public:
-    RandomSampler(const std::vector<std::pair<double,double>> & distribution);
+    RandomRadialSampler(const std::vector<std::pair<double,double>> & distribution);
 
     double getRandom();
 

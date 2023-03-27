@@ -93,9 +93,9 @@ double Hist1DSamplerRegular::getRandom()
     return Hist.From + dBin * (indexAbove - G4UniformRand());
 }
 
-// ----------------- VARIABLE BIN SAMPLER ----------------------
+// ----------------- VARIABLE BIN SAMPLER FOR RADIAL ----------------------
 
-RandomSampler::RandomSampler(const std::vector<std::pair<double, double>> & distribution) :
+RandomRadialSampler::RandomRadialSampler(const std::vector<std::pair<double, double>> & distribution) :
     Distribution(distribution)
 {
     double acc = 0;
@@ -104,11 +104,11 @@ RandomSampler::RandomSampler(const std::vector<std::pair<double, double>> & dist
     {
         Cumulative.push_back(SamplerRec(iBin, acc));
 
-        double binLength = 1.0;
+        double areaFactor = 1.0;
         if (iBin != size-1)
-            binLength = distribution[iBin+1].first - distribution[iBin].first;
+            areaFactor = distribution[iBin+1].first*distribution[iBin+1].first - distribution[iBin].first*distribution[iBin].first;
 
-        acc += distribution[iBin].second * binLength;
+        acc += distribution[iBin].second * areaFactor;
     }
 
     if (acc != 0)
@@ -116,7 +116,7 @@ RandomSampler::RandomSampler(const std::vector<std::pair<double, double>> & dist
             rec.val /= acc;
 }
 
-double RandomSampler::getRandom()
+double RandomRadialSampler::getRandom()
 {
     const double rndm = G4UniformRand(); // (0,1)
     auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
