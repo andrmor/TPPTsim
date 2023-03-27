@@ -664,14 +664,7 @@ void SourceLysoNatural::init()
     for (const auto & pair : ElectronSpectrum)
         hist.fill(pair.first+0.001, pair.second);
 
-    Sampler = new Hist1DSampler(hist, 12345);
-    /*
-    hist.report();
-    Hist1D tmpHist(100,0,600.0);
-    for (int i=0; i<200000; i++) tmpHist.fill(Sampler->getRandom());
-    tmpHist.save("/home/andr/WORK/TPPT/testOutput_ED.txt");
-    exit(-1);
-    */
+    Sampler = new Hist1DSampler(hist);
 }
 
 SourceLysoNatural::~SourceLysoNatural()
@@ -772,7 +765,7 @@ void SourcePointBlurred::init()
     for (const auto & pair : Input)
         dist.fill(pair.first+0.001, pair.second);
 
-    Sampler = new Hist1DSampler(dist, 12345);
+    Sampler = new Hist1DSampler(dist);
 }
 
 SourcePointBlurred::~SourcePointBlurred()
@@ -1024,6 +1017,8 @@ void RoundProfile::readFromJson(const json11::Json &json)
     jstools::readDouble(json, "Diameter", Diameter);
 }
 
+// ---
+
 GaussProfile::GaussProfile(const json11::Json & json) : ProfileBase()
 {
     readFromJson(json);
@@ -1050,6 +1045,108 @@ void GaussProfile::readFromJson(const json11::Json &json)
 {
     jstools::readDouble(json, "SigmaX", SigmaX);
     jstools::readDouble(json, "SigmaY", SigmaY);
+}
+
+// ---
+
+void readDistFromFile(std::vector<std::pair<double,double>> & dist, const std::string & fileName)
+{
+    std::ifstream inStream(fileName);
+    std::string line;
+
+    dist.clear();
+    while (!inStream.eof())
+    {
+        getline(inStream, line);
+        out(line);
+        std::stringstream ss(line);
+        double position, probability;
+        ss >> position >> probability;
+        dist.push_back( {position,probability} );
+    }
+}
+
+CustomProfile::CustomProfile(std::string fileDistributionX, std::string fileDistributionY) : ProfileBase()
+{
+    readDistFromFile(DistX, fileDistributionX);
+    readDistFromFile(DistY, fileDistributionY);
+    init();
+}
+
+CustomProfile::CustomProfile(const json11::Json & json)
+{
+    readFromJson(json);
+    init();
+}
+
+CustomProfile::~CustomProfile()
+{
+    if (logStream)
+    {
+        logStream->close();
+        delete logStream;
+    }
+}
+
+void CustomProfile::init()
+{
+    Hist1D X(DistX.size(), DistX.front().first, DistX.back().first); XSampler = new Hist1DSampler(X); // sampler copies hist
+    Hist1D Y(DistY.size(), DistY.front().first, DistY.back().first); YSampler = new Hist1DSampler(Y);
+
+    if (DoLogPositions) logStream = new std::ofstream("CustomProfileGeneratedPositions.txt");
+}
+
+void CustomProfile::generateOffset(G4ThreeVector & pos) const
+{
+    double offX = XSampler->getRandom();
+    double offY = YSampler->getRandom();
+
+    G4ThreeVector posLoc(offX, offY, 0);
+    posLoc.rotateUz(Direction);
+
+    pos += posLoc;
+
+    if (logStream) *logStream << pos[0] << ' ' << pos[1] << ' ' << pos[2] << '\n';
+}
+
+void writeDistToJson(const std::vector<std::pair<double,double>> & dist, json11::Json::array & ar)
+{
+    for (const auto & pair : dist)
+    {
+        json11::Json::array el;
+            el.push_back(pair.first);
+            el.push_back(pair.second);
+        ar.push_back(el);
+    }
+}
+
+void CustomProfile::doWriteToJson(json11::Json::object & json) const
+{
+    json11::Json::array arX; writeDistToJson(DistX, arX); json["DistributionX"] = arX;
+    json11::Json::array arY; writeDistToJson(DistY, arY); json["DistributionY"] = arY;
+}
+
+void readDistFromJson(std::vector<std::pair<double,double>> & dist, const json11::Json::array & ar)
+{
+    dist.clear();
+    for (size_t i = 0; i < ar.size(); i++)
+    {
+        json11::Json::array el = ar[i].array_items();
+        if (el.size() != 2)
+        {
+            out("Custom distribution json should have lines of two numbers");
+            exit(111);
+        }
+        const double pos = el[0].number_value();
+        const double sw  = el[1].number_value();
+        dist.push_back( {pos, sw} );
+    }
+}
+
+void CustomProfile::readFromJson(const json11::Json & json)
+{
+    json11::Json::array arX; jstools::readArray(json, "DistributionX", arX); readDistFromJson(DistX, arX);
+    json11::Json::array arY; jstools::readArray(json, "DistributionY", arY); readDistFromJson(DistY, arY);
 }
 
 // ---

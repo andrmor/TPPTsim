@@ -61,9 +61,10 @@ void Hist1D::save(const std::string & fileName)
 
 // ---
 
-Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed) : Hist(hist)
+//Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed) : Hist(hist)
+Hist1DSampler::Hist1DSampler(const Hist1D & hist) : Hist(hist)
 {
-    randEngine.seed(seed);
+    //randEngine.seed(seed);
 
     double acc = 0;
     for (size_t iBin = 0; iBin < hist.Data.size(); iBin++)
@@ -77,14 +78,17 @@ Hist1DSampler::Hist1DSampler(const Hist1D & hist, long seed) : Hist(hist)
             rec.val /= acc;
 }
 
+#include "G4RandomTools.hh"
 double Hist1DSampler::getRandom()
 {
-    const double rndm = urd(randEngine);  // [0, 1)
+    //const double rndm = urd(randEngine);  // [0, 1)
+    const double rndm = G4UniformRand(); // (0,1)
     auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
 
     size_t indexAbove = (res == Cumulative.end() ? Cumulative.size()-1
                                                  : res->index);
 
     const double dBin = (Hist.To - Hist.From) / Hist.NumBins;
-    return Hist.From + dBin * (indexAbove - urd(randEngine));
+    //return Hist.From + dBin * (indexAbove - urd(randEngine));
+    return Hist.From + dBin * (indexAbove - G4UniformRand());
 }

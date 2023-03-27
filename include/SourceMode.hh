@@ -228,6 +228,32 @@ protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void readFromJson(const json11::Json & json);
 };
+class CustomProfile : public ProfileBase
+{
+public:
+    // file should contain pairs [Position_mm, StatWeight] for the entire range (from minus to plus), recommend to start from and stop with the positions with zero weight
+    CustomProfile(std::string fileDistributionX, std::string fileDistributionY);
+    CustomProfile(const json11::Json & json);
+    ~CustomProfile();
+
+    std::string getTypeName() const override {return "Custom";}
+    void generateOffset(G4ThreeVector & pos) const override;
+
+protected:
+    const bool DoLogPositions = true;
+    std::vector<std::pair<double,double>> DistX;
+    std::vector<std::pair<double,double>> DistY;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+    void readFromJson(const json11::Json & json);
+
+    // runtime
+    Hist1DSampler * XSampler = nullptr;
+    Hist1DSampler * YSampler = nullptr;
+    std::ofstream * logStream = nullptr;
+
+    void init();
+};
 
 class SourceBeam : public SourceModeBase
 {

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <random>
 
 class Hist1D
 {
@@ -43,10 +42,12 @@ struct SamplerRec
       bool operator<(const SamplerRec & other) const {return val < other.val;}
 };
 
+//#include <random>
 class Hist1DSampler
 {
 public:
-    Hist1DSampler(const Hist1D & hist, long seed);
+    //Hist1DSampler(const Hist1D & hist, long seed);
+    Hist1DSampler(const Hist1D & hist);
     virtual ~Hist1DSampler(){}
 
     double getRandom();
@@ -55,8 +56,8 @@ protected:
     const Hist1D Hist; // make a copy since original might be already destroyed when random s are generated
     std::vector<SamplerRec> Cumulative;
 
-    std::mt19937_64 randEngine;
-    std::uniform_real_distribution<double> urd;  // [0,1)
+    //std::mt19937_64 randEngine;
+    //std::uniform_real_distribution<double> urd;  // [0,1)
 
 };
 
