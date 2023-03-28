@@ -161,3 +161,37 @@ double RandomRadialSampler::getRandom()
     const double to   = Distribution[indexAbove].first;
     return from + (to - from) * G4UniformRand();
 }
+
+void RandomRadialSampler::generatePosition(G4ThreeVector & pos)
+{
+    const double rndm = G4UniformRand(); // (0,1)
+    auto res = std::upper_bound(Cumulative.begin(), Cumulative.end(), SamplerRec(0, rndm)); // iterator to the element with larger val than rndm
+
+    size_t indexAbove = (res == Cumulative.end() ? Cumulative.size()-1
+                                                 : res->index);
+
+    pos[2] = 0;
+    if (indexAbove != 1)
+    {
+        const double from = Distribution[indexAbove-1].first;
+        const double to   = Distribution[indexAbove].first;
+
+        const double radius = from + (to - from) * G4UniformRand();
+        const double phi = 2.0 * 3.1415926535 * G4UniformRand();
+
+        pos[0] = radius;
+        pos[1] = 0;
+        pos.rotateZ(phi);
+    }
+    else
+    {
+        const double r  = Distribution[1].first;
+        const double r2 = Distribution[1].first * Distribution[1].first;
+        do
+        {
+            pos[0] = -r + 2.0 * r * G4UniformRand();
+            pos[1] = -r + 2.0 * r * G4UniformRand();
+        }
+        while (pos[0]*pos[0] + pos[1]*pos[1] > r2);
+    }
+}

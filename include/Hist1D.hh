@@ -64,12 +64,14 @@ protected:
 
 };
 
+#include "G4ThreeVector.hh"
 class RandomRadialSampler
 {
 public:
     RandomRadialSampler(const std::vector<std::pair<double,double>> & distribution);
 
     double getRandom();
+    void   generatePosition(G4ThreeVector & pos);
 
 protected:
     std::vector<std::pair<double,double>> Distribution;

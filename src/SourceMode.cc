@@ -1096,11 +1096,16 @@ void CustomRaidalProfile::init()
 
 void CustomRaidalProfile::generateOffset(G4ThreeVector & pos) const
 {
+    /*
     double radius = Sampler->getRandom();
     double phi = 2.0 * 3.1415926535 * G4UniformRand();
 
     G4ThreeVector posLoc(radius, 0, 0);
     posLoc.rotateZ(phi);
+    */
+
+    G4ThreeVector posLoc;
+    Sampler->generatePosition(posLoc);
 
     posLoc.rotateUz(Direction);
 
