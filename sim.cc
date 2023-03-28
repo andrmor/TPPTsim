@@ -64,8 +64,8 @@ int main(int argc, char** argv)
 
         // Source
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
-        //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", true) );
-        SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/Flat.txt", true) );
+        SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", true) );
+        //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/Flat.txt", true) );
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -15.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
 
         // Simulation mode
@@ -75,7 +75,8 @@ int main(int argc, char** argv)
 //        SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -50}, "Dose.txt");
 
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
-        SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);
+//        SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);
+        SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {101, 101, 200}, {-25.25, -25.25, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.25}, {1, 1, 410}, {-50.0, -50.0, -50.0}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.325}, {1, 1, 350}, {-50.0, -50.0, -52.1}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.25}, {1, 1, 410}, {-50.0, -50.0, -10.0}, "Dose.txt", false);

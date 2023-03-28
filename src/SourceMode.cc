@@ -1085,17 +1085,6 @@ CustomRaidalProfile::~CustomRaidalProfile()
 
 void CustomRaidalProfile::init()
 {
-    /*
-    std::vector<std::pair<double,double>> correctedDist(Distribution);
-    for (size_t i = 0; i < correctedDist.size()-1; i++)
-    {
-        double areaTo   = correctedDist[i+1].first * correctedDist[i+1].first;
-        double areaFrom = correctedDist[i].first   * correctedDist[i].first;
-        correctedDist[i].second *= (areaTo - areaFrom);
-        out(correctedDist[i].first, Distribution[i].second, correctedDist[i].second);
-    }
-    */
-
     Sampler = new RandomRadialSampler(Distribution);
 
     if (DoLogPositions)

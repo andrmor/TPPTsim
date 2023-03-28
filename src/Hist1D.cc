@@ -95,20 +95,53 @@ double Hist1DSamplerRegular::getRandom()
 
 // ----------------- VARIABLE BIN SAMPLER FOR RADIAL ----------------------
 
-RandomRadialSampler::RandomRadialSampler(const std::vector<std::pair<double, double>> & distribution) :
-    Distribution(distribution)
+#include "SessionManager.hh"
+#include "out.hh"
+RandomRadialSampler::RandomRadialSampler(const std::vector<std::pair<double, double>> & distribution) //: Distribution(distribution)
 {
+    if (distribution.size() < 2)
+    {
+        out("Distribution for RandomRadialSampler should have at least 2 points");
+        exit(22);
+    }
+    if (distribution.front().first != 0)
+    {
+        out("First record for the distribution given to RandomRadialSampler should be for zero radial distance");
+        exit(22);
+    }
+
+    const size_t sizeInterpolated = 100;
+    const double step = distribution.back().first / sizeInterpolated;
+
+    Distribution.reserve(sizeInterpolated);
+
+    const size_t sizeOriginal = distribution.size();
+    size_t indexInterpolated = 0;
+    for (size_t indexOriginal = 0; indexOriginal < sizeOriginal-1; indexOriginal++)
+    {
+        double r = step * indexInterpolated;
+        while (r <= distribution[indexOriginal+1].first)
+        {
+            const double interpolationFactor = (r - distribution[indexOriginal].first) / ( distribution[indexOriginal+1].first - distribution[indexOriginal].first );
+            const double interpolatedValue   = SessionManager::interpolate(distribution[indexOriginal].second, distribution[indexOriginal+1].second, interpolationFactor);
+
+            Distribution.push_back( {r, interpolatedValue} );
+
+            indexInterpolated++;
+            r = step * indexInterpolated;
+        }
+    }
+
     double acc = 0;
-    const size_t size = distribution.size();
+    const size_t size = Distribution.size();
     for (size_t iBin = 0; iBin < size; iBin++)
     {
         Cumulative.push_back(SamplerRec(iBin, acc));
 
         double areaFactor = 1.0;
-        if (iBin != size-1)
-            areaFactor = distribution[iBin+1].first*distribution[iBin+1].first - distribution[iBin].first*distribution[iBin].first;
+        if (iBin != size-1) areaFactor = Distribution[iBin+1].first*Distribution[iBin+1].first - Distribution[iBin].first*Distribution[iBin].first;
 
-        acc += distribution[iBin].second * areaFactor;
+        acc += Distribution[iBin].second * areaFactor;
     }
 
     if (acc != 0)
