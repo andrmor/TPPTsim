@@ -420,4 +420,32 @@ private:
     void reportResults();
 };
 
+// ---
+
+class ModePositronTimeLogger : public SimModeBase
+{
+public:
+    ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, std::string fileName);
+
+    void fillTime(double time);
+
+    void run() override;
+
+    std::string getTypeName() const override {return "ModePositronTimeLogger";}
+    void readFromJson(const json11::Json & json) override;
+
+    G4UserStackingAction * getStackingAction() override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    void init();
+
+    int             NumEvents;
+    double          TimeFrom;
+    double          Duration;
+    int             NumBins;
+    std::string     FileName;
+    Hist1DRegular * Hist      = nullptr;
+};
 #endif // SimulationMode_h

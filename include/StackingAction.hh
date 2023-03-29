@@ -15,4 +15,10 @@ public:
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track * track) override;
 };
 
+class PositronTimeLoggerStackingAction : public G4UserStackingAction
+{
+public:
+    G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track * track) override;
+};
+
 #endif

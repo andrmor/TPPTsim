@@ -40,6 +40,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "ModeActivityGenerator")    sm = new ModeActivityGenerator(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
     else if (Type == "ModeAnnihilationLogger")   sm = new ModeAnnihilationLogger(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
       // tests
+    else if (Type == "ModePositronTimeLogger")   sm = new ModePositronTimeLogger(0, 0, 1, 1, "dummy.txt");
     else if (Type == "ModeTestScintPositions")   sm = new ModeTestScintPositions();
     else if (Type == "ModeTestAcollinearity")    sm = new ModeTestAcollinearity(0, 0, 1, "dummy.txt");
     else if (Type == "ModeTestAnnihilations")    sm = new ModeTestAnnihilations(0, 0, "dummy.txt", false);
@@ -1413,4 +1414,56 @@ void ModeTestDepositionStat::reportResults()
     }
 
     //out( NumEvents , num0 , num1 , num2 , num3 , num4 , num5plus , remains);
+}
+
+// ---
+
+ModePositronTimeLogger::ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, std::string fileName) :
+    NumEvents(numEvents), TimeFrom(timeFrom), Duration(duration), NumBins(numBins), FileName(fileName)
+{
+    init();
+}
+
+void ModePositronTimeLogger::fillTime(double time)
+{
+    Hist->fill(time);
+}
+
+void ModePositronTimeLogger::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+    Hist->report();
+    Hist->save(SM.WorkingDirectory + '/' + FileName);
+}
+
+void ModePositronTimeLogger::readFromJson(const json11::Json &json)
+{
+    jstools::readInt   (json, "NumEvents", NumEvents);
+    jstools::readDouble(json, "TimeFrom",  TimeFrom);
+    jstools::readDouble(json, "Duration",  Duration);
+    jstools::readInt   (json, "NumBins",   NumBins);
+    jstools::readString(json, "FileName",  FileName);
+
+    init();
+}
+
+#include "StackingAction.hh"
+G4UserStackingAction * ModePositronTimeLogger::getStackingAction()
+{
+    return new PositronTimeLoggerStackingAction();
+}
+
+void ModePositronTimeLogger::doWriteToJson(json11::Json::object &json) const
+{
+    json["NumEvents"] = NumEvents;
+    json["TimeFrom"]  = TimeFrom;
+    json["Duration"]  = Duration;
+    json["NumBins"]   = NumBins;
+    json["FileName"]  = FileName;
+}
+
+void ModePositronTimeLogger::init()
+{
+    delete Hist; Hist = new Hist1DRegular(NumBins, TimeFrom, TimeFrom + Duration);
 }
