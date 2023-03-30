@@ -1058,7 +1058,7 @@ CustomRaidalProfile::CustomRaidalProfile(std::string fileDistribution, bool logP
     while (!inStream.eof())
     {
         getline(inStream, line);
-        out(line);
+        //out(line);
         std::stringstream ss(line);
         double position, probability;
         ss >> position >> probability;
