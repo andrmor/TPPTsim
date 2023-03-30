@@ -71,13 +71,14 @@ void SessionManager::startSession()
 
     SimMode->preInit();
 
-    DetectorConstruction * theDetector = new DetectorConstruction();
-    runManager->SetUserInitialization(theDetector);
-
-    G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
+    G4VModularPhysicsList * physicsList = new QGSP_BIC_HP;
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     physicsList->SetDefaultCutValue(0.1*mm);  // see createPhantomRegion and createScintRegion for specific cuts!
     runManager->SetUserInitialization(physicsList);
+
+    DetectorConstruction * theDetector = new DetectorConstruction();
+    runManager->SetUserInitialization(theDetector);
+
     if (SimAcollinearity || KillNeutrinos || FastPESGeneration) createFastSimulationPhysics(physicsList);
 
     runManager->SetUserAction(new PrimaryGeneratorAction); // SourceMode cannot be directly inherited from G4VUserPrimaryGeneratorAction due to initialization order
