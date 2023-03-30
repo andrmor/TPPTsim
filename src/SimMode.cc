@@ -40,7 +40,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "ModeActivityGenerator")    sm = new ModeActivityGenerator(0, {1,1,1}, {1,1,1}, {0,0,0}, {{0, 1e20}}, "dummy.txt");
     else if (Type == "ModeAnnihilationLogger")   sm = new ModeAnnihilationLogger(0, {1,1,1}, {1,1,1}, {0,0,0}, "dummy.txt");
       // tests
-    else if (Type == "ModePositronTimeLogger")   sm = new ModePositronTimeLogger(0, 0, 1, 1, "dummy.txt");
+    else if (Type == "ModePositronTimeLogger")   sm = new ModePositronTimeLogger(0, 0, 1, 1, 1.0, "dummy.txt");
     else if (Type == "ModeTestScintPositions")   sm = new ModeTestScintPositions();
     else if (Type == "ModeTestAcollinearity")    sm = new ModeTestAcollinearity(0, 0, 1, "dummy.txt");
     else if (Type == "ModeTestAnnihilations")    sm = new ModeTestAnnihilations(0, 0, "dummy.txt", false);
@@ -1418,15 +1418,20 @@ void ModeTestDepositionStat::reportResults()
 
 // ---
 
-ModePositronTimeLogger::ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, std::string fileName) :
-    NumEvents(numEvents), TimeFrom(timeFrom), Duration(duration), NumBins(numBins), FileName(fileName)
+ModePositronTimeLogger::ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, double maxOffsetFromIso, std::string fileName) :
+    NumEvents(numEvents), TimeFrom(timeFrom), Duration(duration), NumBins(numBins), MaxOffset(maxOffsetFromIso), FileName(fileName)
 {
     init();
 }
 
-void ModePositronTimeLogger::fillTime(double time)
+void ModePositronTimeLogger::fillTime(double time, const G4ThreeVector & pos)
 {
-    Hist->fill(time);
+    //out(pos[0],pos[1],pos[2]);
+    if (fabs(pos[0]) < MaxOffset && fabs(pos[1]) < MaxOffset && fabs(pos[2]) < MaxOffset)
+    {
+        Hist->fill(time);
+        //out("-->Accept");
+    }
 }
 
 void ModePositronTimeLogger::run()
@@ -1443,6 +1448,7 @@ void ModePositronTimeLogger::readFromJson(const json11::Json &json)
     jstools::readDouble(json, "TimeFrom",  TimeFrom);
     jstools::readDouble(json, "Duration",  Duration);
     jstools::readInt   (json, "NumBins",   NumBins);
+    jstools::readDouble(json, "MaxOffset", MaxOffset);
     jstools::readString(json, "FileName",  FileName);
 
     init();
@@ -1460,6 +1466,7 @@ void ModePositronTimeLogger::doWriteToJson(json11::Json::object &json) const
     json["TimeFrom"]  = TimeFrom;
     json["Duration"]  = Duration;
     json["NumBins"]   = NumBins;
+    json["MaxOffset"] = MaxOffset;
     json["FileName"]  = FileName;
 }
 

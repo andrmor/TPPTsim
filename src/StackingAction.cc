@@ -24,6 +24,6 @@ G4ClassificationOfNewTrack PositronTimeLoggerStackingAction::ClassifyNewTrack(co
 
     SessionManager & SM = SessionManager::getInstance();
     ModePositronTimeLogger * Mode = static_cast<ModePositronTimeLogger*>(SM.SimMode);
-    Mode->fillTime(track->GetGlobalTime());
+    Mode->fillTime(track->GetGlobalTime(), track->GetPosition());
     return fKill;
 }

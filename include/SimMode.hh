@@ -425,9 +425,9 @@ private:
 class ModePositronTimeLogger : public SimModeBase
 {
 public:
-    ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, std::string fileName);
+    ModePositronTimeLogger(int numEvents, double timeFrom, double duration, int numBins, double maxOffsetFromIso, std::string fileName);
 
-    void fillTime(double time);
+    void fillTime(double time, const G4ThreeVector & pos);
 
     void run() override;
 
@@ -445,6 +445,7 @@ protected:
     double          TimeFrom;
     double          Duration;
     int             NumBins;
+    double          MaxOffset;
     std::string     FileName;
     Hist1DRegular * Hist      = nullptr;
 };
