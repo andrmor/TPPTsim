@@ -20,7 +20,8 @@ class PhantomDICOM : public PhantomModeBase
 public:
     // lateral compression other than 1 strongly compromoises accuracy -> intended only for visualization
     PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo, int lateralCompression,
-                 double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld);
+                 double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld,
+                 bool makeCointainerVisible = false);
 
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
     std::string       getTypeName() const override {return "PhantomDICOM";}
@@ -38,7 +39,7 @@ protected:
     std::array<double,3> PosInWorld;
     std::array<double,3> RotInWorld;
 
-    bool                 ContainerInvisible;
+    bool                 ContainerVisible;
     bool                 UseFalseColors;
 
     std::vector<std::pair<std::string, float>> MatUpperDens;

@@ -28,13 +28,13 @@
 #include <algorithm>
 
 PhantomDICOM::PhantomDICOM(std::string dataDir, std::string sliceBaseFileName, int sliceFrom, int sliceTo, int lateralCompression,
-                           double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld) :
+                           double containerRadius, std::array<double,3> posInWorld, std::array<double,3> rotInWorld, bool makeCointainerVisible) :
                            DataDir(dataDir), SliceFileBase(sliceBaseFileName), SliceFrom(sliceFrom), SliceTo(sliceTo),
                            LateralCompression(lateralCompression),
-                           PhantRadius(containerRadius), PosInWorld(posInWorld), RotInWorld(rotInWorld)
+                           PhantRadius(containerRadius), PosInWorld(posInWorld), RotInWorld(rotInWorld),
+                           ContainerVisible(makeCointainerVisible)
 {
-    ContainerInvisible = true;
-    UseFalseColors     = false;
+    UseFalseColors = false;
 }
 
 G4LogicalVolume * PhantomDICOM::definePhantom(G4LogicalVolume * logicWorld)
@@ -77,6 +77,8 @@ void PhantomDICOM::doWriteToJson(json11::Json::object & json) const
     json["SliceTo"] = SliceTo;
     json["LateralCompression"] = LateralCompression;
     json["PhantRadius"] = PhantRadius;
+    json["ContainerVisible"] = ContainerVisible;
+    json["UseFalseColors"] = UseFalseColors;
 
     // position
     {
@@ -101,6 +103,8 @@ void PhantomDICOM::readFromJson(const json11::Json & json)
     jstools::readInt(json, "SliceTo", SliceTo);
     jstools::readInt(json, "LateralCompression", LateralCompression);
     jstools::readDouble(json, "PhantRadius", PhantRadius);
+    jstools::readBool(json, "ContainerVisible", ContainerVisible);
+    jstools::readBool(json, "UseFalseColors", UseFalseColors);
 
     // position
     {
@@ -390,8 +394,10 @@ G4LogicalVolume * PhantomDICOM::makeContainer(G4LogicalVolume * logicWorld)
         rot = new CLHEP::HepRotation(RotInWorld[0], RotInWorld[1], RotInWorld[2]);
     new G4PVPlacement(rot, pos, PhantomLogical, "PhCont", logicWorld, false, 1);
 
-    if (ContainerInvisible) PhantomLogical->SetVisAttributes(false);
-    else                    PhantomLogical->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    if (ContainerVisible)
+        PhantomLogical->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+    else
+        PhantomLogical->SetVisAttributes(false);
 
     return PhantomLogical;
 }
@@ -424,7 +430,7 @@ void PhantomDICOM::constructPhantom(G4LogicalVolume * PhantomLogical)
             if (mat == AirMat) continue;
 
             const double z = zStart + 2.0 * iSlice * VoxHalfSizeZ;
-            Voxels.push_back({-y, x, z, mat});
+            Voxels.push_back({y, x, z, mat});
         }
     }
 
