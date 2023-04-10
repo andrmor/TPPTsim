@@ -259,7 +259,7 @@ class SourceBeam : public SourceModeBase
 public:
     SourceBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                const G4ThreeVector & origin, const G4ThreeVector & direction,
-               int numParticles = 1, ProfileBase * spread = nullptr);
+               int numParticles = 1, ProfileBase * spread = nullptr, double energySigma = 0);
     SourceBeam(const json11::Json & json);
     ~SourceBeam();
 
@@ -275,6 +275,10 @@ protected:
     G4ThreeVector Origin       = {0,0,0};
     int           NumParticles = 1;
     ProfileBase * Profile      = nullptr;
+    double        EnergySigma  = 0;
+
+    //runtime
+    Hist1DRegular * HistEnergy = nullptr;
 };
 
 struct BeamRecord

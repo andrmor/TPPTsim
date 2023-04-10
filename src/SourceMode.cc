@@ -199,8 +199,8 @@ void SourcePoint::doReadFromJson(const json11::Json & json)
 
 SourceBeam::SourceBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                        const G4ThreeVector & origin, const G4ThreeVector & direction,
-                       int numParticles, ProfileBase * spread) :
-    SourceModeBase(particle, timeGenerator), Origin(origin), NumParticles(numParticles), Profile(spread)
+                       int numParticles, ProfileBase * spread, double energySigma) :
+    SourceModeBase(particle, timeGenerator), Origin(origin), NumParticles(numParticles), Profile(spread), EnergySigma(energySigma)
 {
     Direction = direction;
     update();
@@ -230,8 +230,16 @@ void SourceBeam::GeneratePrimaries(G4Event * anEvent)
             //out(pos);
             ParticleGun->SetParticlePosition(pos);
         }
+        if (EnergySigma != 0)
+        {
+            const double energy = G4RandGauss::shoot(Particle->Energy, EnergySigma);
+            if (HistEnergy) HistEnergy->fill(energy, 1);
+            ParticleGun->SetParticleEnergy(energy);
+        }
         SourceModeBase::GeneratePrimaries(anEvent);
     }
+
+    if (HistEnergy) HistEnergy->save(SessionManager::getInstance().WorkingDirectory + "/EnergyDistribution.txt");
 }
 
 void SourceBeam::update()
@@ -239,6 +247,8 @@ void SourceBeam::update()
     if (Profile) Profile->setDirection(Direction);
     ParticleGun->SetParticlePosition(Origin);
     bIsotropicDirection = false;
+
+    if (EnergySigma != 0) HistEnergy = new Hist1DRegular(100, 73.5, 78.0);
 }
 
 void SourceBeam::doWriteToJson(json11::Json::object & json) const
@@ -256,6 +266,8 @@ void SourceBeam::doWriteToJson(json11::Json::object & json) const
     json11::Json::object js;
     if (Profile) Profile->writeToJson(js);
     json["Profile"] = js;
+
+    json["EnergySigma"] = EnergySigma;
 }
 
 void SourceBeam::doReadFromJson(const json11::Json &json)
@@ -286,6 +298,8 @@ void SourceBeam::doReadFromJson(const json11::Json &json)
             exit(1);
         }
     }
+
+    jstools::readDouble(json, "EnergySigma", EnergySigma);
 }
 
 // ---
