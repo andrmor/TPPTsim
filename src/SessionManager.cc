@@ -50,7 +50,7 @@ void SessionManager::startSession()
 {
     if (!isDirExist(WorkingDirectory))
     {
-        out("Provided working directory does not exist:\n", WorkingDirectory);
+        out("Configured working directory does not exist:\n", WorkingDirectory);
         exit(1);
     }
     if (!SourceMode)
@@ -197,10 +197,12 @@ void SessionManager::registerFastPESModel(G4Region *region)
 }
 
 #include "G4UserLimits.hh"
-void SessionManager::createPhantomRegion(G4LogicalVolume * logVolPhantom)
+void SessionManager::createPhantomRegion()
 {
+    if (!PhantomLogical) return;
+
     regPhantom = new G4Region("Phantom");
-    regPhantom->AddRootLogicalVolume(logVolPhantom);
+    regPhantom->AddRootLogicalVolume(PhantomLogical);
 
     if (SimAcollinearity)  registerAcollinearGammaModel(regPhantom);
     if (KillNeutrinos)     registerParticleKillerModel(regPhantom);

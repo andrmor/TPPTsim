@@ -1474,3 +1474,43 @@ void ModePositronTimeLogger::init()
 {
     delete Hist; Hist = new Hist1DRegular(NumBins, TimeFrom, TimeFrom + Duration);
 }
+
+// ---
+
+ModeTesterForAntonio::ModeTesterForAntonio() :
+    SimModeBase() {}
+
+void ModeTesterForAntonio::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    if (!SM.PhantomLogical)
+    {
+        out("Phantom is not defined!");
+        exit(111);
+    }
+
+    SM.runManager->BeamOn(1);
+
+    const G4MaterialTable * theMaterialTable = G4Material::GetMaterialTable();
+    const size_t numMat = theMaterialTable->size();
+    out("Defined", numMat, "materials");
+
+    for (size_t iMat = 0; iMat < numMat; iMat++)
+    {
+        G4Material * mat = (*theMaterialTable)[iMat];
+        out("Setting material to:", mat->GetName());
+
+        SM.PhantomLogical->SetMaterial(mat);
+
+        SM.runManager->Initialize();
+
+        SM.runManager->BeamOn(1);
+    }
+}
+
+G4UserSteppingAction * ModeTesterForAntonio::getSteppingAction()
+{
+    return new SteppingAction_TesterForAntonio();
+}
+

@@ -259,3 +259,13 @@ void SteppingAction_DepoStatMode::UserSteppingAction(const G4Step * step)
     ModeTestDepositionStat * Mode = static_cast<ModeTestDepositionStat*>(SM.SimMode);
     Mode->addRecord(iScint, depo, postP->GetGlobalTime());
 }
+
+// ---
+
+void SteppingAction_TesterForAntonio::UserSteppingAction(const G4Step *step)
+{
+    const G4StepPoint * preP = step->GetPreStepPoint();
+
+    G4Material * mat = preP->GetPhysicalVolume()->GetLogicalVolume()->GetMaterial();
+    out("->",mat->GetName());
+}

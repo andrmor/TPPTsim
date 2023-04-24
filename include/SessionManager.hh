@@ -55,7 +55,7 @@ class SessionManager
         void registerAcollinearGammaModel(G4Region * region);
         void registerParticleKillerModel(G4Region * region);
         void registerFastPESModel(G4Region * region);
-        void createPhantomRegion(G4LogicalVolume * logVolPhantom);
+        void createPhantomRegion();
         void createScintillatorRegion(G4LogicalVolume * logVolScint);
         int  countScintillators() const;
         int  getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const;
@@ -71,9 +71,11 @@ class SessionManager
         std::string generateName(const std::string & baseName, const std::string & suffix) const; // e.g. ("base", "txt") when Seed is 100 --> "base_100.txt"
 
      // Main settings
-        SourceModeBase   * SourceMode    = nullptr;
-        SimModeBase      * SimMode       = nullptr;
-        PhantomModeBase  * Phantom   = nullptr;
+        SourceModeBase   * SourceMode     = nullptr;
+        SimModeBase      * SimMode        = nullptr;
+        PhantomModeBase  * Phantom        = nullptr;
+
+        G4LogicalVolume  * PhantomLogical = nullptr; // assigned in DetectorConstruction::Construct()
 
         bool SimAcollinearity = false;
         bool KillNeutrinos    = false;

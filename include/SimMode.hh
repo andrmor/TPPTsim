@@ -449,4 +449,24 @@ protected:
     std::string     FileName;
     Hist1DRegular * Hist      = nullptr;
 };
+
+// ---
+
+class ModeTesterForAntonio : public SimModeBase
+{
+public:
+    ModeTesterForAntonio();
+
+    void run() override;
+
+    std::string getTypeName() const override {return "ModeTesterForAntonio";}
+    //void readFromJson(const json11::Json & json) override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+protected:
+    //void doWriteToJson(json11::Json::object & json) const override;
+
+};
+
 #endif // SimulationMode_h

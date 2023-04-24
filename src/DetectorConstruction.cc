@@ -47,8 +47,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if (SM.detectorContains(DetComp::GDML)) addGDML();
 
-    G4LogicalVolume * phantom = SM.Phantom->definePhantom(logicWorld);
-    if (phantom) SM.createPhantomRegion(phantom);
+    SM.PhantomLogical = SM.Phantom->definePhantom(logicWorld); // can be nullptr
+    SM.createPhantomRegion();
 
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
     if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
