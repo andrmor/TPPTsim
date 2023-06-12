@@ -1,3 +1,3 @@
 # TPPTsim
 
-[Manual](ManualTPPTsim.pdf)
+[A PDF file with the manual](ManualTPPTsim.pdf)
