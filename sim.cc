@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         SM.Verbose          = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/ProposalOfKarol/Nature/DATA";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/RadHardFlash";
 
         // Phantom
         SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
@@ -58,7 +58,8 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, EMaterial::Ni400);
 
         // Detector components
-        //SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::DetComp::SIPM);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
@@ -76,10 +77,12 @@ int main(int argc, char** argv)
 
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
 //        SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);
-        SM.SimMode          = new ModeDoseExtractor(1e6, {0.5, 0.5, 0.5}, {101, 101, 200}, {-25.25, -25.25, -50}, "Dose.txt", false);
+        //SM.SimMode          = new ModeDoseExtractor(1e6, {0.5, 0.5, 0.5}, {101, 101, 200}, {-25.25, -25.25, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.25}, {1, 1, 410}, {-50.0, -50.0, -50.0}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.325}, {1, 1, 350}, {-50.0, -50.0, -52.1}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.25}, {1, 1, 410}, {-50.0, -50.0, -10.0}, "Dose.txt", false);
+
+        SM.SimMode = new ModeRadHard(1e6);
 
     // --- END of user init ---
     }

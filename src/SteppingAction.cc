@@ -269,3 +269,50 @@ void SteppingAction_TesterForAntonio::UserSteppingAction(const G4Step *step)
     G4Material * mat = preP->GetPhysicalVolume()->GetLogicalVolume()->GetMaterial();
     out("->",mat->GetName());
 }
+
+// ---
+
+#include "G4Neutron.hh"
+#include "Hist1D.hh"
+void SteppingAction_RadHard::UserSteppingAction(const G4Step * step)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    ModeRadHard * Mode = static_cast<ModeRadHard*>(SM.SimMode);
+
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+
+    if (step->GetTrack()->GetParticleDefinition() == G4Neutron::Definition())
+    {
+        bool bTransport = false;
+        const G4VProcess  * proc = postP->GetProcessDefinedStep();
+        if (proc) bTransport = ( (proc->GetProcessType() == fTransportation) );
+
+        if (bTransport)
+        {
+            G4Material * postMat = postP->GetMaterial();
+            if (postMat == Mode->MatLYSO) // neutron enters scintillator
+            {
+                Mode->NumNeutrons_LYSO++;
+                Mode->HistNeutronEn_LYSO->fill(preP->GetKineticEnergy());
+            }
+            else if (postMat == Mode->MatSiPM) // neutron enters SiPM
+            {
+                Mode->NumNeutrons_SiPM++;
+                Mode->HistNeutronEn_SiPM->fill(preP->GetKineticEnergy());
+            }
+        }
+    }
+    else
+    {
+        const double depo = step->GetTotalEnergyDeposit(); // in MeV
+        if (depo > 0)
+        {
+            G4Material * preMat = preP->GetMaterial();
+            if      (preMat == Mode->MatLYSO)  // deposition in scintillator
+                Mode->Deposition_LYSO += depo;
+            else if (preMat == Mode->MatSiPM)  // deposition in SiPM
+                Mode->Deposition_SiPM += depo;
+        }
+    }
+}

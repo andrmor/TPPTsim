@@ -1514,3 +1514,54 @@ G4UserSteppingAction * ModeTesterForAntonio::getSteppingAction()
     return new SteppingAction_TesterForAntonio();
 }
 
+// ---------------------
+
+ModeRadHard::ModeRadHard(int numEvents) :
+    NumEvents(numEvents) {}
+
+void ModeRadHard::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    HistNeutronEn_LYSO = new Hist1DRegular(200, 0, 50);
+    HistNeutronEn_SiPM = new Hist1DRegular(200, 0, 50);
+
+    const G4MaterialTable * theMaterialTable = G4Material::GetMaterialTable();
+    const size_t numMat = theMaterialTable->size();
+    out("Defined", numMat, "materials");
+    for (size_t iMat = 0; iMat < numMat; iMat++)
+    {
+        G4Material * mat = (*theMaterialTable)[iMat];
+        if (mat->GetName() == "SIPM")   MatSiPM = mat;
+        if (mat->GetName() == "LYSOCe") MatLYSO = mat;
+    }
+    if (!MatLYSO || !MatSiPM)
+    {
+        out("LYSO or SiPM material not defined!");
+        exit(222);
+    }
+
+    out("Lyso:", MatLYSO, MatLYSO->GetName(), MatSiPM, MatSiPM->GetName());
+
+    SM.runManager->BeamOn(NumEvents);
+
+    size_t numScint = SM.countScintillators();
+    //size_t numSiPM  = SM.NumRows * SM.NumSegments * 2.0;
+
+    out("\n", "\n", "\n");
+    out("--Deposition--");
+    out("  In LYSO", Deposition_LYSO, "MeV", "NumScint:", numScint, "  Depo per one:", Deposition_LYSO / numScint);
+    out("  In SiPM", Deposition_SiPM, "MeV", "NumSiPMs:", numScint, "  Depo per one:", Deposition_SiPM / numScint);
+    out("--Neutrons--");
+    out("  Number in LYSO", NumNeutrons_LYSO, "Per one:", NumNeutrons_LYSO / numScint);
+    out("  Number in SiPM", NumNeutrons_SiPM, "Per one:", NumNeutrons_SiPM / numScint);
+    out("  Energies for LYSO:");
+    HistNeutronEn_LYSO->report();
+    out("  Energies for SiPM:");
+    HistNeutronEn_SiPM->report();
+}
+
+G4UserSteppingAction * ModeRadHard::getSteppingAction()
+{
+    return new SteppingAction_RadHard();
+}

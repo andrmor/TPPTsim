@@ -13,6 +13,7 @@ class G4UserStackingAction;
 class G4UserTrackingAction;
 class G4VSensitiveDetector;
 class Hist1DRegular;
+class G4Material;
 
 class SimModeBase;
 
@@ -467,6 +468,32 @@ public:
 protected:
     //void doWriteToJson(json11::Json::object & json) const override;
 
+};
+
+// ---
+
+class ModeRadHard : public SimModeBase
+{
+public:
+    ModeRadHard(int numEvents);
+
+    void run() override;
+
+    std::string getTypeName() const override {return "ModeRadHard";}
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    int NumEvents = 1;
+
+    G4Material * MatLYSO = nullptr;
+    G4Material * MatSiPM = nullptr;
+
+    Hist1DRegular * HistNeutronEn_LYSO = nullptr;
+    Hist1DRegular * HistNeutronEn_SiPM = nullptr;
+    size_t NumNeutrons_LYSO = 0;
+    size_t NumNeutrons_SiPM = 0;
+    double Deposition_LYSO = 0;
+    double Deposition_SiPM = 0;
 };
 
 #endif // SimulationMode_h
