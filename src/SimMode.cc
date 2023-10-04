@@ -46,6 +46,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
     else if (Type == "ModeTestAnnihilations")    sm = new ModeTestAnnihilations(0, 0, "dummy.txt", false);
     else if (Type == "ModeTestLysoNatRad")       sm = new ModeTestLysoNatRad(0, 0, "dummy.txt");
     else if (Type == "ModeTestDepositionStat")   sm = new ModeTestDepositionStat(0, 0.01, {0.05, 0.1});
+    else if (Type == "ModeRadHard")              sm = new ModeRadHard(1);
     else
     {
         out("Unknown simulation mode type!");
@@ -1523,45 +1524,57 @@ void ModeRadHard::run()
 {
     SessionManager & SM = SessionManager::getInstance();
 
-    HistNeutronEn_LYSO = new Hist1DRegular(200, 0, 50);
-    HistNeutronEn_SiPM = new Hist1DRegular(200, 0, 50);
+    HistNeutronEn_LYSO = new Hist1DRegular(NumBins, From, To);
+    HistNeutronEn_SiPM = new Hist1DRegular(NumBins, From, To);
 
-    const G4MaterialTable * theMaterialTable = G4Material::GetMaterialTable();
-    const size_t numMat = theMaterialTable->size();
-    out("Defined", numMat, "materials");
+    const G4MaterialTable * matTable = G4Material::GetMaterialTable();
+    const size_t numMat = matTable->size();
     for (size_t iMat = 0; iMat < numMat; iMat++)
     {
-        G4Material * mat = (*theMaterialTable)[iMat];
+        G4Material * mat = (*matTable)[iMat];
         if (mat->GetName() == "SIPM")   MatSiPM = mat;
         if (mat->GetName() == "LYSOCe") MatLYSO = mat;
     }
     if (!MatLYSO || !MatSiPM)
     {
-        out("LYSO or SiPM material not defined!");
+        out("'LYSOCe' or 'SIPM' material not defined!");
         exit(222);
     }
 
-    out("Lyso:", MatLYSO, MatLYSO->GetName(), MatSiPM, MatSiPM->GetName());
+    //out("Lyso:", MatLYSO, MatLYSO->GetName(), "  SiPM:", MatSiPM, MatSiPM->GetName());
 
     SM.runManager->BeamOn(NumEvents);
 
-    size_t numScint = SM.countScintillators();
-    //size_t numSiPM  = SM.NumRows * SM.NumSegments * 2.0;
-
-    out("\n", "\n", "\n");
+    out("\n", "\n", "\n", "Simulation seed:", SM.Seed);
+    const size_t numScint = SM.countScintillators();
+    out("Number of scintillators:", numScint, "  Assuming the same number of SiPMs");
     out("--Deposition--");
-    out("  In LYSO", Deposition_LYSO, "MeV", "NumScint:", numScint, "  Depo per one:", Deposition_LYSO / numScint);
-    out("  In SiPM", Deposition_SiPM, "MeV", "NumSiPMs:", numScint, "  Depo per one:", Deposition_SiPM / numScint);
+    out("  Total depo in LYSO", Deposition_LYSO, "MeV", "  Depo per one:", Deposition_LYSO / numScint, "MeV");
+    out("  Total depo in SiPMs", Deposition_SiPM, "MeV", "  Depo per one:", Deposition_SiPM / numScint, "MeV");
     out("--Neutrons--");
-    out("  Number in LYSO", NumNeutrons_LYSO, "Per one:", NumNeutrons_LYSO / numScint);
-    out("  Number in SiPM", NumNeutrons_SiPM, "Per one:", NumNeutrons_SiPM / numScint);
-    out("  Energies for LYSO:");
+    out("  Total number passing LYSO:",  NumNeutrons_LYSO, "Per one:", 1.0 * NumNeutrons_LYSO / numScint);
+    out("  Total number passing SiPMs:", NumNeutrons_SiPM, "Per one:", 1.0 * NumNeutrons_SiPM / numScint);
+    out("  Neutron energy spectrum for LYSO:");
     HistNeutronEn_LYSO->report();
-    out("  Energies for SiPM:");
+    HistNeutronEn_LYSO->save(SM.WorkingDirectory + "/NeutronEnergy_LYSO.txt");
+    out("  Saved to file NeutronEnergy_LYSO.txt with", NumBins, "bins from", From, "MeV to", To, "MeV");
+    out("  Neutron energy spectrum for SiPM:");
     HistNeutronEn_SiPM->report();
+    HistNeutronEn_SiPM->save(SM.WorkingDirectory + "/NeutronEnergy_SiPM.txt");
+    out("  Saved to file NeutronEnergy_SiPM.txt with", NumBins, "bins from", From, "MeV to", To, "MeV");
 }
 
 G4UserSteppingAction * ModeRadHard::getSteppingAction()
 {
     return new SteppingAction_RadHard();
+}
+
+void ModeRadHard::readFromJson(const json11::Json & json)
+{
+    jstools::readInt(json, "NumEvents", NumEvents);
+}
+
+void ModeRadHard::doWriteToJson(json11::Json::object & json) const
+{
+    json["NumEvents"] = NumEvents;
 }

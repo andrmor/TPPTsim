@@ -478,9 +478,8 @@ public:
     ModeRadHard(int numEvents);
 
     void run() override;
-
     std::string getTypeName() const override {return "ModeRadHard";}
-
+    void readFromJson(const json11::Json & json) override;
     G4UserSteppingAction * getSteppingAction() override;
 
     int NumEvents = 1;
@@ -494,6 +493,15 @@ public:
     size_t NumNeutrons_SiPM = 0;
     double Deposition_LYSO = 0;
     double Deposition_SiPM = 0;
+
+    // deposition histogram binning
+    const int    NumBins = 200;
+    const double From = 0;    // MeV
+    const double To   = 50.0; // MeV
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
 };
 
 #endif // SimulationMode_h

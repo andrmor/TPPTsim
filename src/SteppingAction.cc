@@ -295,24 +295,24 @@ void SteppingAction_RadHard::UserSteppingAction(const G4Step * step)
             {
                 Mode->NumNeutrons_LYSO++;
                 Mode->HistNeutronEn_LYSO->fill(preP->GetKineticEnergy());
+                return;
             }
             else if (postMat == Mode->MatSiPM) // neutron enters SiPM
             {
                 Mode->NumNeutrons_SiPM++;
                 Mode->HistNeutronEn_SiPM->fill(preP->GetKineticEnergy());
+                return;
             }
         }
     }
-    else
+
+    const double depo = step->GetTotalEnergyDeposit();
+    if (depo > 0)
     {
-        const double depo = step->GetTotalEnergyDeposit(); // in MeV
-        if (depo > 0)
-        {
-            G4Material * preMat = preP->GetMaterial();
-            if      (preMat == Mode->MatLYSO)  // deposition in scintillator
-                Mode->Deposition_LYSO += depo;
-            else if (preMat == Mode->MatSiPM)  // deposition in SiPM
-                Mode->Deposition_SiPM += depo;
-        }
+        G4Material * preMat = preP->GetMaterial();
+        if      (preMat == Mode->MatLYSO)  // deposition in scintillator
+            Mode->Deposition_LYSO += depo;
+        else if (preMat == Mode->MatSiPM)  // deposition in SiPM
+            Mode->Deposition_SiPM += depo;
     }
 }
