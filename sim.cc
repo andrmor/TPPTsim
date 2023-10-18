@@ -49,13 +49,13 @@ int main(int argc, char** argv)
         SM.Verbose          = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/RadHardFlash/tmp";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/tmp";
 
         // Phantom
-        SM.Phantom = new PhantomNone;
+        //SM.Phantom = new PhantomNone;
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
-        //SM.Phantom = new PhantomMarekWater();
+        SM.Phantom = new PhantomMarekWater();
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, "G4_Cu");
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, EMaterial::Ni400);
 

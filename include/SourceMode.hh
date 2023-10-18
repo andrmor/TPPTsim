@@ -30,7 +30,7 @@ public:
     SourceModeBase(ParticleBase * particle, TimeGeneratorBase * timeGenerator); // transfers ownership
     virtual ~SourceModeBase();
 
-    virtual void initialize();
+    virtual void initialize(); // do not override this method, use customPostInit()
 
     virtual void GeneratePrimaries(G4Event * anEvent);
 
