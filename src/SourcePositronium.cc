@@ -4,21 +4,19 @@
 
 #include "G4ParticleGun.hh"
 #include "G4LorentzVector.hh"
-
 #include "G4Event.hh"
 #include "TLorentzVector.h"
 #include "TGenPhaseSpace.h"
 #include "TimeGenerator.hh"
 #include "G4RandomTools.hh"
 #include "G4Gamma.hh"
+#include "G4DynamicParticle.hh"
+#include "PositroniumDecayChannel.hh"
 
-SourceThreeGammas::SourceThreeGammas(TimeGeneratorBase * timeGenerator) :
-    SourceModeBase(new Gamma(0.511*MeV), timeGenerator)
-{
-    //ParticleGun->SetParticlePosition({0,0,0});
-}
+SourcePositronium::SourcePositronium(double orthoDecayFraction, TimeGeneratorBase * timeGenerator) :
+    SourceModeBase(new Gamma(), timeGenerator), fThreeGammaFraction(orthoDecayFraction) {}
 
-void SourceThreeGammas::GeneratePrimaries(G4Event * anEvent)
+void SourcePositronium::GeneratePrimaries(G4Event * anEvent)
 {
     double particle_time = TimeGenerator->generateTime();
     const G4ThreeVector particle_position = {0,0,0};
@@ -32,27 +30,28 @@ void SourceThreeGammas::GeneratePrimaries(G4Event * anEvent)
     anEvent->AddPrimaryVertex( GetPrimaryVertexFromPositroniumAnnihilation(particle_time, particle_position) );
 }
 
-void SourceThreeGammas::customPostInit()
+void SourcePositronium::customPostInit()
 {
-    //fParaPs  = new Positronium("pPs", 0.1244*ns, 2);
-    //fOrthoPs = new Positronium("oPs", 138.6*ns, 3);
+    OrthoDecayChannel = new PositroniumDecayChannel(true);
+    ParaDecayChannel  = new PositroniumDecayChannel(false);
 }
 
-G4PrimaryVertex * SourceThreeGammas::GetPrimaryVertexFromDeexcitation(double particle_time, const  G4ThreeVector & particle_position )
+G4PrimaryVertex * SourcePositronium::GetPrimaryVertexFromDeexcitation(double particle_time, const  G4ThreeVector & particle_position )
 {
     G4PrimaryVertex* vertex = new G4PrimaryVertex(particle_position, particle_time);
     vertex->SetPrimary( GetGammaFromDeexcitation() );
     return vertex;
 }
 
-G4PrimaryVertex * SourceThreeGammas::GetPrimaryVertexFromPositroniumAnnihilation(G4double particle_time, const G4ThreeVector & particle_position)
+G4PrimaryVertex * SourcePositronium::GetPrimaryVertexFromPositroniumAnnihilation(G4double particle_time, const G4ThreeVector & particle_position)
 {
     bool ThreeGammas;
     if      (fThreeGammaFraction == 1.0) ThreeGammas = true;
     else if (fThreeGammaFraction == 0.0) ThreeGammas = false;
     else ThreeGammas = (G4UniformRand() < fThreeGammaFraction);
 
-    G4double shifted_particle_time = particle_time;// + G4RandExponential::shoot( pInfoPs->GetLifeTime() );  !!!***
+    double lifetime = (ThreeGammas ? OrthoLifetime : ParaLifetime);
+    G4double shifted_particle_time = particle_time + G4RandExponential::shoot(lifetime);
 
     G4PrimaryVertex * vertex = new G4PrimaryVertex(particle_position, shifted_particle_time);
     std::vector<G4PrimaryParticle*> gammas = GetGammasFromPositroniumAnnihilation(ThreeGammas);
@@ -60,7 +59,7 @@ G4PrimaryVertex * SourceThreeGammas::GetPrimaryVertexFromPositroniumAnnihilation
     return vertex;
 }
 
-G4PrimaryParticle * SourceThreeGammas::GetGammaFromDeexcitation()
+G4PrimaryParticle * SourcePositronium::GetGammaFromDeexcitation()
 {
     //inherited from: G4PrimaryParticle* gamma = GetSingleGamma( fPromptGammaEnergy );
 
@@ -78,13 +77,14 @@ G4PrimaryParticle * SourceThreeGammas::GetGammaFromDeexcitation()
     return gamma;
 }
 
-#include "G4DynamicParticle.hh"
-std::vector<G4PrimaryParticle*> SourceThreeGammas::GetGammasFromPositroniumAnnihilation(bool threeGammas)
+#include "G4DecayProducts.hh"
+std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnihilation(bool threeGammas)
 {
     const size_t numGammas = (threeGammas ? 3 : 2);
     std::vector<G4PrimaryParticle*> gammas(numGammas) ;
 
-    G4DecayProducts * decay_products = pInfoPs->GetDecayProducts();
+    PositroniumDecayChannel * decayChannel = (threeGammas ? OrthoDecayChannel : ParaDecayChannel);
+    G4DecayProducts * decay_products = decayChannel->DecayIt(0);
 
     for (size_t i = 0; i < numGammas; i++)
     {
@@ -102,36 +102,9 @@ std::vector<G4PrimaryParticle*> SourceThreeGammas::GetGammasFromPositroniumAnnih
     return gammas;
 }
 
-
-
-
-// ----------------------
-
-#include "G4ParticleTable.hh"
-#include "G4DecayTable.hh"
-#include "G4VDecayChannel.hh"
-
-Positronium::Positronium(G4String name, G4double life_time, G4int annihilation_gammas_number) :
-    fName(name), fLifeTime(life_time), fAnnihilationGammasNumber(annihilation_gammas_number)
-{
-    G4ParticleDefinition * positronium_def = G4ParticleTable::GetParticleTable()->FindParticle(name);
-    if (!positronium_def)
-    {
-        out("positronium_def for name", name, "not found!");
-        exit(111);
-    }
-    G4DecayTable * positronium_decay_table = positronium_def->GetDecayTable();
-    pDecayChannel = positronium_decay_table->GetDecayChannel(0);
-}
-
-G4DecayProducts * Positronium::GetDecayProducts()
-{
-    return pDecayChannel->DecayIt();
-}
-
 // ------ misc -------
 
-G4ThreeVector SourceThreeGammas::GetUniformOnSphere() const
+G4ThreeVector SourcePositronium::GetUniformOnSphere() const
 {
     //Based on TRandom::Sphere
     G4double a = 0,b = 0, r2 = 1;
@@ -146,7 +119,7 @@ G4ThreeVector SourceThreeGammas::GetUniformOnSphere() const
     return G4ThreeVector( a * scale, b * scale, -1. + 8.0 * r2 );
 }
 
-G4ThreeVector SourceThreeGammas::GetPolarization(const G4ThreeVector & momentum) const
+G4ThreeVector SourcePositronium::GetPolarization(const G4ThreeVector & momentum) const
 {
     G4ThreeVector polarization(0.0,0.0,0.0);
 
@@ -160,7 +133,7 @@ G4ThreeVector SourceThreeGammas::GetPolarization(const G4ThreeVector & momentum)
     return polarization;
 }
 
-G4ThreeVector SourceThreeGammas::GetPerpendicularVector(const G4ThreeVector & v) const
+G4ThreeVector SourcePositronium::GetPerpendicularVector(const G4ThreeVector & v) const
 {
     G4double dx = v.x();
     G4double dy = v.y();

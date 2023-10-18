@@ -5,21 +5,23 @@
 
 #include <vector>
 
+#include "G4SystemOfUnits.hh"
+
 class Positronium;
 class G4PrimaryVertex;
 class G4PrimaryParticle;
+class PositroniumDecayChannel;
 
-class SourceThreeGammas : public SourceModeBase
+class SourcePositronium : public SourceModeBase
 {
 public:
     enum DecayModel {Standard, WithPrompt};
-    SourceThreeGammas(TimeGeneratorBase * timeGenerator);
-    //SourceThreeGammas(const json11::Json & json);
+    SourcePositronium(double orthoDecayFraction, TimeGeneratorBase * timeGenerator);
+    //SourcePositronium(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
 
-    std::string getTypeName() const override {return "SourceThreeGammas";}
-
+    std::string getTypeName() const override {return "SourcePositronium";}
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override {}
@@ -28,12 +30,14 @@ protected:
     void customPostInit() override;
 
     DecayModel ModelType = Standard;
-    double fPromptGammaEnergy = 1.275; // in MeV
-    double fThreeGammaFraction = 1.0;
+    double fPromptGammaEnergy = 1.275*MeV;
+    double fThreeGammaFraction = 0.5;
 
-    Positronium * fParaPs  = nullptr;
-    Positronium * fOrthoPs = nullptr;
-    Positronium * pInfoPs  = nullptr;
+    const G4double ParaLifetime  = 0.1244*ns;
+    const G4double OrthoLifetime = 138.6*ns;
+
+    PositroniumDecayChannel * OrthoDecayChannel = nullptr; // 3 annihilation gammas
+    PositroniumDecayChannel * ParaDecayChannel  = nullptr; // 2 annihilation gammas
 
 private:
     G4PrimaryVertex * GetPrimaryVertexFromDeexcitation(double particle_time, const G4ThreeVector & particle_position);
@@ -41,35 +45,8 @@ private:
     G4PrimaryParticle * GetGammaFromDeexcitation();
     std::vector<G4PrimaryParticle*> GetGammasFromPositroniumAnnihilation(bool threeGammas);
     G4ThreeVector GetUniformOnSphere() const;
-    G4ThreeVector GetPolarization(const G4ThreeVector &momentum) const;
-    G4ThreeVector GetPerpendicularVector(const G4ThreeVector &v) const;
+    G4ThreeVector GetPolarization(const G4ThreeVector & momentum) const;
+    G4ThreeVector GetPerpendicularVector(const G4ThreeVector & v) const;
 };
-
-class G4DecayProducts;
-class G4VDecayChannel;
-class Positronium
-{
-public:
-    Positronium(G4String name, G4double life_time, G4int annihilation_gammas_number);
-    void SetLifeTime(const G4double & life_time) {fLifeTime = life_time;}
-    G4double GetLifeTime() const {return fLifeTime;}
-    G4String GetName() const {return fName;}
-    G4int GetAnnihilationGammasNumber() const {return fAnnihilationGammasNumber;}
-    G4DecayProducts * GetDecayProducts();
-private:
-    G4String fName = "";
-    G4double fLifeTime = 0.0; //[ns]
-    G4int fAnnihilationGammasNumber = 0;
-    G4VDecayChannel * pDecayChannel = nullptr;
-};
-
-enum PositroniumKind {pPs, oPs};
-/*
- Decay model descibes decay of positronium.
-    * For example for PositroniumKind::pPs we have decays:
-    * 1) Standard: pPs -> 2 gamma
-    * 2) WithPrompt: pPs* -> 2 gamma + prompt_gamma
-    * Only prompt gamma has nod modified time, other gammas always has modified time.
-*/
 
 #endif // sourcepositronium_h
