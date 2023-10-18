@@ -9,6 +9,7 @@
 #include "SourceParticleListFile.hh"
 #include "SourcePesHistogramFiles.hh"
 #include "SourceAnnihilHistFile.hh"
+#include "SourcePositronium.hh"
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
@@ -37,6 +38,7 @@ SourceModeBase * SourceModeFactory::makeSourceInstance(const json11::Json & json
     else if (Type == "SourceParticleListFile")   sc = new SourceParticleListFile(json);
     else if (Type == "SourcePesHistogramFiles")  sc = new SourcePesHistogramFiles(json);
     else if (Type == "SourceAnnihilHistFile")    sc = new SourceAnnihilHistFile(json);
+    else if (Type == "SourcePositronium")        sc = new SourcePositronium(json);
     else
     {
         out("Unknown source type!");

@@ -67,7 +67,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
 
         // Source
-        SM.SourceMode = new SourcePositronium(0.5, new UniformTime(0, 0.1*s));
+        SM.SourceMode = new SourcePositronium(0.5, new UniformTime(0, 0.1*s), "GeneratedGammaData.txt"); // file name is optional: if not defined, data are not saved!
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", true) );
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );

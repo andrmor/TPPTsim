@@ -1,18 +1,52 @@
 #include "SourcePositronium.hh"
 #include "DefinedParticles.hh"
+#include "SessionManager.hh"
+#include "PositroniumDecayChannel.hh"
+#include "TimeGenerator.hh"
+#include "jstools.hh"
 #include "out.hh"
+
+#include <string>
 
 #include "G4ParticleGun.hh"
 #include "G4LorentzVector.hh"
 #include "G4Event.hh"
-#include "TimeGenerator.hh"
 #include "G4RandomTools.hh"
 #include "G4Gamma.hh"
 #include "G4DynamicParticle.hh"
-#include "PositroniumDecayChannel.hh"
+#include "G4DecayProducts.hh"
 
-SourcePositronium::SourcePositronium(double orthoDecayFraction, TimeGeneratorBase * timeGenerator) :
-    SourceModeBase(new Gamma(), timeGenerator), fThreeGammaFraction(orthoDecayFraction) {}
+SourcePositronium::SourcePositronium(double orthoDecayFraction, TimeGeneratorBase * timeGenerator, const std::string & fileName_GeneratedGammas) :
+    SourceModeBase(nullptr, timeGenerator), OrthoFraction(orthoDecayFraction), GammaOutputFileName(fileName_GeneratedGammas)
+{
+    if (!fileName_GeneratedGammas.empty()) setupStream(fileName_GeneratedGammas);
+}
+
+SourcePositronium::SourcePositronium(const json11::Json & json) :
+    SourceModeBase(nullptr, nullptr)
+{
+    doReadFromJson(json);
+    readFromJson(json);
+}
+
+void SourcePositronium::setupStream(const std::string & baseFileName)
+{
+    Stream = new std::ofstream();
+    SessionManager & SM = SessionManager::getInstance();
+    Stream->open(SM.WorkingDirectory + '/' + baseFileName);
+    if (!Stream->is_open() || Stream->fail() || Stream->bad())
+    {
+        out("Cannot open file to store emission positions!");
+        delete Stream; Stream = nullptr;
+    }
+    else out("\nSaving source emission positions to file", baseFileName);
+}
+
+SourcePositronium::~SourcePositronium()
+{
+    if (Stream) Stream->close();
+    delete Stream; Stream = nullptr;
+}
 
 void SourcePositronium::GeneratePrimaries(G4Event * anEvent)
 {
@@ -22,10 +56,26 @@ void SourcePositronium::GeneratePrimaries(G4Event * anEvent)
     //the rest inherited frpom: pModel->GeneratePrimaryVertices( event, particle_time, particle_position);
     //selection of type from PreparePositroniumParametrization() is directly in GetPrimaryVertexFromPositroniumAnnihilation
 
-    if (ModelType == WithPrompt)
+    if (AddPromptGamma)
         anEvent->AddPrimaryVertex( GetPrimaryVertexFromDeexcitation(particle_time, particle_position) );
 
     anEvent->AddPrimaryVertex( GetPrimaryVertexFromPositroniumAnnihilation(particle_time, particle_position) );
+}
+
+void SourcePositronium::doWriteToJson(json11::Json::object & json) const
+{
+    json["OrthoFraction"]       = OrthoFraction;
+    json["AddPromptGamma"]      = AddPromptGamma;
+    json["PromptGammaEnergy"]   = PromptGammaEnergy;
+    json["GammaOutputFileName"] = GammaOutputFileName;
+}
+
+void SourcePositronium::doReadFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "OrthoFraction",       OrthoFraction);
+    jstools::readBool  (json, "AddPromptGamma",      AddPromptGamma);
+    jstools::readDouble(json, "PromptGammaEnergy",   PromptGammaEnergy);
+    jstools::readString(json, "GammaOutputFileName", GammaOutputFileName);
 }
 
 void SourcePositronium::customPostInit()
@@ -44,9 +94,9 @@ G4PrimaryVertex * SourcePositronium::GetPrimaryVertexFromDeexcitation(double par
 G4PrimaryVertex * SourcePositronium::GetPrimaryVertexFromPositroniumAnnihilation(G4double particle_time, const G4ThreeVector & particle_position)
 {
     bool ThreeGammas;
-    if      (fThreeGammaFraction == 1.0) ThreeGammas = true;
-    else if (fThreeGammaFraction == 0.0) ThreeGammas = false;
-    else ThreeGammas = (G4UniformRand() < fThreeGammaFraction);
+    if      (OrthoFraction == 1.0) ThreeGammas = true;
+    else if (OrthoFraction == 0.0) ThreeGammas = false;
+    else ThreeGammas = (G4UniformRand() < OrthoFraction);
 
     double lifetime = (ThreeGammas ? OrthoLifetime : ParaLifetime);
     G4double shifted_particle_time = particle_time + G4RandExponential::shoot(lifetime);
@@ -66,16 +116,21 @@ G4PrimaryParticle * SourcePositronium::GetGammaFromDeexcitation()
     G4ThreeVector momentum_direction = GetUniformOnSphere();
 
     G4LorentzVector lv_gamma( momentum_direction.x(), momentum_direction.y(), momentum_direction.z(), 1.0 );
-    lv_gamma *= fPromptGammaEnergy;
+    lv_gamma *= PromptGammaEnergy;
 
     gamma->Set4Momentum( lv_gamma.px(), lv_gamma.py(), lv_gamma.pz(), lv_gamma.e() );
     gamma->SetPolarization( GetPolarization( gamma->GetMomentumDirection() ) );
     //gamma->SetUserInformation( GetPrimaryParticleInformation( gamma, GateEmittedGammaInformation::GammaKind::Prompt ) );
 
+    if (Stream)
+        *Stream << lv_gamma.px() << " "
+                << lv_gamma.py() << " "
+                << lv_gamma.pz() << " "
+                << lv_gamma.e()  << ':';
+
     return gamma;
 }
 
-#include "G4DecayProducts.hh"
 std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnihilation(bool threeGammas)
 {
     const size_t numGammas = (threeGammas ? 3 : 2);
@@ -84,7 +139,6 @@ std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnih
     PositroniumDecayChannel * decayChannel = (threeGammas ? OrthoDecayChannel : ParaDecayChannel);
     G4DecayProducts * decay_products = decayChannel->DecayIt(0);
 
-    out("---"); // tmp !!!***
     for (size_t i = 0; i < numGammas; i++)
     {
         G4PrimaryParticle * gamma = new G4PrimaryParticle( G4Gamma::Definition() );
@@ -96,11 +150,18 @@ std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnih
         //gamma->SetUserInformation( GetPrimaryParticleInformation(  gamma, GateEmittedGammaInformation::GammaKind::Annihilation ) );
         gammas[i] = gamma;
 
-        // temporary! make a proper test mode!    !!!***
-        out(lv.px(), lv.py(), lv.pz(), lv.e());
+        if (Stream)
+        {
+            *Stream << lv.px() << " "
+                    << lv.py() << " "
+                    << lv.pz() << " "
+                    << lv.e();
+            if (i != numGammas-1) *Stream << ':';
+        }
     }
-    out("---"); // tmp !!!***
     delete decay_products;
+
+    if (Stream) *Stream << '\n';
 
     return gammas;
 }
@@ -149,4 +210,3 @@ G4ThreeVector SourcePositronium::GetPerpendicularVector(const G4ThreeVector & v)
     if (x < y) { return x < z ? G4ThreeVector(-dy,dx,0) : G4ThreeVector(0,-dz,dy); }
     else { return y < z ? G4ThreeVector(dz,0,-dx) : G4ThreeVector(-dy,dx,0); }
 }
-
