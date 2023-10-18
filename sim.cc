@@ -75,7 +75,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -15.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
 
         // Simulation mode
-        SM.SimMode          = new ModeGui(); //SM.SimMode          = new ModeTracing();
+        //SM.SimMode          = new ModeGui(); //SM.SimMode          = new ModeTracing();
+        SM.SimMode          = new ModeDummy(1000);
         //SM.SimMode          = new ModeRadHard(1e6);
         //SM.SimMode          = new ModePesGenerator_Prob(1e5, {110.0, 110.0, 110.0}, {1, 1, 1}, {-55, -55, -55}, { {0.1*s, 1.0*s} });
         //SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
