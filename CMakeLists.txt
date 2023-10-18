@@ -19,8 +19,10 @@ endif()
 #Uncomment the folowing line to activate GDML support!
 #add_compile_definitions(USE_GDML)
 
-find_package(ROOT REQUIRED)
-include_directories(${ROOT_INCLUDE_DIRS})
+#----------------------------------------------------------------------------
+# CERN ROOT
+#find_package(ROOT REQUIRED)
+#include_directories(${ROOT_INCLUDE_DIRS})
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions

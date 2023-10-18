@@ -19,13 +19,13 @@ PositroniumDecayChannel::PositroniumDecayChannel(bool ortho) :
     if (Ortho)
     {
         // OrthoPositronium
-        theParentName = "e+";
+        theParentName = "e+"; // "oPs" is not defined in vanilla Geant4
         daughters_number = 3;
     }
     else
     {
         // ParaPositronium;
-        theParentName = "e+";
+        theParentName = "e+"; // "pPs" is not defined in vanilla Geant4
         daughters_number = 2;
     }
 
@@ -98,7 +98,7 @@ G4DecayProducts* PositroniumDecayChannel::DecayOrthoPositronium()
     return decay_products;
 }
 
-G4double PositroniumDecayChannel::GetOrthoPsM( const G4double w1, const G4double w2, const G4double w3 ) const
+G4double PositroniumDecayChannel::GetOrthoPsM(G4double w1, G4double w2, G4double w3 ) const
 {
     // !!!*** pow --> square
     return pow( ( kElectronMass - w1 ) / ( w2 * w3 ), 2 ) + pow( ( kElectronMass - w2 ) / ( w1 * w3 ), 2 ) + pow( ( kElectronMass - w3 ) / ( w1 * w2 ), 2 );

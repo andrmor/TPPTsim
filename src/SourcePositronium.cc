@@ -5,8 +5,6 @@
 #include "G4ParticleGun.hh"
 #include "G4LorentzVector.hh"
 #include "G4Event.hh"
-#include "TLorentzVector.h"
-#include "TGenPhaseSpace.h"
 #include "TimeGenerator.hh"
 #include "G4RandomTools.hh"
 #include "G4Gamma.hh"
@@ -86,6 +84,7 @@ std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnih
     PositroniumDecayChannel * decayChannel = (threeGammas ? OrthoDecayChannel : ParaDecayChannel);
     G4DecayProducts * decay_products = decayChannel->DecayIt(0);
 
+    out("---"); // tmp !!!***
     for (size_t i = 0; i < numGammas; i++)
     {
         G4PrimaryParticle * gamma = new G4PrimaryParticle( G4Gamma::Definition() );
@@ -96,7 +95,11 @@ std::vector<G4PrimaryParticle*> SourcePositronium::GetGammasFromPositroniumAnnih
         gamma->SetPolarization( dynamic_gamma->GetPolarization() );
         //gamma->SetUserInformation( GetPrimaryParticleInformation(  gamma, GateEmittedGammaInformation::GammaKind::Annihilation ) );
         gammas[i] = gamma;
+
+        // temporary! make a proper test mode!    !!!***
+        out(lv.px(), lv.py(), lv.pz(), lv.e());
     }
+    out("---"); // tmp !!!***
     delete decay_products;
 
     return gammas;
