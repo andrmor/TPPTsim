@@ -51,15 +51,19 @@ SourcePositronium::~SourcePositronium()
 void SourcePositronium::GeneratePrimaries(G4Event * anEvent)
 {
     double particle_time = TimeGenerator->generateTime();
-    const G4ThreeVector particle_position = {0,0,0};
 
     //the rest inherited frpom: pModel->GeneratePrimaryVertices( event, particle_time, particle_position);
     //selection of type from PreparePositroniumParametrization() is directly in GetPrimaryVertexFromPositroniumAnnihilation
 
     if (AddPromptGamma)
-        anEvent->AddPrimaryVertex( GetPrimaryVertexFromDeexcitation(particle_time, particle_position) );
+        anEvent->AddPrimaryVertex( GetPrimaryVertexFromDeexcitation(particle_time, Position) );
 
-    anEvent->AddPrimaryVertex( GetPrimaryVertexFromPositroniumAnnihilation(particle_time, particle_position) );
+    anEvent->AddPrimaryVertex( GetPrimaryVertexFromPositroniumAnnihilation(particle_time, Position) );
+}
+
+void SourcePositronium::setTimeGenerator(TimeGeneratorBase * generator)
+{
+    TimeGenerator = generator;
 }
 
 void SourcePositronium::doWriteToJson(json11::Json::object & json) const

@@ -1,6 +1,7 @@
 #include "DefinedParticles.hh"
 #include "jstools.hh"
 #include "out.hh"
+#include "Positronium.hh"
 
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
@@ -14,11 +15,12 @@ ParticleBase * ParticleFactory::makeParticleInstance(const json11::Json & json)
 
     ParticleBase * p = nullptr;
 
-    if      (Type == "Geantino")  p = new Geantino();
-    else if (Type == "Gamma")     p = new Gamma();
-    else if (Type == "GammaPair") p = new GammaPair();
-    else if (Type == "Isotope")   p = new Isotope(0, 0, 0);
-    else if (Type == "Proton")    p = new Proton();
+    if      (Type == "Geantino")    p = new Geantino();
+    else if (Type == "Gamma")       p = new Gamma();
+    else if (Type == "GammaPair")   p = new GammaPair();
+    else if (Type == "Isotope")     p = new Isotope(0, 0, 0);
+    else if (Type == "Proton")      p = new Proton();
+    else if (Type == "Positronium") p = new Positronium(1.0);
     else
     {
         out("Unknown particle type!");

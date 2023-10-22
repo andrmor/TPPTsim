@@ -78,20 +78,26 @@ void SourceModeBase::initialize()
         if (iso) bIsotropicDirection = false; // save time by not generating direction
 
         ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+
+        Particle->customInit();
     }
     customPostInit();
 }
 
 void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
 {
-    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+    if (!Particle || Particle->StandardPrimaryGeneration)
+    {
+        ParticleGun->SetParticleTime(TimeGenerator->generateTime());
 
-    if (bIsotropicDirection) Direction = generateDirectionIsotropic(); //else it is fixed
-    ParticleGun->SetParticleMomentumDirection(Direction);
+        if (bIsotropicDirection) Direction = generateDirectionIsotropic(); //else it is fixed
+        ParticleGun->SetParticleMomentumDirection(Direction);
 
-    ParticleGun->GeneratePrimaryVertex(anEvent);
+        ParticleGun->GeneratePrimaryVertex(anEvent);
 
-    if (bGeneratePair) generateSecondGamma(anEvent);
+        if (bGeneratePair) generateSecondGamma(anEvent);
+    }
+    else Particle->generatePrimaries(ParticleGun, TimeGenerator, anEvent);
 }
 
 void SourceModeBase::writeToJson(json11::Json::object & json) const

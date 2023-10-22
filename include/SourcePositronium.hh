@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 
-class Positronium;
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 class PositroniumDecayChannel;
@@ -25,6 +25,9 @@ public:
     void GeneratePrimaries(G4Event * anEvent) override;
 
     std::string getTypeName() const override {return "SourcePositronium";}
+
+    void setTimeGenerator(TimeGeneratorBase * generator);
+    G4ThreeVector Position = {0,0,0};
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
