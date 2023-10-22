@@ -9,8 +9,8 @@ Positronium::Positronium(double threeGammaDecayFraction) :
     StandardPrimaryGeneration = false;
 }
 
-Positronium::Positronium(double threeGammaDecayFraction, const std::string & fileName_GammaEnergyPositions) :
-    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction), LogFileName(fileName_GammaEnergyPositions)
+Positronium::Positronium(double threeGammaDecayFraction, const std::string & fileName_LogGammaMomentumAndEnergy) :
+    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction), LogFileName(fileName_LogGammaMomentumAndEnergy)
 {
     StandardPrimaryGeneration = false;
 }

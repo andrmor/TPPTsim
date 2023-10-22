@@ -12,7 +12,7 @@ class Positronium : public ParticleBase
 {
 public:
     Positronium(double threeGammaDecayFraction);
-    Positronium(double threeGammaDecayFraction, const std::string & fileName_GammaEnergyPositions);
+    Positronium(double threeGammaDecayFraction, const std::string & fileName_LogGammaMomentumAndEnergy);
     ~Positronium();
 
     G4ParticleDefinition * getParticleDefinition() const override;
