@@ -13,6 +13,7 @@ class Positronium : public ParticleBase
 public:
     Positronium(double threeGammaDecayFraction);
     Positronium(double threeGammaDecayFraction, const std::string & fileName_LogGammaMomentumAndEnergy);
+    Positronium(double threeGammaDecayFraction, bool Na22origin, const std::string & fileName_LogGammaMomentumAndEnergy);
     ~Positronium();
 
     G4ParticleDefinition * getParticleDefinition() const override;
@@ -27,6 +28,7 @@ protected:
     void doReadFromJson(const json11::Json & json) override;
 
     double ThreeGammaDecayFraction = 1.0;
+    bool Na22origin = false;
     std::string LogFileName;
 
     SourcePositronium * Source = nullptr;

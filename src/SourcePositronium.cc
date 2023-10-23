@@ -66,6 +66,12 @@ void SourcePositronium::setTimeGenerator(TimeGeneratorBase * generator)
     TimeGenerator = generator;
 }
 
+void SourcePositronium::setNa22Origin()
+{
+    AddPromptGamma = true;
+    PromptGammaEnergy = 1.275*MeV;
+}
+
 void SourcePositronium::doWriteToJson(json11::Json::object & json) const
 {
     json["OrthoFraction"]       = OrthoFraction;

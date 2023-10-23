@@ -4,16 +4,13 @@
 #include "SourcePositronium.hh"
 
 Positronium::Positronium(double threeGammaDecayFraction) :
-    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction)
-{
-    StandardPrimaryGeneration = false;
-}
+    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction){}
 
 Positronium::Positronium(double threeGammaDecayFraction, const std::string & fileName_LogGammaMomentumAndEnergy) :
-    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction), LogFileName(fileName_LogGammaMomentumAndEnergy)
-{
-    StandardPrimaryGeneration = false;
-}
+    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction), LogFileName(fileName_LogGammaMomentumAndEnergy){}
+
+Positronium::Positronium(double threeGammaDecayFraction, bool assumeNa22Origin, const std::string &fileName_LogGammaMomentumAndEnergy) :
+    ParticleBase("Positronium"), ThreeGammaDecayFraction(threeGammaDecayFraction), Na22origin(assumeNa22Origin), LogFileName(fileName_LogGammaMomentumAndEnergy){}
 
 Positronium::~Positronium()
 {
@@ -27,7 +24,9 @@ G4ParticleDefinition * Positronium::getParticleDefinition() const
 
 void Positronium::customInit()
 {
+    StandardPrimaryGeneration = false;
     Source = new SourcePositronium(ThreeGammaDecayFraction, nullptr, LogFileName);
+    if (Na22origin) Source->setNa22Origin();
     Source->initialize();
 }
 

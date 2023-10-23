@@ -29,6 +29,8 @@ public:
     void setTimeGenerator(TimeGeneratorBase * generator);
     G4ThreeVector Position = {0,0,0};
 
+    void setNa22Origin();
+
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
     void doReadFromJson(const json11::Json & json);
