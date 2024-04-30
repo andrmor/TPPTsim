@@ -28,6 +28,7 @@ SimModeBase * SimModeFactory::makeSimModeInstance(const json11::Json & json)
 
       // misc mode
     if      (Type == "ModeGui")                  sm = new ModeGui();
+    else if (Type == "ModeDummy")                sm = new ModeDummy(0);
     else if (Type == "ModeShowEvent")            sm = new ModeShowEvent(0);
     else if (Type == "ModeParticleLogger")       sm = new ModeParticleLogger(0, "dummy.txt", false);
     else if (Type == "ModeTracing")              sm = new ModeTracing();
@@ -1575,6 +1576,24 @@ void ModeRadHard::readFromJson(const json11::Json & json)
 }
 
 void ModeRadHard::doWriteToJson(json11::Json::object & json) const
+{
+    json["NumEvents"] = NumEvents;
+}
+
+ModeDummy::ModeDummy(int numEvents) : NumEvents(numEvents) {}
+
+void ModeDummy::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+}
+
+void ModeDummy::readFromJson(const json11::Json &json)
+{
+    jstools::readInt(json, "NumEvents", NumEvents);
+}
+
+void ModeDummy::doWriteToJson(json11::Json::object &json) const
 {
     json["NumEvents"] = NumEvents;
 }

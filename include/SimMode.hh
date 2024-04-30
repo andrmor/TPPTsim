@@ -62,6 +62,24 @@ public:
 
 // ---
 
+class ModeDummy : public SimModeBase
+{
+public:
+    ModeDummy(int numEvents);
+
+    void run() override;
+    std::string getTypeName() const override {return "ModeDummy";}
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    int NumEvents;
+};
+
+// ---
+
 class ModeDoseExtractor : public SimModeBase
 {
 public:

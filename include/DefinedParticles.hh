@@ -10,6 +10,10 @@
 class G4ParticleDefinition;
 class ParticleBase;
 
+class G4Event;
+class G4ParticleGun;
+class TimeGeneratorBase;
+
 class ParticleFactory
 {
 public:
@@ -25,6 +29,10 @@ public:
     std::string Name = "undefined";
     double      Energy = 1.0;
 
+    bool        StandardPrimaryGeneration = true;
+    virtual void customInit() {}
+    virtual void generatePrimaries(G4ParticleGun * particleGun, TimeGeneratorBase * timeGenerator, G4Event * anEvent) {}
+
     virtual G4ParticleDefinition * getParticleDefinition() const = 0;
 
     void writeToJson(json11::Json::object & json) const;
@@ -33,8 +41,8 @@ public:
     virtual std::string getTypeName() const = 0;
 
 protected:
-    virtual void doWriteToJson(json11::Json::object & /*json*/) const {};
-    virtual void doReadFromJson(const json11::Json & /*json*/) {};
+    virtual void doWriteToJson(json11::Json::object & /*json*/) const {}
+    virtual void doReadFromJson(const json11::Json & /*json*/) {}
 };
 
 // ---

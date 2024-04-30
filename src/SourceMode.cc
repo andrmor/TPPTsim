@@ -9,6 +9,7 @@
 #include "SourceParticleListFile.hh"
 #include "SourcePesHistogramFiles.hh"
 #include "SourceAnnihilHistFile.hh"
+#include "SourcePositronium.hh"
 
 #include "G4RandomTools.hh"
 #include "G4NistManager.hh"
@@ -37,6 +38,7 @@ SourceModeBase * SourceModeFactory::makeSourceInstance(const json11::Json & json
     else if (Type == "SourceParticleListFile")   sc = new SourceParticleListFile(json);
     else if (Type == "SourcePesHistogramFiles")  sc = new SourcePesHistogramFiles(json);
     else if (Type == "SourceAnnihilHistFile")    sc = new SourceAnnihilHistFile(json);
+    else if (Type == "SourcePositronium")        sc = new SourcePositronium(json);
     else
     {
         out("Unknown source type!");
@@ -76,20 +78,26 @@ void SourceModeBase::initialize()
         if (iso) bIsotropicDirection = false; // save time by not generating direction
 
         ParticleGun->SetParticleEnergy(Particle->Energy); // to be changed later if there will be spectra to be sampled from
+
+        Particle->customInit();
     }
     customPostInit();
 }
 
 void SourceModeBase::GeneratePrimaries(G4Event * anEvent)
 {
-    ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+    if (!Particle || Particle->StandardPrimaryGeneration)
+    {
+        ParticleGun->SetParticleTime(TimeGenerator->generateTime());
 
-    if (bIsotropicDirection) Direction = generateDirectionIsotropic(); //else it is fixed
-    ParticleGun->SetParticleMomentumDirection(Direction);
+        if (bIsotropicDirection) Direction = generateDirectionIsotropic(); //else it is fixed
+        ParticleGun->SetParticleMomentumDirection(Direction);
 
-    ParticleGun->GeneratePrimaryVertex(anEvent);
+        ParticleGun->GeneratePrimaryVertex(anEvent);
 
-    if (bGeneratePair) generateSecondGamma(anEvent);
+        if (bGeneratePair) generateSecondGamma(anEvent);
+    }
+    else Particle->generatePrimaries(ParticleGun, TimeGenerator, anEvent);
 }
 
 void SourceModeBase::writeToJson(json11::Json::object & json) const

@@ -20,6 +20,11 @@ endif()
 #add_compile_definitions(USE_GDML)
 
 #----------------------------------------------------------------------------
+# CERN ROOT
+#find_package(ROOT REQUIRED)
+#include_directories(${ROOT_INCLUDE_DIRS})
+
+#----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
