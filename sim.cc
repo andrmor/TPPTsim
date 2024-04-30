@@ -50,7 +50,7 @@ int main(int argc, char** argv)
         SM.Verbose          = false;
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/tmp1";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPTantsScanner/sim";
 
         // Phantom
         SM.Phantom = new PhantomNone;
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
         // Source
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
-        SM.SourceMode = new SourceCylinder(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
+        SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
 
         //SM.SourceMode = new SourcePositronium(1.0, new UniformTime(0, 0.1*s), "GeneratedGammaData.txt"); // file name is optional: if not defined, data are not saved!
@@ -80,8 +80,8 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -15.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
 
         // Simulation mode
-        SM.SimMode          = new ModeGui(); //SM.SimMode          = new ModeTracing();
-        //SM.SimMode          = new ModeDummy(1e6);
+        //SM.SimMode          = new ModeGui(); //SM.SimMode          = new ModeTracing();
+        SM.SimMode          = new ModeDummy(1e5);
         //SM.SimMode          = new ModeRadHard(1e6);
         //SM.SimMode          = new ModePesGenerator_Prob(1e5, {110.0, 110.0, 110.0}, {1, 1, 1}, {-55, -55, -55}, { {0.1*s, 1.0*s} });
         //SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
