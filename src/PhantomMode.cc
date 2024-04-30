@@ -454,3 +454,62 @@ G4LogicalVolume * PhantomMarekWater::definePhantom(G4LogicalVolume * logicWorld)
 
     return logicPmma;
 }
+
+G4LogicalVolume * PhantomMarekCompartments::definePhantom(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+    G4Material * matWater = man->FindOrBuildMaterial("G4_WATER");
+    G4Material * matTi = man->FindOrBuildMaterial("G4_Ti");
+
+    double outerD = 37.77;
+    double innerD = 30.56;
+    double wallOuterD = 33.0;
+
+    double ringT  = 6.4;
+    double centerRingT = 1.0;
+    double wallT  = 0.00254;
+    double frontT = 3.0;
+    double backT  = 30.0;
+
+    G4VSolid          * sRing = new G4Tubs("Phantom_sRing", 0, 0.5*outerD, 0.5*ringT, 0, 360.0*deg);
+    G4LogicalVolume   * lRing = new G4LogicalVolume(sRing, matPMMA, "Phantom_lRing");
+    lRing->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * sInner = new G4Tubs("Phantom_sRing", 0, 0.5*innerD, 0.5*6.4, 0, 360.0*deg);
+    G4LogicalVolume   * lInner = new G4LogicalVolume(sInner, matWater, "Phantom_lInner");
+    new G4PVPlacement(nullptr, {0, 0, 0}, lInner, "Phantom_Inner_PV", lRing, false, 0);
+    lInner->SetVisAttributes(G4VisAttributes(G4Colour(0, 0, 1.0)));
+
+    G4VSolid          * sWall = new G4Tubs("Phantom_sWall", 0, 0.5*wallOuterD, 0.5*wallT, 0, 360.0*deg);
+    G4LogicalVolume   * lWall = new G4LogicalVolume(sWall, matTi, "Phantom_lWall");
+    lWall->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 0, 0)));
+
+    G4VSolid          * sFront = new G4Tubs("Phantom_sFront", 0.5*innerD, 0.5*outerD, 0.5*frontT, 0, 360.0*deg);
+    G4LogicalVolume   * lFront = new G4LogicalVolume(sFront, matPMMA, "Phantom_lFront");
+    lFront->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * sBack = new G4Tubs("Phantom_sBack", 0.5*innerD, 0.5*outerD, 0.5*backT, 0, 360.0*deg);
+    G4LogicalVolume   * lBack = new G4LogicalVolume(sBack, matPMMA, "Phantom_lBack");
+    lBack->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * sCenterRing = new G4Tubs("Phantom_sCenterRing", 0, 0.5*outerD, 0.5*centerRingT, 0, 360.0*deg);
+    G4LogicalVolume   * lCenterRing = new G4LogicalVolume(sCenterRing, matPMMA, "Phantom_lCenterRing");
+    lCenterRing->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * sCenterInner = new G4Tubs("Phantom_sCenterRing", 0, 0.5*innerD, 0.5*centerRingT, 0, 360.0*deg);
+    G4LogicalVolume   * lCenterInner = new G4LogicalVolume(sCenterInner, matWater, "Phantom_lCenterInner");
+    new G4PVPlacement(nullptr, {0, 0, 0}, lCenterInner, "Phantom_CenterInner_PV", lCenterRing, false, 0);
+    lInner->SetVisAttributes(G4VisAttributes(G4Colour(0, 0, 1.0)));
+
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, -10.0+SM.GlobalZ0}, lFront, "Phantom_Front_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, lRing, "Phantom_Ring_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 10.0+SM.GlobalZ0}, lWall, "Phantom_Wall_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 15.0+SM.GlobalZ0}, lCenterRing, "Phantom_CenterRing_PV", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 50.0+SM.GlobalZ0}, lBack, "Phantom_Back_PV", logicWorld, false, 0);
+
+    return lRing;
+}
