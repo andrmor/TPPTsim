@@ -470,10 +470,10 @@ G4LogicalVolume * PhantomMarekCompartments::definePhantom(G4LogicalVolume *logic
     double wallOuterD = 33.0;
 
     double ringT  = 6.4;
-    double centerRingT = 1.0;
+    double centerRingT = 0.8;
     double wallT  = 0.00254;
-    double frontT = 3.0;
-    double backT  = 30.0;
+    double frontT = 2.5;
+    double backT  = 76.2;
 
     G4VSolid          * sRing = new G4Tubs("Phantom_sRing", 0, 0.5*outerD, 0.5*ringT, 0, 360.0*deg);
     G4LogicalVolume   * lRing = new G4LogicalVolume(sRing, matPMMA, "Phantom_lRing");
@@ -505,11 +505,48 @@ G4LogicalVolume * PhantomMarekCompartments::definePhantom(G4LogicalVolume *logic
     new G4PVPlacement(nullptr, {0, 0, 0}, lCenterInner, "Phantom_CenterInner_PV", lCenterRing, false, 0);
     lInner->SetVisAttributes(G4VisAttributes(G4Colour(0, 0, 1.0)));
 
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, -10.0+SM.GlobalZ0}, lFront, "Phantom_Front_PV", logicWorld, false, 0);
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, lRing, "Phantom_Ring_PV", logicWorld, false, 0);
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 10.0+SM.GlobalZ0}, lWall, "Phantom_Wall_PV", logicWorld, false, 0);
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 15.0+SM.GlobalZ0}, lCenterRing, "Phantom_CenterRing_PV", logicWorld, false, 0);
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, 50.0+SM.GlobalZ0}, lBack, "Phantom_Back_PV", logicWorld, false, 0);
+    double pos = SM.GlobalZ0;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lCenterRing, "Phantom_CenterRing_PV", logicWorld, false, 0);
+    pos -= 0.5*centerRingT;
+
+    for (int i = 0; i < 4; i++)
+    {
+        pos -= 0.5*wallT;
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lWall, "Phantom_Wall_PV", logicWorld, true, 4-i);
+        pos -= 0.5*wallT;
+
+        pos -= 0.5*ringT;
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lRing, "Phantom_Ring_PV", logicWorld, true, 4-i);
+        pos -= 0.5*ringT;
+    }
+
+    pos -= 0.5*wallT;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lWall, "Phantom_Wall_PV", logicWorld, true, 0);
+    pos -= 0.5*wallT;
+
+    pos -= 0.5*frontT;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lFront, "Phantom_Front_PV", logicWorld, false, 0);
+    //pos -= 0.5*frontT;
+
+    pos = SM.GlobalZ0 + 0.5*centerRingT;
+    for (int i = 0; i < 4; i++)
+    {
+        pos += 0.5*wallT;
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lWall, "Phantom_Wall_PV", logicWorld, true, 5+i);
+        pos += 0.5*wallT;
+
+        pos += 0.5*ringT;
+        new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lRing, "Phantom_Ring_PV", logicWorld, true, 5+i);
+        pos += 0.5*ringT;
+    }
+
+    pos += 0.5*wallT;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lWall, "Phantom_Wall_PV", logicWorld, true, 9);
+    pos += 0.5*wallT;
+
+    pos += 0.5*backT;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, pos}, lBack, "Phantom_Back_PV", logicWorld, false, 0);
+    pos += 0.5*backT;
 
     return lRing;
 }
