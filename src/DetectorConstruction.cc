@@ -227,11 +227,14 @@ void DetectorConstruction::addScintillators()
 
     SM.ScintRecords.clear();
 
+    const double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ) - SM.TeflonThick;
+
     int iAssembly = 0;
     int iScint    = 0;
+
+    // old scheme
     for (int iA = 0; iA < SM.NumSegments; iA++)
     {
-        double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ) - SM.TeflonThick;
         double Angle  = SM.AngularStep * iA + SM.Angle0;
         double X = Radius * sin(Angle);
         double Y = Radius * cos(Angle);
@@ -243,10 +246,42 @@ void DetectorConstruction::addScintillators()
             double RowPitch = SM.EncapsSizeY + SM.RowGap;
             double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
-            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,             iScint, iAssembly++, 0);
-            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + 0.5*M_PI , iScint, iAssembly++, 1);
+            positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,         iScint, iAssembly++, 0);
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + M_PI , iScint, iAssembly++, 1);
         }
     }
+
+    /*
+    // new scheme
+    // first head
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle, 90.0*deg, 0);
+        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        {
+            double RowPitch = SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+            positionAssembly(rot,  G4ThreeVector(X, Y, Z), Angle, iScint, iAssembly++, 0);
+        }
+    }
+    //second head
+    for (int iA = 0; iA < SM.NumSegments; iA++)
+    {
+        double Angle  = SM.AngularStep * iA + SM.Angle0;
+        double X = Radius * sin(Angle);
+        double Y = Radius * cos(Angle);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+        for (int iZ = 0; iZ < SM.NumRows; iZ++)
+        {
+            double RowPitch = SM.EncapsSizeY + SM.RowGap;
+            double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+            positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + M_PI , iScint, iAssembly++, 1);
+        }
+    }
+    */
 
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();

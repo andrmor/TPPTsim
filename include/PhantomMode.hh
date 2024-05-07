@@ -175,4 +175,11 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
+class PhantomBeamDerenzoAndr : public PhantomModeBase
+{
+public:
+    std::string getTypeName() const override {return "PhantomBeamDerenzoAndr";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
 #endif // PhantomMode_h

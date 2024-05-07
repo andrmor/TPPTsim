@@ -550,3 +550,48 @@ G4LogicalVolume * PhantomMarekCompartments::definePhantom(G4LogicalVolume *logic
 
     return lRing;
 }
+
+G4LogicalVolume * PhantomBeamDerenzoAndr::definePhantom(G4LogicalVolume * logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matAir  = man->FindOrBuildMaterial("G4_AIR");
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+
+    double length = 40.0*mm;
+
+    G4VSolid          * sBox = new G4Box("Phantom_sBox", 30.0, 30.0, 30.0);
+    G4LogicalVolume   * lBox = new G4LogicalVolume(sBox, matAir, "Phantom_lBox");
+    lBox->SetVisAttributes(G4VisAttributes(G4Colour(0, 0, 1.0)));
+    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, lBox, "Phantom_pBox", logicWorld, false, 0);
+
+    G4VSolid          * s2 = new G4Tubs("Phantom_s2", 0, 0.5*2.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l2 = new G4LogicalVolume(s2, matPMMA, "Phantom_l2");
+    l2->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s3 = new G4Tubs("Phantom_s3", 0, 0.5*3.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l3 = new G4LogicalVolume(s3, matPMMA, "Phantom_l3");
+    l3->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s4 = new G4Tubs("Phantom_s4", 0, 0.5*4.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l4 = new G4LogicalVolume(s4, matPMMA, "Phantom_l4");
+    l4->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s5 = new G4Tubs("Phantom_s5", 0, 0.5*5.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l5 = new G4LogicalVolume(s5, matPMMA, "Phantom_l5");
+    l5->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s6 = new G4Tubs("Phantom_s6", 0, 0.5*6.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l6 = new G4LogicalVolume(s6, matPMMA, "Phantom_l6");
+    l6->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    for (int i = 0; i < 8; i++) new G4PVPlacement(nullptr, {(i-3-0.5) * 4.0*mm,   0.0,  0}, l2, "Phantom_p2", lBox, true, i);
+    for (int i = 0; i < 5; i++) new G4PVPlacement(nullptr, {(i-2)     * 6.0*mm,   5.5,  0}, l3, "Phantom_p3", lBox, true, i);
+    for (int i = 0; i < 4; i++) new G4PVPlacement(nullptr, {(i-1-0.5) * 8.0*mm,  -6.0,  0}, l4, "Phantom_p4", lBox, true, i);
+    for (int i = 0; i < 3; i++) new G4PVPlacement(nullptr, {(i-1)     * 10.0*mm, -14.0, 0}, l5, "Phantom_p5", lBox, true, i);
+    for (int i = 0; i < 2; i++) new G4PVPlacement(nullptr, {(i-0.5)   * 12.0*mm,  14.0, 0}, l6, "Phantom_p6", lBox, true, i);
+
+    return lBox;
+}
