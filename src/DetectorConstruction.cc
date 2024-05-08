@@ -64,6 +64,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         nozzlemaker.constructNozzle(logicWorld);
     }
 
+    //G4GDMLParser parser;
+    //parser.Write(SM.WorkingDirectory + "/geometry.gdml", SM.physWorld);
+
     return SM.physWorld;
 }
 
