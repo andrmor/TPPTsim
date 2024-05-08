@@ -30,7 +30,7 @@ protected:
     double      ActivityMultiplier;
     bool        GenerateUniformOverBin = false; // false = generate always in the bin center
 
-    static constexpr double TimeSpan = 10e15; // time span of uniform generator, in ns
+    static constexpr double TimeSpan = 1e13; // time span of uniform generator, in ns
 
     // run-time
     size_t CurrentIy = 0;
