@@ -595,3 +595,52 @@ G4LogicalVolume * PhantomBeamDerenzoAndr::definePhantom(G4LogicalVolume * logicW
 
     return lBox;
 }
+
+G4LogicalVolume *PhantomBeamDerenzoAndr2::definePhantom(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matAir  = man->FindOrBuildMaterial("G4_AIR");
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+
+    double length = 40.0*mm;
+    double halfLengthBox = 0.5*length + 1.0*mm;
+
+    G4VSolid          * sBox = new G4Box("Phantom_sBox", halfLengthBox, halfLengthBox, halfLengthBox);
+    G4LogicalVolume   * lBox = new G4LogicalVolume(sBox, matAir, "Phantom_lBox");
+    lBox->SetVisAttributes(G4VisAttributes(G4Colour(0, 0, 1.0)));
+    new G4PVPlacement(nullptr, {0, 0, SM.GlobalZ0}, lBox, "Phantom_pBox", logicWorld, false, 0);
+
+    G4VSolid          * s2 = new G4Tubs("Phantom_s2", 0, 0.5*2.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l2 = new G4LogicalVolume(s2, matPMMA, "Phantom_l2");
+    l2->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s2i5 = new G4Tubs("Phantom_s2i5", 0, 0.5*2.5*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l2i5 = new G4LogicalVolume(s2i5, matPMMA, "Phantom_l2i5");
+    l2i5->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s3 = new G4Tubs("Phantom_s3", 0, 0.5*3.0*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l3 = new G4LogicalVolume(s3, matPMMA, "Phantom_l3");
+    l3->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s3i5 = new G4Tubs("Phantom_s3i5", 0, 0.5*3.5*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l3i5 = new G4LogicalVolume(s3i5, matPMMA, "Phantom_l3i5");
+    l3i5->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    placeArray(l2,   4.0, -6.0, -5.0, lBox, "Ph_2");
+    placeArray(l2i5, 5.0, -6.0,  5.0, lBox, "Ph_2i5");
+    placeArray(l3,   6.0,  6.0,  7.5, lBox, "Ph_3");
+    placeArray(l3i5, 7.0,  7.0, -6.5, lBox, "Ph_3i5");
+
+    return lBox;
+}
+
+void PhantomBeamDerenzoAndr2::placeArray(G4LogicalVolume * element, double step, double x, double y, G4LogicalVolume * container, const std::string & name)
+{
+    int iCounter = 0;
+    for (int ix = 0; ix < 2; ix++)
+        for (int iy = 0; iy < 2; iy++)
+            new G4PVPlacement(nullptr, {x*mm + (ix - 0.5) * step*mm, y*mm + (iy - 0.5) * step*mm,  0}, element, name, container, true, iCounter++);
+}

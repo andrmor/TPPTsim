@@ -8,9 +8,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4RandomTools.hh"
 
-SourceAnnihilHistFile::SourceAnnihilHistFile(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin) :
+SourceAnnihilHistFile::SourceAnnihilHistFile(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin,
+                                             std::array<double, 3> offset) :
     SourceModeBase(new GammaPair(0.511*MeV), new UniformTime(0, TimeSpan*ns)),
-    HistogramFileName(histogramFileName), ActivityMultiplier(activityMultiplier), GenerateUniformOverBin(generateUniformOverBin)
+    HistogramFileName(histogramFileName), ActivityMultiplier(activityMultiplier), GenerateUniformOverBin(generateUniformOverBin),
+    Offset(offset)
 {
     init();
 }
@@ -59,6 +61,11 @@ void SourceAnnihilHistFile::GeneratePrimaries(G4Event * anEvent)
                     y = Binning.Origin[1] + (0.5 + CurrentIy) * Binning.BinSize[1];
                     z = Binning.Origin[2] + (0.5 + iz)        * Binning.BinSize[2];
                 }
+
+                x += Offset[0];
+                y += Offset[1];
+                z += Offset[2];
+
                 ParticleGun->SetParticlePosition( {x,y,z} );
 
                 SourceModeBase::GeneratePrimaries(anEvent);
@@ -73,11 +80,15 @@ double SourceAnnihilHistFile::CountEvents()
     return ActivityData.size();
 }
 
-void SourceAnnihilHistFile::doWriteToJson(json11::Json::object &json) const
+void SourceAnnihilHistFile::doWriteToJson(json11::Json::object & json) const
 {
     json["HistogramFileName"]      = HistogramFileName;
     json["ActivityMultiplier"]     = ActivityMultiplier;
     json["GenerateUniformOverBin"] = GenerateUniformOverBin;
+
+    json11::Json::array ar;
+    for (size_t i = 0; i < 3; i++) ar.push_back(Offset[i]);
+    json["Offset"] = ar;
 }
 
 void SourceAnnihilHistFile::doReadFromJson(const json11::Json &json)
@@ -85,4 +96,8 @@ void SourceAnnihilHistFile::doReadFromJson(const json11::Json &json)
     jstools::readString(json, "HistogramFileName",      HistogramFileName);
     jstools::readDouble(json, "ActivityMultiplier",     ActivityMultiplier);
     jstools::readBool  (json, "GenerateUniformOverBin", GenerateUniformOverBin);
+
+    json11::Json::array ar;
+    jstools::readArray(json, "Offset", ar);
+    for (size_t i = 0; i < 3; i++) Offset[i] = ar[i].number_value();
 }

@@ -5,13 +5,14 @@
 #include "jstools.hh"
 
 #include <string>
+#include <array>
 
 class G4ParticleDefinition;
 
 class SourceAnnihilHistFile : public SourceModeBase
 {
 public:
-    SourceAnnihilHistFile(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin);  // if not uniform, use bin center
+    SourceAnnihilHistFile(const std::string & histogramFileName, double activityMultiplier, bool generateUniformOverBin, std::array<double,3> offset = {0,0,0});  // if not uniform, use bin center
     SourceAnnihilHistFile(const json11::Json & json);
 
     void GeneratePrimaries(G4Event * anEvent) override;
@@ -27,8 +28,10 @@ protected:
     void init();
 
     std::string HistogramFileName;
-    double      ActivityMultiplier;
-    bool        GenerateUniformOverBin = false; // false = generate always in the bin center
+    double      ActivityMultiplier = 1.0;
+    bool        GenerateUniformOverBin = true; // false = generate always in the bin center
+
+    std::array<double,3> Offset = {0,0,0};
 
     static constexpr double TimeSpan = 1e13; // time span of uniform generator, in ns
 
