@@ -138,6 +138,8 @@ class SessionManager
         int    NumSegments     = 12;
         int    NumRows         = 4;
 
+        int    NumScintMultiplicator = 1; // enables to extend num scint calculation for DoiPET
+
         double RowGap          = 0.6  * mm;
         double Angle0          = 40.5 * deg;
         double AngularStep     = 9.0  * deg;

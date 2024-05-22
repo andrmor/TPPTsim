@@ -51,6 +51,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     SM.createPhantomRegion();
 
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
+    if (SM.detectorContains(DetComp::MiniPET))           addScintillatorsMiniPET();
+    if (SM.detectorContains(DetComp::DoiPET))            addScintillatorsDoiPET();
     if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
     if (SM.detectorContains(DetComp::Base))              addBase();
     if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
@@ -64,8 +66,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         nozzlemaker.constructNozzle(logicWorld);
     }
 
-    //G4GDMLParser parser;
-    //parser.Write(SM.WorkingDirectory + "/geometry.gdml", SM.physWorld);
+    /*
+    G4GDMLParser parser;
+    parser.Write(SM.WorkingDirectory + "/geometry.gdml", SM.physWorld);
+    */
 
     return SM.physWorld;
 }
@@ -297,6 +301,71 @@ void DetectorConstruction::addScintillators()
     SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
 }
 
+void DetectorConstruction::addScintillatorsDoiPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.ScintSizeZ  = 3.0*mm;
+    SM.EncapsSizeZ = SM.ScintSizeZ;
+    SM.NumScintMultiplicator = 5;
+
+    solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
+    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
+    logicScint->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+
+    SM.createScintillatorRegion(logicScint);
+
+    solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
+
+    SM.ScintRecords.clear();
+
+    double Radius = 0.5 * (SM.InnerDiam + SM.EncapsSizeZ) - SM.TeflonThick;
+
+    int iAssembly = 0;
+    int iScint    = 0;
+
+    for (int iR = 0; iR < SM.NumScintMultiplicator; iR++)
+    {
+        for (int iA = 0; iA < SM.NumSegments; iA++)
+        {
+            double Angle  = SM.AngularStep * iA + SM.Angle0;
+            double X = Radius * sin(Angle);
+            double Y = Radius * cos(Angle);
+            G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle,             90.0*deg, 0);
+            G4RotationMatrix * rot1 = new CLHEP::HepRotation(-Angle + 180.0*deg, 90.0*deg, 0);
+
+            for (int iZ = 0; iZ < SM.NumRows; iZ++)
+            {
+                double RowPitch = SM.EncapsSizeY + SM.RowGap;
+                double Z = -0.5 * (SM.NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
+
+                positionAssembly(rot,  G4ThreeVector( X,  Y, Z), Angle,         iScint, iAssembly++, 0);
+                positionAssembly(rot1, G4ThreeVector(-X, -Y, Z), Angle + M_PI , iScint, iAssembly++, 1);
+            }
+        }
+        Radius += SM.ScintSizeZ;
+    }
+
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
+        logicScint->SetSensitiveDetector(pSD_Scint);
+    }
+
+    SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
+}
+
+void DetectorConstruction::addScintillatorsMiniPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.NumSegments = 2;
+    SM.NumRows     = 2;
+    SM.Angle0      = (90.0 - 0.5*9.0) * deg;
+
+    addScintillators();
+}
+
 G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber, int iAssembly)
 {
     SessionManager & SM = SessionManager::getInstance();
@@ -309,7 +378,8 @@ G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationM
         {
             double X = -0.5 * (SM.NumScintX - 1) * SM.ScintPitchX  +  SM.ScintPitchX * ix;
             double Y = -0.5 * (SM.NumScintY - 1) * SM.ScintPitchY  +  SM.ScintPitchY * iy;
-            G4ThreeVector ScintPos(X, Y, -0.5*SM.TeflonThick);
+            //G4ThreeVector ScintPos(X, Y, -0.5*SM.TeflonThick);
+            G4ThreeVector ScintPos(X, Y, 0);
             new G4PVPlacement(nullptr, ScintPos, logicScint, "Scint", logicEncaps, true, iScint++);
 
             ScintRecord rec;

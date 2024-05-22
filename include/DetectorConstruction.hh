@@ -19,6 +19,8 @@ private:
     void addGDML();
     void addParticleLogger();
     void addScintillators();
+    void addScintillatorsMiniPET();
+    void addScintillatorsDoiPET();
     void addBase();
     void addClosedStructure();
     void addSIPM();
