@@ -23,11 +23,12 @@ public:
     static constexpr auto Nozzle            = "Nozzle";
     static constexpr auto MiniPET           = "MiniPET";
     static constexpr auto DoiPET            = "DoiPET";
+    static constexpr auto CollimatorMarek   = "CollimatorMarek";
     // Do not forget to add new types to the ValidComponents list below!!!
 
 private:
     const std::vector<std::string> ValidComponents = {Scintillators, GDML, ParticleLogger, Base, ClosedStructure,
-                                                      SIPM, PCB, CopperStructure, CoolingAssemblies, Nozzle, MiniPET, DoiPET};
+                                                      SIPM, PCB, CopperStructure, CoolingAssemblies, Nozzle, MiniPET, DoiPET, CollimatorMarek};
 
 public:
     void set(const std::vector<std::string> & components);

@@ -65,6 +65,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         Nozzle nozzlemaker;
         nozzlemaker.constructNozzle(logicWorld);
     }
+    if (SM.detectorContains(DetComp::CollimatorMarek))   addCollimatorMarek();
 
     /*
     G4GDMLParser parser;
@@ -763,4 +764,99 @@ void DetectorConstruction::addCoolingAssemblies()
     logicWaterPipe->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 
     new G4PVPlacement(0, {0, 0, 0}, logicWaterPipe, "WaterPipe_PV", logicCopperPipeHolder, false, 0);
+}
+
+void DetectorConstruction::addCollimatorMarek()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double cylLength    = 30.0*mm;
+    double cylDiameter  = 30.0*mm;
+    double ringLength   = 10.0*mm;
+    double ringDiameter = 45.0*mm;
+
+    std::array<double,3> offset = {0,0,-55.0*mm}; // distance in beam direction from the isocenter to the exit surface of the collimator
+
+    G4NistManager * man = G4NistManager::Instance();
+    G4Material * matBrass = man->FindOrBuildMaterial("G4_BRASS");
+
+    G4Tubs          * sCyl = new G4Tubs("sCyl", 0, 0.5*cylDiameter,0.5*cylLength, 0, 360.0*deg);
+    G4LogicalVolume * lCyl = new G4LogicalVolume(sCyl, matBrass, "lCyl");
+    lCyl->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
+
+    G4Tubs          * sRing = new G4Tubs("sRing", 0.5*cylDiameter, 0.5*ringDiameter, 0.5*ringLength, 0, 360.0*deg);
+    G4LogicalVolume * lRing = new G4LogicalVolume(sRing, matBrass, "lRing");
+    lRing->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
+
+    switch (SM.CollimatorMarekOption)
+    {
+    case SessionManager::OneHole :
+    {
+        G4Tubs          * sChan = new G4Tubs("sChan", 0, 0.5*3.0*mm, 0.5*cylLength, 0, 360.0*deg);
+        G4LogicalVolume * lChan = new G4LogicalVolume(sChan, WorldMat, "lChan");
+        lChan->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+        new G4PVPlacement(nullptr, {0,0,0}, lChan,  "pChan",  lCyl, false, 0);
+        break;
+    }
+    case SessionManager::ThreeHoles :
+    {
+        G4Tubs          * sChan3 = new G4Tubs("sChan3", 0, 0.5*3.0*mm, 0.5*cylLength, 0, 360.0*deg);
+        G4LogicalVolume * lChan3 = new G4LogicalVolume(sChan3, WorldMat, "lChan3");
+        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+        new G4PVPlacement(nullptr, {10.0*mm,0,0}, lChan3,  "pChan3",  lCyl, false, 0);
+
+        G4Tubs          * sChan6 = new G4Tubs("sChan6", 0, 0.5*6.0*mm, 0.5*cylLength, 0, 360.0*deg);
+        G4LogicalVolume * lChan6 = new G4LogicalVolume(sChan6, WorldMat, "lChan6");
+        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+        new G4PVPlacement(nullptr, {0,0,0}, lChan6, "pChan6",  lCyl, false, 0);
+
+        G4Tubs          * sChan9 = new G4Tubs("sChan9", 0, 0.5*9.0*mm, 0.5*cylLength, 0, 360.0*deg);
+        G4LogicalVolume * lChan9 = new G4LogicalVolume(sChan9, WorldMat, "lChan9");
+        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+        new G4PVPlacement(nullptr, {-10.0*mm,0,0}, lChan9,  "pChan9",  lCyl, false, 0);
+
+        break;
+    }
+    case SessionManager::Cross :
+    {
+        double boxX = 10.0 - 0.5 * 3.0*mm;
+        double boxOffset = 0.5 * 3.0*mm + 0.5 * boxX;
+
+        G4Box           * sCenter = new G4Box("sCenter", 0.5*3.0*mm, 0.5*3.0*mm, 0.5*cylLength);
+        G4LogicalVolume * lCenter = new G4LogicalVolume(sCenter, WorldMat, "lCenter");
+        lCenter->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+
+        G4Tubs          * sDom = new G4Tubs("sDom", 0, 0.5*3.0*mm, 0.5*cylLength, -90.0*deg, 180.0*deg);
+        G4LogicalVolume * lDom = new G4LogicalVolume(sDom, WorldMat, "lDom");
+        lDom->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+
+        G4Box           * sBox = new G4Box("sBox", 0.5*boxX, 0.5*3.0*mm, 0.5*cylLength);
+        G4LogicalVolume * lBox = new G4LogicalVolume(sBox, WorldMat, "lBox");
+        lCenter->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+
+        new G4PVPlacement(nullptr, {0,0,0}, lCenter, "pCenter", lCyl, false, 0);
+
+        new G4PVPlacement(nullptr, {boxOffset,0,0}, lBox,  "pBox",  lCyl, true, 0);
+        new G4PVPlacement(nullptr, {10.0*mm,0,0},    lDom,  "pDom",  lCyl, true, 0);
+
+        new G4PVPlacement(new CLHEP::HepRotation(90*deg, 0, 0), {0, boxOffset,0}, lBox, "pBox", lCyl, true, 1);
+        new G4PVPlacement(new CLHEP::HepRotation(90*deg, 0, 0), {0, 10.0*mm,0}, lDom,  "pDom",  lCyl, true, 1);
+
+        new G4PVPlacement(new CLHEP::HepRotation(180*deg, 0, 0), {-boxOffset,0,0}, lBox,  "pBox",  lCyl, true, 2);
+        new G4PVPlacement(new CLHEP::HepRotation(180*deg, 0, 0), {-10.0*mm,0,0}, lDom,  "pDom",  lCyl, true, 2);
+
+        new G4PVPlacement(new CLHEP::HepRotation(-90*deg, 0, 0), {0, -boxOffset,0}, lBox, "pBox", lCyl, true, 3);
+        new G4PVPlacement(new CLHEP::HepRotation(-90*deg, 0, 0), {0, -10.0*mm,0}, lDom,  "pDom",  lCyl, true, 3);
+
+        break;
+    }
+    default :;                    // no channels
+    case SessionManager::Blind :; // no channels
+    }
+
+    double zPosCyl = -0.5*cylLength + offset[2] + SM.GlobalZ0;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {offset[0], offset[1], zPosCyl},  lCyl,  "pCyl",  logicWorld, false, 0);
+    double zPosRing = -0.5*ringLength + offset[2] + SM.GlobalZ0;
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {offset[0], offset[1], zPosRing}, lRing, "pRing", logicWorld, false, 0);
+
 }

@@ -53,13 +53,13 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/tmp";
 
         // Phantom
-        //SM.Phantom = new PhantomNone;
+        SM.Phantom = new PhantomNone;
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
         //SM.Phantom = new PhantomMarekCompartments();
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, "G4_Cu");
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, EMaterial::Ni400);
-        SM.Phantom = new PhantomBeamDerenzoAndr2();
+        //SM.Phantom = new PhantomBeamDerenzoAndr2();
 
         // Detector components
         //SM.DetectorComposition.add(DetComp::Scintillators);
@@ -69,7 +69,11 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
         // special scintillator arrangements
         //SM.DetectorComposition.add(DetComp::MiniPET);
-        SM.DetectorComposition.add(DetComp::DoiPET);
+        //SM.DetectorComposition.add(DetComp::DoiPET);
+        SM.DetectorComposition.add(DetComp::CollimatorMarek);
+        //SM.CollimatorMarekOption = SessionManager::OneHole;
+        //SM.CollimatorMarekOption = SessionManager::ThreeHoles;
+        SM.CollimatorMarekOption = SessionManager::Cross;
 
         // Source
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
@@ -83,10 +87,11 @@ int main(int argc, char** argv)
 //        SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6.dat", 3.5e4, true);
 //        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true);
-        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true, {50.0*mm, 50.0*mm, 25.0*mm});
+//        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true, {50.0*mm, 50.0*mm, 25.0*mm});
+        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 1000*s), 0.5*mm, {50.0,50.0,-50.0}, {50.0,50.0,50.0});
 
         // Simulation mode
-        //SM.SimMode          = new ModeGui();
+        SM.SimMode          = new ModeGui();
         //SM.SimMode          = new ModeTracing();
         //SM.SimMode          = new ModeDummy(1e5);
         //SM.SimMode          = new ModeRadHard(1e6);
@@ -96,7 +101,8 @@ int main(int argc, char** argv)
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -35}, "DepoE.txt", true);
         //SM.SimMode          = new ModePesGenerator_Prob(1e5, {0.5, 0.5, 0.5}, {201, 201, 200}, {-50.25, -50.25, -35}, { {0.1*s, 1000*s} });
 //        SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 40}, {-20.0, -20.0, -20.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph2_a.dat");
-        SM.SimMode = new ModeDepositionScint(200, "DepoFromActivityFlash_v2_doi_50_50_25.dat", true);
+//        SM.SimMode = new ModeDepositionScint(200, "DepoFromActivityFlash_v2_doi_50_50_25.dat", true);
+//        SM.SimMode = new ModeDepositionScint(5e7, "DepoLine_5e7_3mmScanner.dat", true);
 
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);

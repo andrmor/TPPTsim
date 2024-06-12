@@ -288,6 +288,10 @@ class SessionManager
 
         double CoolingSegment  = 120.0 * deg - 2.0 * SideWallSegment;
 
+     // Marek's collimator
+        enum ECollimatorMarekOptions {Blind, OneHole, ThreeHoles, Cross, Ring};
+        int CollimatorMarekOption = OneHole;
+
      // Internal resources
         std::ofstream       * outStream  = nullptr;
         G4Region            * regPhantom  = nullptr;
