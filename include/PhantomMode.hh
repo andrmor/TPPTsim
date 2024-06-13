@@ -188,8 +188,15 @@ public:
     std::string getTypeName() const override {return "PhantomBeamDerenzoAndr2";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 
-private:
+protected:
     void placeArray(G4LogicalVolume * element, double step, double x, double y, G4LogicalVolume * container, const std::string & name);
+};
+
+class PhantomBeamDerenzoAndr2inv : public PhantomBeamDerenzoAndr2
+{
+public:
+    std::string getTypeName() const override {return "PhantomBeamDerenzoAndr2inv";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
 

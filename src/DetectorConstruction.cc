@@ -775,7 +775,7 @@ void DetectorConstruction::addCollimatorMarek()
     double ringLength   = 10.0*mm;
     double ringDiameter = 45.0*mm;
 
-    std::array<double,3> offset = {0,0,-55.0*mm}; // distance in beam direction from the isocenter to the exit surface of the collimator
+    std::array<double,3> offset = {0,0,-75.0*mm}; // distance in beam direction from the isocenter to the exit surface of the collimator
 
     G4NistManager * man = G4NistManager::Instance();
     G4Material * matBrass = man->FindOrBuildMaterial("G4_BRASS");
