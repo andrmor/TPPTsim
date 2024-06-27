@@ -4,6 +4,7 @@
 #include "json11.hh"
 
 #include <vector>
+#include <array>
 
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"

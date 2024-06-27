@@ -11,3 +11,19 @@ CTestTestfile.cmake
 _deps
 
 *.autosave
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Debug/.cmake/api/v1/query/
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Debug/.cmake/api/v1/reply.prev/
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Debug/.cmake/api/v1/reply/
+
+*.cmake
+
+*.idx
+
+build/Desktop_Qt_6_7_2-Debug/
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Release/
+
+build/Desktop_Qt_5_15_2_GCC_64bit-Debug/

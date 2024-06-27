@@ -55,16 +55,16 @@ int main(int argc, char** argv)
 
         // Phantom
         //SM.Phantom = new PhantomNone;
-        //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
 //        SM.Phantom = new PhantomCylinder(25.4, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
         //SM.Phantom = new PhantomMarekCompartments();
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, "G4_Cu");
         //SM.Phantom = new PhantomCylinder(6.35, 20.0, EMaterial::Ni400);
-        SM.Phantom = new PhantomBeamDerenzoAndr2inv();
+      //  SM.Phantom = new PhantomBeamDerenzoAndr2inv();
 
         // Detector components
-        //SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add(DetComp::DetComp::SIPM);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourcePositronium(1.0, new UniformTime(0, 0.1*s), "GeneratedGammaData.txt"); // file name is optional: if not defined, data are not saved!
-        //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
+        SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -15.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/Flat.txt", true) );
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", true) );
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 //        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 1000*s), 0.5*mm, {50.0,50.0,-50.0}, {50.0,50.0,50.0});
 //        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2inv_a.dat", 3.5e4, true);
 //       SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_MarekCross.dat", 3.5e4, true);
-        SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Marek3holes.dat", 3.5e4, true);
+  //      SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Marek3holes.dat", 3.5e4, true);
 
         // Simulation mode
         SM.SimMode          = new ModeGui();

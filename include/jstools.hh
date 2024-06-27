@@ -4,6 +4,7 @@
 #include "json11.hh"
 
 #include <string>
+#include <array>
 
 namespace jstools
 {
