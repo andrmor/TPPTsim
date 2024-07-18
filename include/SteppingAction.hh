@@ -83,4 +83,12 @@ public:
     void UserSteppingAction(const G4Step * step) override;
 };
 
+// ---
+
+class SteppingAction_ScintDepoLogger : public G4UserSteppingAction
+{
+public:
+    void UserSteppingAction(const G4Step * step) override;
+};
+
 #endif // SteppingAction_h

@@ -20,6 +20,7 @@ private:
     void addParticleLogger();
     void addScintillators();
     void addScintillatorsMiniPET();
+    void addScintillatorsMicroPET();
     void addScintillatorsDoiPET();
     void addBase();
     void addClosedStructure();

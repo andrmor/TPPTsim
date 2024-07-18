@@ -316,3 +316,31 @@ void SteppingAction_RadHard::UserSteppingAction(const G4Step * step)
             Mode->Deposition_SiPM += depo;
     }
 }
+
+void SteppingAction_ScintDepoLogger::UserSteppingAction(const G4Step *step)
+{
+    const double depo = step->GetTotalEnergyDeposit(); // in MeV
+    if (depo == 0) return;
+
+    // note that energy deposition can be on exiting scintillator!
+
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+
+    bool bTransport = false;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc) bTransport = ( (proc->GetProcessType() == fTransportation) );
+
+    const G4VPhysicalVolume * referenceVolume = (bTransport ? preP ->GetPhysicalVolume()
+                                                           : postP->GetPhysicalVolume() );
+
+    const G4Material * mat = referenceVolume->GetLogicalVolume()->GetMaterial();
+
+    SessionManager & SM = SessionManager::getInstance();
+    if (mat != SM.ScintMat) return;
+
+    const int iScint = referenceVolume->GetCopyNo();
+
+    ModeScintDepoLogger * Mode = static_cast<ModeScintDepoLogger*>(SM.SimMode);
+    Mode->addDepo(iScint, depo, postP->GetGlobalTime());
+}

@@ -52,6 +52,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
     if (SM.detectorContains(DetComp::MiniPET))           addScintillatorsMiniPET();
+    if (SM.detectorContains(DetComp::MicroPET))          addScintillatorsMicroPET();
     if (SM.detectorContains(DetComp::DoiPET))            addScintillatorsDoiPET();
     if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
     if (SM.detectorContains(DetComp::Base))              addBase();
@@ -365,6 +366,72 @@ void DetectorConstruction::addScintillatorsMiniPET()
     SM.Angle0      = (90.0 - 0.5*9.0) * deg;
 
     addScintillators();
+}
+
+void DetectorConstruction::addScintillatorsMicroPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.NumSegments = 1;
+    SM.NumRows     = 2;
+    SM.Angle0      = 90 * deg;//(90.0 - 0.5*9.0) * deg;
+
+    addScintillators();
+
+    if (SM.detectorContains(DetComp::TungstenCubes))
+    {
+        double size     = 25.4 * mm;
+        double diameter = 1 * mm;
+
+        G4NistManager   * man  = G4NistManager::Instance();
+        G4Material      * matW = man->FindOrBuildMaterial("G4_W");
+
+        G4Box           * sWBox = new G4Box("sWBox", 0.5 * size, 0.5 * size, 0.5 * size);
+        G4LogicalVolume * lWBox = new G4LogicalVolume(sWBox, matW, "lWBox");
+        lWBox->SetVisAttributes(G4VisAttributes({1, 0, 1}));
+
+        G4Tubs          * sHole = new G4Tubs("sHole", 0, 0.5 * diameter, 0.5 * size, 0, 360*deg);
+        G4LogicalVolume * lHole = new G4LogicalVolume(sHole, WorldMat, "sHole");
+        lHole->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+
+        // hole positions are taken directly from the Marek's drawing
+        std::array<double, 4> pos1;
+        pos1[0] = 0.5 * size -  1.5*mm;
+        pos1[1] = 0.5 * size -  7.9*mm;
+        pos1[2] = 0.5 * size - 14.3*mm;
+        pos1[3] = 0.5 * size - 20.7*mm;
+
+        std::array<double, 4> pos2;
+        pos2[0] = 0.5 * size -  4.7*mm;
+        pos2[1] = 0.5 * size - 11.1*mm;
+        pos2[2] = 0.5 * size - 17.5*mm;
+        pos2[3] = 0.5 * size - 23.9*mm;
+
+        size_t iHole = 0;
+        for (size_t ix = 0; ix < 4; ix++)
+        {
+            double x = pos1[ix];
+
+            for (size_t iy = 0; iy < 4; iy++)
+            {
+                double y;
+                if (ix == 0 || ix == 2) y = pos1[iy];
+                else                    y = pos2[iy];
+
+                new G4PVPlacement(nullptr, {x,y,0}, lHole, "pHole", lWBox, true, iHole++);
+            }
+        }
+
+        const double X = 0.5 * SM.InnerDiam - 0.5*size - 1*mm;
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(90*deg + 180.0*deg, 90.0*deg, 0);
+
+        double offset = 0.5 * SM.RowGap + 0.5 * size;
+        new G4PVPlacement(rot,  {X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 0);
+        new G4PVPlacement(rot,  {X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 1);
+
+        new G4PVPlacement(rot1, {-X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 2);
+        new G4PVPlacement(rot1, {-X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 3);
+    }
 }
 
 G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber, int iAssembly)
@@ -849,6 +916,20 @@ void DetectorConstruction::addCollimatorMarek()
         new G4PVPlacement(new CLHEP::HepRotation(-90*deg, 0, 0), {0, -10.0*mm,0}, lDom,  "pDom",  lCyl, true, 3);
 
         break;
+    }
+    case SessionManager::Ring :
+    {
+        double cutAngle = 3.0 / (2*3.1415926*12.5) * 360.0;
+        double arcAngle = 90.0 - cutAngle;
+        out("Cut angle:", cutAngle, "Arc angle:", arcAngle, "deg");
+        G4Tubs          * sChan = new G4Tubs("sChan", 0.5*10.0, 0.5*12.5*mm, 0.5*cylLength, 0, arcAngle*deg);
+        G4LogicalVolume * lChan = new G4LogicalVolume(sChan, WorldMat, "lChan");
+        lChan->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
+        new G4PVPlacement(new CLHEP::HepRotation(   0*deg + 0.5*cutAngle*deg, 0, 0), {0,0,0}, lChan,  "pChan0",  lCyl, true, 0);
+        new G4PVPlacement(new CLHEP::HepRotation( -90*deg + 0.5*cutAngle*deg, 0, 0), {0,0,0}, lChan,  "pChan1",  lCyl, true, 1);
+        new G4PVPlacement(new CLHEP::HepRotation( +90*deg + 0.5*cutAngle*deg, 0, 0), {0,0,0}, lChan,  "pChan2",  lCyl, true, 2);
+        new G4PVPlacement(new CLHEP::HepRotation(+180*deg + 0.5*cutAngle*deg, 0, 0), {0,0,0}, lChan,  "pChan3",  lCyl, true, 3);
+
     }
     default :;                    // no channels
     case SessionManager::Blind :; // no channels

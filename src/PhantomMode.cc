@@ -686,3 +686,34 @@ G4LogicalVolume *PhantomBeamDerenzoAndr2inv::definePhantom(G4LogicalVolume *logi
 
     return lCyl;
 }
+
+G4LogicalVolume *PhantomBeamDerenzoAndr3inv::definePhantom(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matAir  = man->FindOrBuildMaterial("G4_AIR");
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+
+    double length = 40.0*mm;
+    double cylDiameter = 12.0 * mm;
+    double cylLength   = 50.0 * mm;
+
+    G4VSolid          * sCyl = new G4Tubs("sCyl", 0, 0.5*cylDiameter, 0.5*cylLength, 0, 360.0*deg);
+    G4LogicalVolume   * lCyl = new G4LogicalVolume(sCyl, matPMMA, "lCyl");
+    lCyl->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, lCyl, "lCyl", logicWorld, false, 0);
+
+    //G4VSolid          * s2 = new G4Tubs("Phantom_s2", 0, 0.5*2.0*mm, 0.5*length, 0, 360.0*deg);
+    //G4LogicalVolume   * l2 = new G4LogicalVolume(s2, matAir, "Phantom_l2");
+    //l2->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s2i5 = new G4Tubs("Phantom_s2i5", 0, 0.5*2.5*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l2i5 = new G4LogicalVolume(s2i5, matAir, "Phantom_l2i5");
+    l2i5->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    placeArray(l2i5, 5.0, 0,  0, lCyl, "Ph_2i5");
+
+    return lCyl;
+}
