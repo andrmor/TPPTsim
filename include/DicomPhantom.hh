@@ -7,6 +7,7 @@
 #include "json11.hh"
 
 #include <vector>
+#include <array>
 #include <map>
 
 class G4Material;
