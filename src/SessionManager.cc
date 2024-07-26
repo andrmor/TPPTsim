@@ -425,6 +425,7 @@ double SessionManager::interpolate(double a, double b, double fraction)
 }
 
 #include "json11.hh"
+#include "BeamCollimatorMode.hh"
 void SessionManager::saveConfig(const std::string & fileName) const
 {
     json11::Json::object json;
@@ -448,6 +449,14 @@ void SessionManager::saveConfig(const std::string & fileName) const
     json["Verbose"] = Verbose;
     json["ShowEventNumber"]  = ShowEventNumber;
     json["EvNumberInterval"] = EvNumberInterval;
+
+    // Beam collimator
+    if (BeamCollimator)
+    {
+        json11::Json::object js;
+        BeamCollimator->writeToJson(js);
+        json["BeamCollimator"] = js;
+    }
 
     // Phantom
     {
@@ -538,6 +547,13 @@ void SessionManager::loadConfig(const std::string & fileName)
     jstools::readBool(json, "Verbose", Verbose);
     jstools::readBool(json, "ShowEventNumber", ShowEventNumber);
     jstools::readInt(json, "EvNumberInterval", EvNumberInterval);
+
+    // Beam collimator
+    {
+        json11::Json::object js;
+        jstools::readObject(json, "BeamCollimator", js);
+        BeamCollimator = BeamCollimatorFactory::makeBeamCollimatorInstance(js);
+    }
 
     // Phantom
     {

@@ -4,6 +4,7 @@
 #include "TimeGenerator.hh"
 #include "DefinedParticles.hh"
 #include "SimMode.hh"
+#include "BeamCollimatorMode.hh"
 #include "PhantomMode.hh"
 #include "DicomPhantom.hh"
 #include "DetComp.hh"
@@ -54,11 +55,14 @@ int main(int argc, char** argv)
         //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/tmp";
         SM.WorkingDirectory  = "/media/andr/HDD/work";
 
+        // Beam collimator (optional)
+        SM.BeamCollimator = new BeamCollimatorMarek(BeamCollimatorMarek::Holes123, {0,0,-75*mm});
+
         // Phantom
-        SM.Phantom = new PhantomNone;
+    //    SM.Phantom = new PhantomNone;
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
     //    SM.Phantom = new PhantomCylinder(25.4, 50.0, "G4_PLEXIGLASS");
-    //    SM.Phantom = new PhantomCylinder(24.0, 50.0, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomCylinder(24.0, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(40.0, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
         //SM.Phantom = new PhantomMarekCompartments();
@@ -85,7 +89,7 @@ int main(int argc, char** argv)
     //    SM.DetectorComposition.add(DetComp::PLoggerMicroPET);
 
         // Source
-    //    SM.SourceMode = new SourceCylinder(new Gamma(100*keV), new UniformTime(0, 1e10*ns), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
+        SM.SourceMode = new SourceCylinder(new Gamma(100*keV), new UniformTime(0, 1e10*ns), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
@@ -107,7 +111,7 @@ int main(int argc, char** argv)
    //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Ring.dat", 3.5e4, true);
    //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog.txt", false);
         //SM.SourceMode = new SourceParticleListFile("/media/andr/HDD/work/PartLog.txt", false);
-        SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog_400.txt", false);
+   //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog_400.txt", false);
 
 
         // Simulation mode
