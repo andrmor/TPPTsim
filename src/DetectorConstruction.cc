@@ -67,6 +67,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         nozzlemaker.constructNozzle(logicWorld);
     }
     if (SM.detectorContains(DetComp::CollimatorMarek))   addCollimatorMarek();
+    if (SM.detectorContains(DetComp::PLoggerMicroPET))   addParticleLoggerMicroPET();
 
     /*
     G4GDMLParser parser;
@@ -205,6 +206,24 @@ void DetectorConstruction::addParticleLogger()
     double OuterRadius = 0.5 * SM.InnerDiam - 7.0*mm;
     double InnerRadius = OuterRadius - 1.0*mm;
     double Height      = 5.0 * SM.EncapsSizeX; // Margarida, please calculate the minimum size
+
+    G4VSolid          * solidPL = new G4Tubs("ParticleLogger_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
+    G4LogicalVolume   * logicPL = new G4LogicalVolume(solidPL, WorldMat, "ParticleLogger");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPL, "ParticleLogger_PV", logicWorld, false, 0);
+    logicPL->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+
+    G4VSensitiveDetector * pSD_FSM = new SensitiveDetectorFSM("SD_FSM");
+    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_FSM);
+    logicPL->SetSensitiveDetector(pSD_FSM);
+}
+
+void DetectorConstruction::addParticleLoggerMicroPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double OuterRadius = 0.5 * SM.InnerDiam - 30*mm;
+    double InnerRadius = OuterRadius - 1.0*mm;
+    double Height      = 2 * SM.EncapsSizeX + SM.RowGap + 5.0*mm;
 
     G4VSolid          * solidPL = new G4Tubs("ParticleLogger_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
     G4LogicalVolume   * logicPL = new G4LogicalVolume(solidPL, WorldMat, "ParticleLogger");

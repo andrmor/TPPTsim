@@ -26,13 +26,14 @@ public:
     static constexpr auto DoiPET            = "DoiPET";
     static constexpr auto CollimatorMarek   = "CollimatorMarek";
     static constexpr auto TungstenCubes     = "TungstenCubes";
+    static constexpr auto PLoggerMicroPET   = "PLoggerMicroPET";
     // Do not forget to add new types to the ValidComponents list below!!!
 
 private:
     const std::vector<std::string> ValidComponents = {Scintillators, GDML, ParticleLogger, Base, ClosedStructure,
                                                       SIPM, PCB, CopperStructure, CoolingAssemblies, Nozzle,
                                                       MiniPET, MicroPET, DoiPET,
-                                                      CollimatorMarek, TungstenCubes};
+                                                      CollimatorMarek, TungstenCubes, PLoggerMicroPET};
 
 public:
     void set(const std::vector<std::string> & components);

@@ -335,7 +335,7 @@ public:
 
     void saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time);
 
-    void run() override;
+    void run() override; // record: particle energy x y z dx dy dz time // units: keV mm and ns
     void onEventStarted() override;
     std::string getTypeName() const override {return "ModeParticleLogger";}
     void readFromJson(const json11::Json & json) override;

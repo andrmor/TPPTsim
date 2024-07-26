@@ -38,7 +38,7 @@ int main(int argc, char** argv)
      // --- START of user init ---
 
         // General settings
-        SM.Seed = 400;                // WARNING: the seed can be overriden with a command line argument, e.g. sim -s 123456
+        SM.Seed = 100;                // WARNING: the seed can be overriden with a command line argument, e.g. sim -s 123456
         SM.SimAcollinearity   = true;  // only for the phantom region!
         SM.KillNeutrinos      = true;
         //SM.UseStepLimiter     = true; SM.PhantomStepLimit = 0.25*mm;
@@ -55,10 +55,10 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/media/andr/HDD/work";
 
         // Phantom
-        //SM.Phantom = new PhantomNone;
+        SM.Phantom = new PhantomNone;
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
     //    SM.Phantom = new PhantomCylinder(25.4, 50.0, "G4_PLEXIGLASS");
-        SM.Phantom = new PhantomCylinder(24.0, 50.0, "G4_PLEXIGLASS");
+    //    SM.Phantom = new PhantomCylinder(24.0, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(40.0, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
         //SM.Phantom = new PhantomMarekCompartments();
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomBeamDerenzoAndr3inv();
 
         // Detector components
-    //    SM.DetectorComposition.add(DetComp::Scintillators);
+        //SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add(DetComp::DetComp::SIPM);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
@@ -82,9 +82,10 @@ int main(int argc, char** argv)
             //SM.CollimatorMarekOption = SessionManager::Cross;
             //SM.CollimatorMarekOption = SessionManager::Ring;
         SM.DetectorComposition.add(DetComp::TungstenCubes);
+    //    SM.DetectorComposition.add(DetComp::PLoggerMicroPET);
 
         // Source
-        SM.SourceMode = new SourceCylinder(new Gamma(100*keV), new UniformTime(0, 1e10*ns), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
+    //    SM.SourceMode = new SourceCylinder(new Gamma(100*keV), new UniformTime(0, 1e10*ns), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
@@ -104,10 +105,15 @@ int main(int argc, char** argv)
     //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_ph3inv.dat", 3.5e4, true);
     //    SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Micro3holes.dat", 3.5e4, true);
    //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Ring.dat", 3.5e4, true);
+   //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog.txt", false);
+        //SM.SourceMode = new SourceParticleListFile("/media/andr/HDD/work/PartLog.txt", false);
+        SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog_400.txt", false);
+
 
         // Simulation mode
        SM.SimMode          = new ModeGui();
-    //    SM.SimMode = new ModeScintDepoLogger(1e7, 0.1*s, "DepoTester400.txt");
+    //    SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
+   //     SM.SimMode = new ModeScintDepoLogger(1e8, 0.1*s, "Depo_PartLog_400.txt");
         //SM.SimMode          = new ModeTracing();
         //SM.SimMode          = new ModeDummy(1e5);
         //SM.SimMode          = new ModeRadHard(1e6);
@@ -130,6 +136,7 @@ int main(int argc, char** argv)
     //    SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv.dat", true);
     //     SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Micro3holes.dat", true);
     //     SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Ring.dat", true);
+    //    SM.SimMode = new ModeParticleLogger(1e8, "1PartLog_400.txt", false);
 
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);

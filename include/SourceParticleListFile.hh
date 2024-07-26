@@ -31,7 +31,9 @@ protected:
     void init();
 
     void prepareStream();
-    void addPrimary(G4Event * anEvent);
+
+    virtual void onNewEventMarker() {}
+    virtual void addPrimary(G4Event * anEvent);
 
     GeantParticleGenerator ParticleGenerator;
 
@@ -44,6 +46,24 @@ protected:
     G4ParticleDefinition * pd;
     double energy, time;
     G4ThreeVector pos, dir;
+};
+
+class SourceParticleListFileMicroPET : public SourceParticleListFile
+{
+public:
+    SourceParticleListFileMicroPET(const std::string & fileName, bool bBinaryFile);
+    SourceParticleListFileMicroPET(const json11::Json & json);
+
+    std::string getTypeName() const override {return "SourceParticleListFileMicroPET";}
+
+    // GeneratePrimaries method is the same, overriding only onNewEventMarker and addPrimary
+
+protected:
+    void onNewEventMarker() override;
+    void addPrimary(G4Event * anEvent) override;
+
+    bool FirstParticleThisEvent = true;
+    double Phi = 0; // rotation angle around Z axis
 };
 
 #endif // fromfilesource_h

@@ -107,6 +107,7 @@ void SourceParticleListFile::GeneratePrimaries(G4Event * anEvent)
             {
                 inStream->read((char*)&iEv, sizeof(int));
                 //event finished
+                onNewEventMarker();
                 break;
             }
             else if (ch == (char)0xFF)
@@ -150,7 +151,11 @@ void SourceParticleListFile::GeneratePrimaries(G4Event * anEvent)
             //std::cout << "line=>" << line << "<=" << std::endl;
             if (line.size() < 1) continue; //allow empty lines
 
-            if (line[0] == '#') break; //event finished
+            if (line[0] == '#')
+            {
+                onNewEventMarker();
+                break;
+            }
 
             if (inStream->eof())
             {
@@ -262,4 +267,53 @@ void SourceParticleListFile::doReadFromJson(const json11::Json & json)
 {
     jstools::readString(json, "FileName", FileName);
     jstools::readBool  (json, "bBinary",  bBinary);
+}
+
+// ---------------------------
+
+SourceParticleListFileMicroPET::SourceParticleListFileMicroPET(const std::string &fileName, bool bBinaryFile) :
+    SourceParticleListFile(fileName, bBinaryFile) {}
+
+SourceParticleListFileMicroPET::SourceParticleListFileMicroPET(const json11::Json & json) :
+    SourceParticleListFile(json) {}
+
+void SourceParticleListFileMicroPET::onNewEventMarker()
+{
+    FirstParticleThisEvent = true;
+}
+
+#include "G4RandomTools.hh"
+void SourceParticleListFileMicroPET::addPrimary(G4Event * anEvent)
+{
+    pd = ParticleGenerator.makeGeant4Particle(name);
+
+    ParticleGun->SetParticleDefinition(pd);
+    ParticleGun->SetParticleEnergy(energy*keV);
+    ParticleGun->SetParticleTime(time*ns);
+
+    if (FirstParticleThisEvent)
+    {
+        G4ThreeVector posProj{pos[0], pos[1], 0};
+        double Xedge = 140.0;  // 0.5*InnerDiam - CubeSize = 0.5*335.4 - 25.4 - 1.0 --> 141.3 mm
+        double Yedge = 12.5;
+        G4ThreeVector edge{-Xedge, Yedge, 0};
+        double phi0 = posProj.angle(edge); // always positive!
+        bool upperHalf = (pos[1] > -(Yedge/Xedge*pos[0]));
+        if (!upperHalf) phi0 = -phi0;
+
+        double angleOfView = 2.0 * atan(Yedge / Xedge);
+        Phi = phi0 + G4UniformRand() * angleOfView;
+        if (G4UniformRand() > 0.5) Phi += 180*deg;
+
+        FirstParticleThisEvent = false;
+    }
+    pos.rotateZ(Phi);
+    dir.rotateZ(Phi);
+
+    //out("->", pd->GetParticleName(), energy, pos, dir, time);
+
+    ParticleGun->SetParticlePosition(pos);
+    ParticleGun->SetParticleMomentumDirection(dir);
+
+    ParticleGun->GeneratePrimaryVertex(anEvent);
 }

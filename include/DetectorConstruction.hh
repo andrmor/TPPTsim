@@ -18,6 +18,7 @@ private:
     void defineMaterials();
     void addGDML();
     void addParticleLogger();
+    void addParticleLoggerMicroPET();
     void addScintillators();
     void addScintillatorsMiniPET();
     void addScintillatorsMicroPET();
