@@ -405,7 +405,7 @@ void DetectorConstruction::addScintillatorsMicroPET()
 
     addScintillators();
 
-    if (SM.detectorContains(DetComp::TungstenCubes))
+    if (SM.detectorContains(DetComp::TungstenCubes) || SM.detectorContains(DetComp::TungstenCubes2))
     {
         double size     = 25.4 * mm;
         double diameter = 1 * mm;
@@ -449,7 +449,7 @@ void DetectorConstruction::addScintillatorsMicroPET()
             }
         }
 
-        const double X = 0.5 * SM.InnerDiam - 0.5*size - 1*mm;
+        double X = 0.5 * SM.InnerDiam - 0.5*size - 1*mm;
         G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg,             90.0*deg, 0);
         G4RotationMatrix * rot1 = new CLHEP::HepRotation(90*deg + 180.0*deg, 90.0*deg, 0);
 
@@ -459,6 +459,17 @@ void DetectorConstruction::addScintillatorsMicroPET()
 
         new G4PVPlacement(rot1, {-X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 2);
         new G4PVPlacement(rot1, {-X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 3);
+
+        if (SM.detectorContains(DetComp::TungstenCubes2))
+        {
+            X -= size;
+
+            new G4PVPlacement(rot,  {X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 4);
+            new G4PVPlacement(rot,  {X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 5);
+
+            new G4PVPlacement(rot1, {-X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 6);
+            new G4PVPlacement(rot1, {-X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 7);
+        }
     }
 }
 

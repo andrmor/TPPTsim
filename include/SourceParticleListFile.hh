@@ -51,7 +51,7 @@ protected:
 class SourceParticleListFileMicroPET : public SourceParticleListFile
 {
 public:
-    SourceParticleListFileMicroPET(const std::string & fileName, bool bBinaryFile);
+    SourceParticleListFileMicroPET(const std::string & fileName, bool bBinaryFile, double pushBackDistance = 0);
     SourceParticleListFileMicroPET(const json11::Json & json);
 
     std::string getTypeName() const override {return "SourceParticleListFileMicroPET";}
@@ -59,8 +59,13 @@ public:
     // GeneratePrimaries method is the same, overriding only onNewEventMarker and addPrimary
 
 protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+    void doReadFromJson(const json11::Json & json);
+
     void onNewEventMarker() override;
     void addPrimary(G4Event * anEvent) override;
+
+    double PushBackDistance = 0;
 
     bool FirstParticleThisEvent = true;
     double Phi = 0; // rotation angle around Z axis

@@ -49,8 +49,8 @@ void BeamCollimatorBase::writeToJson(json11::Json::object & json) const
 
 // --------
 
-BeamCollimatorMarek::BeamCollimatorMarek(EOpeningOptions openingType, const G4ThreeVector & innerFacePosition) :
-    OpeningType(openingType), FacePosition(innerFacePosition) {}
+BeamCollimatorMarek::BeamCollimatorMarek(EOpeningOptions openingType, const G4ThreeVector & innerFacePosition, double rotationAngle) :
+    OpeningType(openingType), FacePosition(innerFacePosition), Angle(rotationAngle) {}
 
 
 void BeamCollimatorMarek::defineBeamCollimator(G4LogicalVolume * logicWorld)
@@ -172,10 +172,11 @@ void BeamCollimatorMarek::defineBeamCollimator(G4LogicalVolume * logicWorld)
     case Blind :; // no channels
     }
 
+    double rotAngle = 90.0*deg + Angle;
     double zPosCyl = -0.5*cylLength + FacePosition[2] + SM.GlobalZ0;
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {FacePosition[0], FacePosition[1], zPosCyl},  lCyl,  "pCyl",  logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(rotAngle, 0, 0), {FacePosition[0], FacePosition[1], zPosCyl},  lCyl,  "pCyl",  logicWorld, false, 0);
     double zPosRing = -0.5*ringLength + FacePosition[2] + SM.GlobalZ0;
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {FacePosition[0], FacePosition[1], zPosRing}, lRing, "pRing", logicWorld, false, 0);
+    new G4PVPlacement(new CLHEP::HepRotation(rotAngle, 0, 0), {FacePosition[0], FacePosition[1], zPosRing}, lRing, "pRing", logicWorld, false, 0);
 }
 
 void BeamCollimatorMarek::readFromJson(const json11::Json & json)

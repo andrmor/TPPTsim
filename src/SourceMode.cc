@@ -36,6 +36,7 @@ SourceModeBase * SourceModeFactory::makeSourceInstance(const json11::Json & json
     else if (Type == "SourceMaterialLimited")    sc = new SourceMaterialLimited(json);
     else if (Type == "SourceLysoNatural")        sc = new SourceLysoNatural(json);
     else if (Type == "SourceParticleListFile")   sc = new SourceParticleListFile(json);
+    else if (Type == "SourceParticleListFileMicroPET") sc = new SourceParticleListFileMicroPET(json);
     else if (Type == "SourcePesHistogramFiles")  sc = new SourcePesHistogramFiles(json);
     else if (Type == "SourceAnnihilHistFile")    sc = new SourceAnnihilHistFile(json);
     else if (Type == "SourcePositronium")        sc = new SourcePositronium(json);

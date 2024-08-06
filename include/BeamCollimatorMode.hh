@@ -44,7 +44,7 @@ class BeamCollimatorMarek : public BeamCollimatorBase
 {
 public:
     enum EOpeningOptions {Blind, Hole3, Holes369, Holes123, Cross, Ring};
-    BeamCollimatorMarek(EOpeningOptions openingType, const G4ThreeVector & innerFacePosition);
+    BeamCollimatorMarek(EOpeningOptions openingType, const G4ThreeVector & innerFacePosition, double rotationAngle = 0);
 
     std::string getTypeName() const override {return "BeamCollimatorMarek";}
     void defineBeamCollimator(G4LogicalVolume * logicWorld) override;
@@ -54,6 +54,7 @@ public:
 protected:
     EOpeningOptions OpeningType = Blind;
     G4ThreeVector   FacePosition = {0,0,-100.0};
+    double          Angle = 0;
 
     void doWriteToJson(json11::Json::object & /*json*/) const override;
 };

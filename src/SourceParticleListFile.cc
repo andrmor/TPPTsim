@@ -271,11 +271,23 @@ void SourceParticleListFile::doReadFromJson(const json11::Json & json)
 
 // ---------------------------
 
-SourceParticleListFileMicroPET::SourceParticleListFileMicroPET(const std::string &fileName, bool bBinaryFile) :
-    SourceParticleListFile(fileName, bBinaryFile) {}
+SourceParticleListFileMicroPET::SourceParticleListFileMicroPET(const std::string &fileName, bool bBinaryFile, double pushBackDistance) :
+    SourceParticleListFile(fileName, bBinaryFile), PushBackDistance(pushBackDistance) {}
 
 SourceParticleListFileMicroPET::SourceParticleListFileMicroPET(const json11::Json & json) :
     SourceParticleListFile(json) {}
+
+void SourceParticleListFileMicroPET::doWriteToJson(json11::Json::object & json) const
+{
+    SourceParticleListFile::doWriteToJson(json);
+    json["PushBackDistance"] = PushBackDistance;
+}
+
+void SourceParticleListFileMicroPET::doReadFromJson(const json11::Json & json)
+{
+    SourceParticleListFile::doReadFromJson(json);
+    jstools::readDouble(json, "PushBackDistance", PushBackDistance);
+}
 
 void SourceParticleListFileMicroPET::onNewEventMarker()
 {
@@ -312,8 +324,9 @@ void SourceParticleListFileMicroPET::addPrimary(G4Event * anEvent)
 
     //out("->", pd->GetParticleName(), energy, pos, dir, time);
 
-    ParticleGun->SetParticlePosition(pos);
     ParticleGun->SetParticleMomentumDirection(dir);
+    if (PushBackDistance != 0) pos -= dir * PushBackDistance;
+    ParticleGun->SetParticlePosition(pos);
 
     ParticleGun->GeneratePrimaryVertex(anEvent);
 }

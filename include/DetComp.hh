@@ -26,13 +26,14 @@ public:
     static constexpr auto DoiPET            = "DoiPET";
     //static constexpr auto CollimatorMarek   = "CollimatorMarek"; // converted to standalone detector component
     static constexpr auto TungstenCubes     = "TungstenCubes";
+    static constexpr auto TungstenCubes2    = "TungstenCubes2";
     static constexpr auto PLoggerMicroPET   = "PLoggerMicroPET";
     // Do not forget to add new types to the ValidComponents list below!!!
 
 private:
     const std::vector<std::string> ValidComponents = {Scintillators, GDML, ParticleLogger, Base, ClosedStructure,
                                                       SIPM, PCB, CopperStructure, CoolingAssemblies, Nozzle,
-                                                      MiniPET, MicroPET, DoiPET, TungstenCubes, PLoggerMicroPET};
+                                                      MiniPET, MicroPET, DoiPET, TungstenCubes, TungstenCubes2, PLoggerMicroPET};
 
 public:
     void set(const std::vector<std::string> & components);
