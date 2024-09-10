@@ -23,6 +23,7 @@ private:
     void addScintillatorsMiniPET();
     void addScintillatorsMicroPET();
     void addScintillatorsDoiPET();
+    void addScintillatorsFlatPanelPET();
     void addBase();
     void addClosedStructure();
     void addSIPM();

@@ -59,6 +59,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if (SM.detectorContains(DetComp::MiniPET))           addScintillatorsMiniPET();
     if (SM.detectorContains(DetComp::MicroPET))          addScintillatorsMicroPET();
     if (SM.detectorContains(DetComp::DoiPET))            addScintillatorsDoiPET();
+    if (SM.detectorContains(DetComp::FlatPanelPET))      addScintillatorsFlatPanelPET();
     // scanner components
     if (SM.detectorContains(DetComp::Base))              addBase();
     if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
@@ -382,6 +383,76 @@ void DetectorConstruction::addScintillatorsDoiPET()
         G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
         logicScint->SetSensitiveDetector(pSD_Scint);
     }
+
+    SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
+}
+
+void DetectorConstruction::addScintillatorsFlatPanelPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double ScintTotalLength = 30*mm;
+    size_t NumDOIregions = 10;
+    size_t NumHeads = 2;
+    size_t NumAssembliesPerRow = 10;
+    double HeadAngularStep = 360*deg / NumHeads;
+    double HeadDistance = 285.28*mm; // between most inner scintillator surfaces
+    double AssemblyStep = 0;
+    if (NumAssembliesPerRow > 1) AssemblyStep = (263.4*mm - SM.EncapsSizeX) / (NumAssembliesPerRow - 1);
+
+    SM.NumScintMultiplicator = NumHeads * NumDOIregions;
+    SM.ScintSizeZ  = ScintTotalLength / NumDOIregions;
+    SM.EncapsSizeZ = SM.ScintSizeZ;  // no teflon before/after scints
+
+    solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
+    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint");
+    logicScint->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+    SM.createScintillatorRegion(logicScint);
+    solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
+
+    SM.ScintRecords.clear();
+    int iAssembly = 0;
+    int iScint    = 0;
+
+    for (size_t iDoiLayer = 0; iDoiLayer < NumDOIregions; iDoiLayer++)
+    {
+        const double Offset = 0.5 * (HeadDistance + SM.EncapsSizeZ) + iDoiLayer * SM.EncapsSizeZ;
+
+        for (size_t iHead = 0; iHead < NumHeads; iHead++)
+        {
+            double Angle = HeadAngularStep * iHead;
+            G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle, 90.0*deg, 0);
+
+            for (size_t iZ = 0; iZ < NumAssembliesPerRow; iZ++)
+            {
+                const double Z = -0.5 * (NumAssembliesPerRow - 1) * AssemblyStep  +  iZ * AssemblyStep + SM.GlobalZ0;
+
+                for (size_t iX = 0; iX < NumAssembliesPerRow; iX++)
+                {
+                    const double localX = -0.5 * (NumAssembliesPerRow - 1) * AssemblyStep  +  iX * AssemblyStep;
+                    const double localY = -Offset;
+
+                    double cosA = cos(Angle);
+                    double sinA = sin(Angle);
+
+                    double X = cosA * localX - sinA * localY;
+                    double Y = sinA * localX + cosA * localY;
+
+                    positionAssembly(rot,  G4ThreeVector(X, Y, Z), Angle, iScint, iAssembly++, iHead);
+                }
+            }
+        }
+    }
+
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
+        logicScint->SetSensitiveDetector(pSD_Scint);
+    }
+
+    out("Num scints:", iScint, "Scint records size:", SM.ScintRecords.size());
 
     SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
 }
