@@ -102,7 +102,10 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6.dat", 3.5e4, true);
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true);
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true, {50.0*mm, 50.0*mm, 25.0*mm});
-      SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity123vert_1e7.dat", 3.5e3, true, {0.0*mm, 0.0*mm, 0.0*mm});
+
+      //SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity123vert_1e7.dat", 3.5e3, true, {0.0*mm, 0.0*mm, 0.0*mm});
+      SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity123hor_1e7.dat", 3.5e3, true, {0.0*mm, 0.0*mm, 0.0*mm});
+
 //        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 1000*s), 0.5*mm, {50.0,50.0,-50.0}, {50.0,50.0,50.0});
 //        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2inv_a.dat", 3.5e4, true);
 //       SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_MarekCross.dat", 3.5e4, true);
@@ -116,7 +119,7 @@ int main(int argc, char** argv)
 
 
         // Simulation mode
-       //SM.SimMode          = new ModeGui();
+       SM.SimMode          = new ModeGui();
         //SM.SimMode = new ModeScintDepoLogger(1e8, 1e10*ns, "DepoTester_100keV_2cubes.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
       //  SM.SimMode = new ModeScintDepoLogger(1e8, 0.1*s, "Depo_PartLog_400_2Cubes.txt");
@@ -141,8 +144,11 @@ int main(int argc, char** argv)
  //       SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Marek3holes.dat", true);
     //    SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv.dat", true);
     //     SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Micro3holes.dat", true);
-        SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123vert_1e7_to3i5e10_xyz0_0_0.dat", true);
-    //    SM.SimMode = new ModeParticleLogger(1e8, "1PartLog_400.txt", false);
+       //    SM.SimMode = new ModeParticleLogger(1e8, "1PartLog_400.txt", false);
+
+       //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123vert_1e7_to3i5e10_xyz0_0_0.dat", true);
+     // SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123hor_1e7_to3i5e10_xyz0_0_0.dat", true);
+
 
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);

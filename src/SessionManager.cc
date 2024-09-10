@@ -235,7 +235,8 @@ void SessionManager::createScintillatorRegion(G4LogicalVolume * logVolScint)
 
 int SessionManager::countScintillators() const
 {
-    return NumScintX * NumScintY * NumRows * NumSegments * 2.0 * NumScintMultiplicator;
+    //return NumScintX * NumScintY * NumRows * NumSegments * 2.0 * NumScintMultiplicator;
+    return TotalNumberOfScintillators;
 }
 
 int SessionManager::getNumberNatRadEvents(double timeFromInNs, double timeToInNs) const

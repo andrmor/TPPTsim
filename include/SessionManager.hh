@@ -124,6 +124,8 @@ class SessionManager
         int    NumScintX       = 8;
         int    NumScintY       = 8;
 
+        int    TotalNumberOfScintillators = 0;  // computed in detector construction
+
         double ScintSizeX      = 3.005  * mm;
         double ScintSizeY      = ScintSizeX;
         double ScintSizeZ      = 15.0 * mm;
@@ -140,7 +142,7 @@ class SessionManager
         int    NumSegments     = 12;
         int    NumRows         = 4;
 
-        int    NumScintMultiplicator = 1; // enables to extend num scint calculation for DoiPET
+        //int    NumScintMultiplicator = 1; // enables to extend num scint calculation for DoiPET
 
         double RowGap          = 0.6  * mm;
         double Angle0          = 40.5 * deg;

@@ -26,9 +26,9 @@
 #include "Nozzle.hh"
 #include "G4Trd.hh"
 
-#ifdef USE_GDML
+//#ifdef USE_GDML
 #include "G4GDMLParser.hh"
-#endif
+//#endif
 
 #define _USE_MATH_DEFINES
 
@@ -77,10 +77,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         nozzlemaker.constructNozzle(logicWorld);
     }
 
-    /*
+  //  /*
     G4GDMLParser parser;
     parser.Write(SM.WorkingDirectory + "/geometry.gdml", SM.physWorld);
-    */
+  //  */
 
     return SM.physWorld;
 }
@@ -321,6 +321,8 @@ void DetectorConstruction::addScintillators()
     }
     */
 
+    SM.TotalNumberOfScintillators = iScint;
+
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
     if (pSD_Scint)
@@ -337,7 +339,7 @@ void DetectorConstruction::addScintillatorsDoiPET()
     SessionManager & SM = SessionManager::getInstance();
     SM.ScintSizeZ  = 3.0*mm;
     SM.EncapsSizeZ = SM.ScintSizeZ;
-    SM.NumScintMultiplicator = 5;
+    int NumScintMultiplicator = 5;
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
@@ -354,7 +356,7 @@ void DetectorConstruction::addScintillatorsDoiPET()
     int iAssembly = 0;
     int iScint    = 0;
 
-    for (int iR = 0; iR < SM.NumScintMultiplicator; iR++)
+    for (int iR = 0; iR < NumScintMultiplicator; iR++)
     {
         for (int iA = 0; iA < SM.NumSegments; iA++)
         {
@@ -375,6 +377,8 @@ void DetectorConstruction::addScintillatorsDoiPET()
         }
         Radius += SM.ScintSizeZ;
     }
+
+    SM.TotalNumberOfScintillators = iScint;
 
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
@@ -400,7 +404,6 @@ void DetectorConstruction::addScintillatorsFlatPanelPET()
     double AssemblyStep = 0;
     if (NumAssembliesPerRow > 1) AssemblyStep = (263.4*mm - SM.EncapsSizeX) / (NumAssembliesPerRow - 1);
 
-    SM.NumScintMultiplicator = NumHeads * NumDOIregions;
     SM.ScintSizeZ  = ScintTotalLength / NumDOIregions;
     SM.EncapsSizeZ = SM.ScintSizeZ;  // no teflon before/after scints
 
@@ -443,6 +446,8 @@ void DetectorConstruction::addScintillatorsFlatPanelPET()
             }
         }
     }
+
+    SM.TotalNumberOfScintillators = iScint;
 
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
