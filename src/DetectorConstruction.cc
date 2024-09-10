@@ -26,9 +26,9 @@
 #include "Nozzle.hh"
 #include "G4Trd.hh"
 
-//#ifdef USE_GDML
+#ifdef USE_GDML
 #include "G4GDMLParser.hh"
-//#endif
+#endif
 
 #define _USE_MATH_DEFINES
 
@@ -77,10 +77,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         nozzlemaker.constructNozzle(logicWorld);
     }
 
-  //  /*
+    /*
     G4GDMLParser parser;
     parser.Write(SM.WorkingDirectory + "/geometry.gdml", SM.physWorld);
-  //  */
+    */
 
     return SM.physWorld;
 }
