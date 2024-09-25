@@ -399,11 +399,11 @@ void DetectorConstruction::addScintillatorsFlatPanelPET()
     size_t NumDOIregions = 10;
     size_t NumHeads = 2;
     size_t NumAssembliesPerRow = 10;
-    double HeadAngularStep = 360*deg / NumHeads;
     double HeadDistance = 285.28*mm; // between most inner scintillator surfaces
+
+    double HeadAngularStep = 360*deg / NumHeads;
     double AssemblyStep = 0;
     if (NumAssembliesPerRow > 1) AssemblyStep = (263.4*mm - SM.EncapsSizeX) / (NumAssembliesPerRow - 1);
-
     SM.ScintSizeZ  = ScintTotalLength / NumDOIregions;
     SM.EncapsSizeZ = SM.ScintSizeZ;  // no teflon before/after scints
 
