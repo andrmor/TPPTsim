@@ -18,6 +18,7 @@ class G4RunManager;
 class G4VisManager;
 class SourceModeBase;
 class SimModeBase;
+class BeamCollimatorBase;
 class PhantomModeBase;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
@@ -71,9 +72,10 @@ class SessionManager
         std::string generateName(const std::string & baseName, const std::string & suffix) const; // e.g. ("base", "txt") when Seed is 100 --> "base_100.txt"
 
      // Main settings
-        SourceModeBase   * SourceMode     = nullptr;
-        SimModeBase      * SimMode        = nullptr;
-        PhantomModeBase  * Phantom        = nullptr;
+        SourceModeBase     * SourceMode     = nullptr;
+        SimModeBase        * SimMode        = nullptr;
+        PhantomModeBase    * Phantom        = nullptr;
+        BeamCollimatorBase * BeamCollimator = nullptr;
 
         G4LogicalVolume  * PhantomLogical = nullptr; // assigned in DetectorConstruction::Construct()
 
@@ -122,6 +124,8 @@ class SessionManager
         int    NumScintX       = 8;
         int    NumScintY       = 8;
 
+        int    TotalNumberOfScintillators = 0;  // computed in detector construction
+
         double ScintSizeX      = 3.005  * mm;
         double ScintSizeY      = ScintSizeX;
         double ScintSizeZ      = 15.0 * mm;
@@ -138,7 +142,7 @@ class SessionManager
         int    NumSegments     = 12;
         int    NumRows         = 4;
 
-        int    NumScintMultiplicator = 1; // enables to extend num scint calculation for DoiPET
+        //int    NumScintMultiplicator = 1; // enables to extend num scint calculation for DoiPET
 
         double RowGap          = 0.6  * mm;
         double Angle0          = 40.5 * deg;
@@ -288,16 +292,13 @@ class SessionManager
 
         double CoolingSegment  = 120.0 * deg - 2.0 * SideWallSegment;
 
-     // Marek's collimator
-        enum ECollimatorMarekOptions {Blind, OneHole, ThreeHoles, Cross, Ring};
-        int CollimatorMarekOption = OneHole;
-
      // Internal resources
         std::ofstream       * outStream  = nullptr;
         G4Region            * regPhantom  = nullptr;
         G4Region            * regScint    = nullptr;
 
      // External resources
+        G4Material          * WorldMat    = nullptr;
         G4Material          * ScintMat    = nullptr;
         G4VPhysicalVolume   * physWorld   = nullptr;
 

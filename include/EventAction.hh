@@ -7,6 +7,7 @@ class EventAction : public G4UserEventAction
 {
 public:
     void BeginOfEventAction(const G4Event * event) override;
+    void EndOfEventAction(const G4Event * event) override;
 };
 
 #endif // eventaction_h

@@ -30,6 +30,7 @@ PhantomModeBase * PhantomModeFactory::makePhantomModeInstance(const json11::Json
     if      (Type == "PhantomNone")       ph = new PhantomNone();
     else if (Type == "PhantomCylinder")   ph = new PhantomCylinder();
     else if (Type == "PhantomBox")        ph = new PhantomBox();
+    else if (Type == "PhantomSphere")     ph = new PhantomSphere();
     else if (Type == "PhantomDerenzo")    ph = new PhantomDerenzo(100.0, 100.0, {}, 0, 0, 0);
     else if (Type == "PhantomParam")      ph = new PhantomParam();
     else if (Type == "PhantomDICOM")      ph = new PhantomDICOM("", "", 0,0, 1, 100.0, {0,0,50.0}, {0,0,0});
@@ -685,4 +686,100 @@ G4LogicalVolume *PhantomBeamDerenzoAndr2inv::definePhantom(G4LogicalVolume *logi
     placeArray(l3i5, 7.0,  7.0, -6.5, lCyl, "Ph_3i5");
 
     return lCyl;
+}
+
+G4LogicalVolume *PhantomBeamDerenzoAndr3inv::definePhantom(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4NistManager * man = G4NistManager::Instance();
+
+    G4Material * matAir  = man->FindOrBuildMaterial("G4_AIR");
+    G4Material * matPMMA  = man->FindOrBuildMaterial("G4_PLEXIGLASS");
+
+    double length = 40.0*mm;
+    double cylDiameter = 12.0 * mm;
+    double cylLength   = 50.0 * mm;
+
+    G4VSolid          * sCyl = new G4Tubs("sCyl", 0, 0.5*cylDiameter, 0.5*cylLength, 0, 360.0*deg);
+    G4LogicalVolume   * lCyl = new G4LogicalVolume(sCyl, matPMMA, "lCyl");
+    lCyl->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, lCyl, "lCyl", logicWorld, false, 0);
+
+    //G4VSolid          * s2 = new G4Tubs("Phantom_s2", 0, 0.5*2.0*mm, 0.5*length, 0, 360.0*deg);
+    //G4LogicalVolume   * l2 = new G4LogicalVolume(s2, matAir, "Phantom_l2");
+    //l2->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4VSolid          * s2i5 = new G4Tubs("Phantom_s2i5", 0, 0.5*2.5*mm, 0.5*length, 0, 360.0*deg);
+    G4LogicalVolume   * l2i5 = new G4LogicalVolume(s2i5, matAir, "Phantom_l2i5");
+    l2i5->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    placeArray(l2i5, 5.0, 0,  0, lCyl, "Ph_2i5");
+
+    return lCyl;
+}
+
+// ---
+
+PhantomSphere::PhantomSphere(double radiusOuter, double radiusInner, std::array<double, 3> position, std::string g4_material_name) :
+    RadiusOuter(radiusOuter), RadiusInner(radiusInner), Position(position), MatBuilder(new MaterialBuilder(g4_material_name)) {}
+
+PhantomSphere::PhantomSphere(double radiusOuter, double radiusInner, std::array<double, 3> position, EMaterial material) :
+    RadiusOuter(radiusOuter), RadiusInner(radiusInner), Position(position), MatBuilder(new MaterialBuilder(material)) {}
+
+PhantomSphere::PhantomSphere() : MatBuilder(new MaterialBuilder(EMaterial::Undefined)) {}
+
+#include "G4Sphere.hh"
+G4LogicalVolume * PhantomSphere::definePhantom(G4LogicalVolume * logicWorld)
+{
+    /*
+    G4Material * mat = MatBuilder->build();
+    G4VSolid          * solid = new G4Sphere("sSphere", RadiusInner, RadiusOuter,  0, 360*deg, 0, 180*deg);
+    G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "lSphere");
+    new G4PVPlacement(nullptr, {Position[0], Position[1], Position[2]}, logic, "phSphere", logicWorld, false, 0);
+    logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+    return logic;
+    */
+
+    // Need to create a thin sphere of world mat around this phantom:
+    // the physical model for generating activity is triggered only inside the phantom region.
+    // therefore, the last transportation step from the phantom to world is not triggered,
+    // and information is lost (both sphere-->inner and sphere-->world)
+    SessionManager & SM = SessionManager::getInstance();
+    G4VSolid          * solidCapsule = new G4Sphere("sCapsule", 0, RadiusOuter+0.01*mm,  0, 360*deg, 0, 180*deg);
+    G4LogicalVolume   * logicCapsule = new G4LogicalVolume(solidCapsule, SM.WorldMat, "lCapsule");
+    new G4PVPlacement(nullptr, {Position[0], Position[1], Position[2]}, logicCapsule, "phCapsule", logicWorld, false, 0);
+    logicCapsule->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    G4Material * mat = MatBuilder->build();
+    G4VSolid          * solid = new G4Sphere("sSphere", RadiusInner, RadiusOuter,  0, 360*deg, 0, 180*deg);
+    G4LogicalVolume   * logic = new G4LogicalVolume(solid, mat, "lSphere");
+    new G4PVPlacement(nullptr, {0,0,0}, logic, "phSphere", logicCapsule, false, 0);
+    logic->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    return logicCapsule;
+}
+
+void PhantomSphere::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "RadiusOuter", RadiusOuter);
+    jstools::readDouble(json, "RadiusInner", RadiusInner);
+
+    json11::Json::array ar;
+    jstools::readArray(json, "Position", ar);
+    for (size_t i = 0; i < 3; i++) Position[i] = ar[i].number_value();
+
+    MatBuilder->readFromJson(json);
+}
+
+void PhantomSphere::doWriteToJson(json11::Json::object & json) const
+{
+    json["RadiusOuter"] = RadiusOuter;
+    json["RadiusInner"] = RadiusInner;
+
+    json11::Json::array ar;
+    for (size_t i = 0; i < 3; i++) ar.push_back(Position[i]);
+    json["Position"] = ar;
+
+    MatBuilder->writeToJson(json);
 }

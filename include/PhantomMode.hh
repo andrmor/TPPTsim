@@ -86,6 +86,31 @@ protected:
 
 // ---
 
+class PhantomSphere : public PhantomModeBase
+{
+public:
+    PhantomSphere(double radiusOuter, double radiusInner, std::array<double,3> position, std::string g4_material_name);
+    PhantomSphere(double radiusOuter, double radiusInner, std::array<double,3> position, EMaterial material);
+    PhantomSphere();
+
+    std::string getTypeName() const override {return "PhantomSphere";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    void doWriteToJson(json11::Json::object & json) const override;
+
+    double RadiusOuter = 10.0;
+    double RadiusInner = 9.0;
+
+    std::array<double,3> Position = {0,0,0};
+
+    MaterialBuilder * MatBuilder = nullptr;
+};
+
+// ---
+
 class PhantomDerenzo : public PhantomModeBase
 {
 public:
@@ -196,6 +221,13 @@ class PhantomBeamDerenzoAndr2inv : public PhantomBeamDerenzoAndr2
 {
 public:
     std::string getTypeName() const override {return "PhantomBeamDerenzoAndr2inv";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+};
+
+class PhantomBeamDerenzoAndr3inv : public PhantomBeamDerenzoAndr2
+{
+public:
+    std::string getTypeName() const override {return "PhantomBeamDerenzoAndr3inv";}
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 

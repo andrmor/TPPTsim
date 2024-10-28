@@ -4,6 +4,7 @@
 #include "SensitiveDetectorFSM.hh"
 #include "SessionManager.hh"
 #include "SimMode.hh"
+#include "BeamCollimatorMode.hh"
 #include "PhantomMode.hh"
 #include "out.hh"
 
@@ -50,22 +51,31 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     SM.PhantomLogical = SM.Phantom->definePhantom(logicWorld); // can be nullptr
     SM.createPhantomRegion();
 
+    if (SM.BeamCollimator)
+        SM.BeamCollimator->defineBeamCollimator(logicWorld);
+
+    // scintillator arrangements
     if (SM.detectorContains(DetComp::Scintillators))     addScintillators();
     if (SM.detectorContains(DetComp::MiniPET))           addScintillatorsMiniPET();
+    if (SM.detectorContains(DetComp::MicroPET))          addScintillatorsMicroPET();
     if (SM.detectorContains(DetComp::DoiPET))            addScintillatorsDoiPET();
-    if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
+    if (SM.detectorContains(DetComp::FlatPanelPET))      addScintillatorsFlatPanelPET();
+    // scanner components
     if (SM.detectorContains(DetComp::Base))              addBase();
     if (SM.detectorContains(DetComp::ClosedStructure))   addClosedStructure();
     if (SM.detectorContains(DetComp::SIPM))              addSIPM();
     if (SM.detectorContains(DetComp::PCB))               addPCB();
     if (SM.detectorContains(DetComp::CopperStructure))   addCopperStructure();
     if (SM.detectorContains(DetComp::CoolingAssemblies)) addCoolingAssemblies();
+    // particle loggers
+    if (SM.detectorContains(DetComp::ParticleLogger))    addParticleLogger();
+    if (SM.detectorContains(DetComp::PLoggerMicroPET))   addParticleLoggerMicroPET();
+    // obsolete
     if (SM.detectorContains(DetComp::Nozzle))
     {
         Nozzle nozzlemaker;
         nozzlemaker.constructNozzle(logicWorld);
     }
-    if (SM.detectorContains(DetComp::CollimatorMarek))   addCollimatorMarek();
 
     /*
     G4GDMLParser parser;
@@ -170,6 +180,8 @@ void DetectorConstruction::defineMaterials()
     CopperStructMat = matCopper;
     CopperPipeMat   = matCopper;
     WaterPipeMat    = matWater;
+
+    SM.WorldMat = WorldMat; // used by beam collimator constructor
 }
 
 void DetectorConstruction::addGDML()
@@ -204,6 +216,24 @@ void DetectorConstruction::addParticleLogger()
     double OuterRadius = 0.5 * SM.InnerDiam - 7.0*mm;
     double InnerRadius = OuterRadius - 1.0*mm;
     double Height      = 5.0 * SM.EncapsSizeX; // Margarida, please calculate the minimum size
+
+    G4VSolid          * solidPL = new G4Tubs("ParticleLogger_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
+    G4LogicalVolume   * logicPL = new G4LogicalVolume(solidPL, WorldMat, "ParticleLogger");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPL, "ParticleLogger_PV", logicWorld, false, 0);
+    logicPL->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 1.0)));
+
+    G4VSensitiveDetector * pSD_FSM = new SensitiveDetectorFSM("SD_FSM");
+    G4SDManager::GetSDMpointer()->AddNewDetector(pSD_FSM);
+    logicPL->SetSensitiveDetector(pSD_FSM);
+}
+
+void DetectorConstruction::addParticleLoggerMicroPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double OuterRadius = 0.5 * SM.InnerDiam - 30*mm;
+    double InnerRadius = OuterRadius - 1.0*mm;
+    double Height      = 2 * SM.EncapsSizeX + SM.RowGap + 5.0*mm;
 
     G4VSolid          * solidPL = new G4Tubs("ParticleLogger_Cyl", InnerRadius, OuterRadius, 0.5 * Height, 0, 360.0*deg);
     G4LogicalVolume   * logicPL = new G4LogicalVolume(solidPL, WorldMat, "ParticleLogger");
@@ -291,6 +321,8 @@ void DetectorConstruction::addScintillators()
     }
     */
 
+    SM.TotalNumberOfScintillators = iScint;
+
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
     if (pSD_Scint)
@@ -307,7 +339,7 @@ void DetectorConstruction::addScintillatorsDoiPET()
     SessionManager & SM = SessionManager::getInstance();
     SM.ScintSizeZ  = 3.0*mm;
     SM.EncapsSizeZ = SM.ScintSizeZ;
-    SM.NumScintMultiplicator = 5;
+    int NumScintMultiplicator = 5;
 
     solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
     logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint"); //SiPM are interfaced at the local negative Z
@@ -324,7 +356,7 @@ void DetectorConstruction::addScintillatorsDoiPET()
     int iAssembly = 0;
     int iScint    = 0;
 
-    for (int iR = 0; iR < SM.NumScintMultiplicator; iR++)
+    for (int iR = 0; iR < NumScintMultiplicator; iR++)
     {
         for (int iA = 0; iA < SM.NumSegments; iA++)
         {
@@ -346,6 +378,8 @@ void DetectorConstruction::addScintillatorsDoiPET()
         Radius += SM.ScintSizeZ;
     }
 
+    SM.TotalNumberOfScintillators = iScint;
+
     // Sensitive Detector
     G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
     if (pSD_Scint)
@@ -353,6 +387,77 @@ void DetectorConstruction::addScintillatorsDoiPET()
         G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
         logicScint->SetSensitiveDetector(pSD_Scint);
     }
+
+    SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
+}
+
+void DetectorConstruction::addScintillatorsFlatPanelPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double ScintTotalLength = 30*mm;
+    size_t NumDOIregions = 10;
+    size_t NumHeads = 2;
+    size_t NumAssembliesPerRow = 10;
+    double HeadDistance = 285.28*mm; // between most inner scintillator surfaces
+
+    double HeadAngularStep = 360*deg / NumHeads;
+    double AssemblyStep = 0;
+    if (NumAssembliesPerRow > 1) AssemblyStep = (263.4*mm - SM.EncapsSizeX) / (NumAssembliesPerRow - 1);
+    SM.ScintSizeZ  = ScintTotalLength / NumDOIregions;
+    SM.EncapsSizeZ = SM.ScintSizeZ;  // no teflon before/after scints
+
+    solidScint = new G4Box("Scint", 0.5 * SM.ScintSizeX, 0.5 * SM.ScintSizeY, 0.5 * SM.ScintSizeZ);
+    logicScint = new G4LogicalVolume(solidScint, SM.ScintMat, "Scint");
+    logicScint->SetVisAttributes(G4VisAttributes({0, 0, 1}));
+    SM.createScintillatorRegion(logicScint);
+    solidEncaps = new G4Box("Encaps",  0.5 * SM.EncapsSizeX, 0.5 * SM.EncapsSizeY, 0.5 * SM.EncapsSizeZ);
+
+    SM.ScintRecords.clear();
+    int iAssembly = 0;
+    int iScint    = 0;
+
+    for (size_t iDoiLayer = 0; iDoiLayer < NumDOIregions; iDoiLayer++)
+    {
+        const double Offset = 0.5 * (HeadDistance + SM.EncapsSizeZ) + iDoiLayer * SM.EncapsSizeZ;
+
+        for (size_t iHead = 0; iHead < NumHeads; iHead++)
+        {
+            double Angle = HeadAngularStep * iHead;
+            G4RotationMatrix * rot  = new CLHEP::HepRotation(-Angle, 90.0*deg, 0);
+
+            for (size_t iZ = 0; iZ < NumAssembliesPerRow; iZ++)
+            {
+                const double Z = -0.5 * (NumAssembliesPerRow - 1) * AssemblyStep  +  iZ * AssemblyStep + SM.GlobalZ0;
+
+                for (size_t iX = 0; iX < NumAssembliesPerRow; iX++)
+                {
+                    const double localX = -0.5 * (NumAssembliesPerRow - 1) * AssemblyStep  +  iX * AssemblyStep;
+                    const double localY = -Offset;
+
+                    double cosA = cos(Angle);
+                    double sinA = sin(Angle);
+
+                    double X = cosA * localX - sinA * localY;
+                    double Y = sinA * localX + cosA * localY;
+
+                    positionAssembly(rot,  G4ThreeVector(X, Y, Z), Angle, iScint, iAssembly++, iHead);
+                }
+            }
+        }
+    }
+
+    SM.TotalNumberOfScintillators = iScint;
+
+    // Sensitive Detector
+    G4VSensitiveDetector * pSD_Scint = SM.SimMode->getScintDetector();
+    if (pSD_Scint)
+    {
+        G4SDManager::GetSDMpointer()->AddNewDetector(pSD_Scint);
+        logicScint->SetSensitiveDetector(pSD_Scint);
+    }
+
+    out("Num scints:", iScint, "Scint records size:", SM.ScintRecords.size());
 
     SM.saveScintillatorTable(SM.WorkingDirectory + '/' + "LUT.txt");
 }
@@ -365,6 +470,83 @@ void DetectorConstruction::addScintillatorsMiniPET()
     SM.Angle0      = (90.0 - 0.5*9.0) * deg;
 
     addScintillators();
+}
+
+void DetectorConstruction::addScintillatorsMicroPET()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.NumSegments = 1;
+    SM.NumRows     = 2;
+    SM.Angle0      = 90 * deg;//(90.0 - 0.5*9.0) * deg;
+
+    addScintillators();
+
+    if (SM.detectorContains(DetComp::TungstenCubes) || SM.detectorContains(DetComp::TungstenCubes2))
+    {
+        double size     = 25.4 * mm;
+        double diameter = 1 * mm;
+
+        G4NistManager   * man  = G4NistManager::Instance();
+        G4Material      * matW = man->FindOrBuildMaterial("G4_W");
+
+        G4Box           * sWBox = new G4Box("sWBox", 0.5 * size, 0.5 * size, 0.5 * size);
+        G4LogicalVolume * lWBox = new G4LogicalVolume(sWBox, matW, "lWBox");
+        lWBox->SetVisAttributes(G4VisAttributes({1, 0, 1}));
+
+        G4Tubs          * sHole = new G4Tubs("sHole", 0, 0.5 * diameter, 0.5 * size, 0, 360*deg);
+        G4LogicalVolume * lHole = new G4LogicalVolume(sHole, WorldMat, "sHole");
+        lHole->SetVisAttributes(G4VisAttributes({1, 1, 1}));
+
+        // hole positions are taken directly from the Marek's drawing
+        std::array<double, 4> pos1;
+        pos1[0] = 0.5 * size -  1.5*mm;
+        pos1[1] = 0.5 * size -  7.9*mm;
+        pos1[2] = 0.5 * size - 14.3*mm;
+        pos1[3] = 0.5 * size - 20.7*mm;
+
+        std::array<double, 4> pos2;
+        pos2[0] = 0.5 * size -  4.7*mm;
+        pos2[1] = 0.5 * size - 11.1*mm;
+        pos2[2] = 0.5 * size - 17.5*mm;
+        pos2[3] = 0.5 * size - 23.9*mm;
+
+        size_t iHole = 0;
+        for (size_t ix = 0; ix < 4; ix++)
+        {
+            double x = pos1[ix];
+
+            for (size_t iy = 0; iy < 4; iy++)
+            {
+                double y;
+                if (ix == 0 || ix == 2) y = pos1[iy];
+                else                    y = pos2[iy];
+
+                new G4PVPlacement(nullptr, {x,y,0}, lHole, "pHole", lWBox, true, iHole++);
+            }
+        }
+
+        double X = 0.5 * SM.InnerDiam - 0.5*size - 1*mm;
+        G4RotationMatrix * rot  = new CLHEP::HepRotation(90*deg,             90.0*deg, 0);
+        G4RotationMatrix * rot1 = new CLHEP::HepRotation(90*deg + 180.0*deg, 90.0*deg, 0);
+
+        double offset = 0.5 * SM.RowGap + 0.5 * size;
+        new G4PVPlacement(rot,  {X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 0);
+        new G4PVPlacement(rot,  {X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 1);
+
+        new G4PVPlacement(rot1, {-X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 2);
+        new G4PVPlacement(rot1, {-X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 3);
+
+        if (SM.detectorContains(DetComp::TungstenCubes2))
+        {
+            X -= size;
+
+            new G4PVPlacement(rot,  {X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 4);
+            new G4PVPlacement(rot,  {X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 5);
+
+            new G4PVPlacement(rot1, {-X, 0, -offset}, lWBox, "pWBox", logicWorld, true, 6);
+            new G4PVPlacement(rot1, {-X, 0, +offset}, lWBox, "pWBox", logicWorld, true, 7);
+        }
+    }
 }
 
 G4LogicalVolume * DetectorConstruction::createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber, int iAssembly)
@@ -764,99 +946,4 @@ void DetectorConstruction::addCoolingAssemblies()
     logicWaterPipe->SetVisAttributes(G4VisAttributes(G4Colour(0.0, 1.0, 1.0)));
 
     new G4PVPlacement(0, {0, 0, 0}, logicWaterPipe, "WaterPipe_PV", logicCopperPipeHolder, false, 0);
-}
-
-void DetectorConstruction::addCollimatorMarek()
-{
-    SessionManager & SM = SessionManager::getInstance();
-
-    double cylLength    = 30.0*mm;
-    double cylDiameter  = 30.0*mm;
-    double ringLength   = 10.0*mm;
-    double ringDiameter = 45.0*mm;
-
-    std::array<double,3> offset = {0,0,-75.0*mm}; // distance in beam direction from the isocenter to the exit surface of the collimator
-
-    G4NistManager * man = G4NistManager::Instance();
-    G4Material * matBrass = man->FindOrBuildMaterial("G4_BRASS");
-
-    G4Tubs          * sCyl = new G4Tubs("sCyl", 0, 0.5*cylDiameter,0.5*cylLength, 0, 360.0*deg);
-    G4LogicalVolume * lCyl = new G4LogicalVolume(sCyl, matBrass, "lCyl");
-    lCyl->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
-
-    G4Tubs          * sRing = new G4Tubs("sRing", 0.5*cylDiameter, 0.5*ringDiameter, 0.5*ringLength, 0, 360.0*deg);
-    G4LogicalVolume * lRing = new G4LogicalVolume(sRing, matBrass, "lRing");
-    lRing->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
-
-    switch (SM.CollimatorMarekOption)
-    {
-    case SessionManager::OneHole :
-    {
-        G4Tubs          * sChan = new G4Tubs("sChan", 0, 0.5*3.0*mm, 0.5*cylLength, 0, 360.0*deg);
-        G4LogicalVolume * lChan = new G4LogicalVolume(sChan, WorldMat, "lChan");
-        lChan->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-        new G4PVPlacement(nullptr, {0,0,0}, lChan,  "pChan",  lCyl, false, 0);
-        break;
-    }
-    case SessionManager::ThreeHoles :
-    {
-        G4Tubs          * sChan3 = new G4Tubs("sChan3", 0, 0.5*3.0*mm, 0.5*cylLength, 0, 360.0*deg);
-        G4LogicalVolume * lChan3 = new G4LogicalVolume(sChan3, WorldMat, "lChan3");
-        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-        new G4PVPlacement(nullptr, {10.0*mm,0,0}, lChan3,  "pChan3",  lCyl, false, 0);
-
-        G4Tubs          * sChan6 = new G4Tubs("sChan6", 0, 0.5*6.0*mm, 0.5*cylLength, 0, 360.0*deg);
-        G4LogicalVolume * lChan6 = new G4LogicalVolume(sChan6, WorldMat, "lChan6");
-        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-        new G4PVPlacement(nullptr, {0,0,0}, lChan6, "pChan6",  lCyl, false, 0);
-
-        G4Tubs          * sChan9 = new G4Tubs("sChan9", 0, 0.5*9.0*mm, 0.5*cylLength, 0, 360.0*deg);
-        G4LogicalVolume * lChan9 = new G4LogicalVolume(sChan9, WorldMat, "lChan9");
-        lChan3->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-        new G4PVPlacement(nullptr, {-10.0*mm,0,0}, lChan9,  "pChan9",  lCyl, false, 0);
-
-        break;
-    }
-    case SessionManager::Cross :
-    {
-        double boxX = 10.0 - 0.5 * 3.0*mm;
-        double boxOffset = 0.5 * 3.0*mm + 0.5 * boxX;
-
-        G4Box           * sCenter = new G4Box("sCenter", 0.5*3.0*mm, 0.5*3.0*mm, 0.5*cylLength);
-        G4LogicalVolume * lCenter = new G4LogicalVolume(sCenter, WorldMat, "lCenter");
-        lCenter->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-
-        G4Tubs          * sDom = new G4Tubs("sDom", 0, 0.5*3.0*mm, 0.5*cylLength, -90.0*deg, 180.0*deg);
-        G4LogicalVolume * lDom = new G4LogicalVolume(sDom, WorldMat, "lDom");
-        lDom->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-
-        G4Box           * sBox = new G4Box("sBox", 0.5*boxX, 0.5*3.0*mm, 0.5*cylLength);
-        G4LogicalVolume * lBox = new G4LogicalVolume(sBox, WorldMat, "lBox");
-        lCenter->SetVisAttributes(G4VisAttributes({1.0, 1.0, 1.0}));
-
-        new G4PVPlacement(nullptr, {0,0,0}, lCenter, "pCenter", lCyl, false, 0);
-
-        new G4PVPlacement(nullptr, {boxOffset,0,0}, lBox,  "pBox",  lCyl, true, 0);
-        new G4PVPlacement(nullptr, {10.0*mm,0,0},    lDom,  "pDom",  lCyl, true, 0);
-
-        new G4PVPlacement(new CLHEP::HepRotation(90*deg, 0, 0), {0, boxOffset,0}, lBox, "pBox", lCyl, true, 1);
-        new G4PVPlacement(new CLHEP::HepRotation(90*deg, 0, 0), {0, 10.0*mm,0}, lDom,  "pDom",  lCyl, true, 1);
-
-        new G4PVPlacement(new CLHEP::HepRotation(180*deg, 0, 0), {-boxOffset,0,0}, lBox,  "pBox",  lCyl, true, 2);
-        new G4PVPlacement(new CLHEP::HepRotation(180*deg, 0, 0), {-10.0*mm,0,0}, lDom,  "pDom",  lCyl, true, 2);
-
-        new G4PVPlacement(new CLHEP::HepRotation(-90*deg, 0, 0), {0, -boxOffset,0}, lBox, "pBox", lCyl, true, 3);
-        new G4PVPlacement(new CLHEP::HepRotation(-90*deg, 0, 0), {0, -10.0*mm,0}, lDom,  "pDom",  lCyl, true, 3);
-
-        break;
-    }
-    default :;                    // no channels
-    case SessionManager::Blind :; // no channels
-    }
-
-    double zPosCyl = -0.5*cylLength + offset[2] + SM.GlobalZ0;
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {offset[0], offset[1], zPosCyl},  lCyl,  "pCyl",  logicWorld, false, 0);
-    double zPosRing = -0.5*ringLength + offset[2] + SM.GlobalZ0;
-    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {offset[0], offset[1], zPosRing}, lRing, "pRing", logicWorld, false, 0);
-
 }

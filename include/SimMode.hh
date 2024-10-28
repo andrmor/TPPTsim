@@ -41,6 +41,7 @@ public:
     virtual G4VSensitiveDetector * getScintDetector()  {return nullptr;}
 
     virtual void onEventStarted() {}
+    virtual void onEventEnded() {}
 
     virtual std::string getTypeName() const = 0;
     void writeToJson(json11::Json::object & json) const;
@@ -334,7 +335,7 @@ public:
 
     void saveParticle(const G4String & particle, double energy_keV, double * PosDir, double time);
 
-    void run() override;
+    void run() override; // record: particle energy x y z dx dy dz time // units: keV mm and ns
     void onEventStarted() override;
     std::string getTypeName() const override {return "ModeParticleLogger";}
     void readFromJson(const json11::Json & json) override;
@@ -520,6 +521,35 @@ public:
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;
+
+};
+
+// ---
+
+class ModeScintDepoLogger : public SimModeBase
+{
+public:
+    ModeScintDepoLogger(int numEvents, double maxTime, const std::string & fileName);
+
+    void run() override;
+
+    std::string getTypeName() const override {return "ModeScintDepoLogger";}
+    //void readFromJson(const json11::Json & json) override;
+
+    void onEventStarted() override;
+    void onEventEnded() override;
+
+    G4UserSteppingAction * getSteppingAction() override;
+
+    void addDepo(int iScint, double depo, double time);
+
+protected:
+    //void doWriteToJson(json11::Json::object & json) const override;
+
+    int NumEvents = 0;
+    double MaxTime = 0.1e9;
+    std::vector<double> Depo;
+    bool NoDepoThisEvent = true;
 
 };
 

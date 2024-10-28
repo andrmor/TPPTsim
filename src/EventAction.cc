@@ -15,3 +15,9 @@ void EventAction::BeginOfEventAction(const G4Event * event)
 
     SM.SimMode->onEventStarted();
 }
+
+void EventAction::EndOfEventAction(const G4Event *)
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.SimMode->onEventEnded();
+}

@@ -1597,3 +1597,57 @@ void ModeDummy::doWriteToJson(json11::Json::object &json) const
 {
     json["NumEvents"] = NumEvents;
 }
+
+// ---------
+
+ModeScintDepoLogger::ModeScintDepoLogger(int numEvents, double maxTime, const std::string & fileName) :
+    NumEvents(numEvents), MaxTime(maxTime)
+{
+    bNeedOutput = true;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName   = fileName;
+    SM.bBinOutput = false;
+}
+
+void ModeScintDepoLogger::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+
+    SM.outStream->flush();
+}
+
+void ModeScintDepoLogger::onEventStarted()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    int numScint = SM.countScintillators();
+    Depo = std::vector<double>(numScint, 0);
+    NoDepoThisEvent = true;
+}
+
+void ModeScintDepoLogger::onEventEnded()
+{
+    if (NoDepoThisEvent) return;
+
+    SessionManager & SM = SessionManager::getInstance();
+    *SM.outStream << '#' << '\n';
+    for (size_t i = 0; i < Depo.size(); i++)
+    {
+        if (Depo[i] == 0) continue;
+        *SM.outStream << i << ' ' << Depo[i]/MeV << '\n';
+    }
+}
+
+G4UserSteppingAction *ModeScintDepoLogger::getSteppingAction()
+{
+    return new SteppingAction_ScintDepoLogger();
+}
+
+void ModeScintDepoLogger::addDepo(int iScint, double depo, double time)
+{
+    if (time > MaxTime) return;
+
+    Depo[iScint] += depo;
+    NoDepoThisEvent = false;
+}

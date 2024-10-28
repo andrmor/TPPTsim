@@ -18,16 +18,18 @@ private:
     void defineMaterials();
     void addGDML();
     void addParticleLogger();
+    void addParticleLoggerMicroPET();
     void addScintillators();
     void addScintillatorsMiniPET();
+    void addScintillatorsMicroPET();
     void addScintillatorsDoiPET();
+    void addScintillatorsFlatPanelPET();
     void addBase();
     void addClosedStructure();
     void addSIPM();
     void addPCB();
     void addCopperStructure();
     void addCoolingAssemblies();
-    void addCollimatorMarek();
 
     G4LogicalVolume * createAssembly(int & iScint, G4RotationMatrix * AssemblyRot, G4ThreeVector AssemblyPos, double Angle, int headNumber, int iAssembly);
     void positionAssembly(G4RotationMatrix * rot, G4ThreeVector pos, double angle, int & iScint, int iAssembly, int headNumber);
