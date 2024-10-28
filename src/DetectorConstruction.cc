@@ -425,14 +425,14 @@ void DetectorConstruction::addBase()
     G4RotationMatrix * rot1 = new CLHEP::HepRotation(-90.0*deg, 0, 0);
 
     new G4PVPlacement(rot, {0, 0, -0.5 * (SM.SystHeight+SM.BaseHeight) - SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, -0.5 * (SM.SystHeight+SM.BaseHeight) - SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot, {0, 0, 0.5 * (SM.SystHeight+SM.BaseHeight) + SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, 0.5 * (SM.SystHeight+SM.BaseHeight) + SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot1, {0, 0, -0.5 * (SM.SystHeight+SM.BaseHeight) - SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 1);
+    new G4PVPlacement(rot, {0, 0, 0.5 * (SM.SystHeight+SM.BaseHeight) + SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 2);
+    new G4PVPlacement(rot1, {0, 0, 0.5 * (SM.SystHeight+SM.BaseHeight) + SM.BPlateHeight}, logicBase, "Base_PV", logicWorld, false, 3);
 
     new G4PVPlacement(rot, {0, 0, -0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, -0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot, {0, 0, 0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, 0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot1, {0, 0, -0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 1);
+    new G4PVPlacement(rot, {0, 0, 0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 2);
+    new G4PVPlacement(rot1, {0, 0, 0.5 * (SM.SystHeight + SM.BPlateHeight)}, logicBasePlate, "BasePlate_PV", logicWorld, false, 3);
 }
 
 void DetectorConstruction::addClosedStructure()
@@ -537,20 +537,20 @@ void DetectorConstruction::addPCB()
             double Z = -0.5 * (SM.PCB1PCB3NumRows - 1) * RowPitch  +  iZ * RowPitch + SM.GlobalZ0;
 
             new G4PVPlacement(rot, G4ThreeVector( X1,  Y1, Z), logicPCB1, "PCB1_PV", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicPCB1, "PCB1_PV", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X1, -Y1, Z), logicPCB1, "PCB1_PV", logicWorld, false, 1);
 
             new G4PVPlacement(rot, G4ThreeVector( X3,  Y3, Z), logicPCB3, "PCB3_PV", logicWorld, false, 0);
-            new G4PVPlacement(rot1, G4ThreeVector(-X3, -Y3, Z), logicPCB3, "PCB3_PV", logicWorld, false, 0);
+            new G4PVPlacement(rot1, G4ThreeVector(-X3, -Y3, Z), logicPCB3, "PCB3_PV", logicWorld, false, 1);
         }
 
         new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z1), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z1), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z2), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z2), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z3), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z3), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z4), logicPCB2, "PCB2_PV", logicWorld, false, 0);
-        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z4), logicPCB2, "PCB2_PV", logicWorld, false, 0);
+        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z1), logicPCB2, "PCB2_PV", logicWorld, false, 1);
+        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z2), logicPCB2, "PCB2_PV", logicWorld, false, 2);
+        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z2), logicPCB2, "PCB2_PV", logicWorld, false, 3);
+        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z3), logicPCB2, "PCB2_PV", logicWorld, false, 4);
+        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z3), logicPCB2, "PCB2_PV", logicWorld, false, 5);
+        new G4PVPlacement(rot, G4ThreeVector( X2,  Y2, SM.PCB2Z4), logicPCB2, "PCB2_PV", logicWorld, false, 6);
+        new G4PVPlacement(rot1, G4ThreeVector(-X2, -Y2, SM.PCB2Z4), logicPCB2, "PCB2_PV", logicWorld, false, 7);
     }
 }
 
@@ -750,13 +750,13 @@ void DetectorConstruction::addCoolingAssemblies()
     G4RotationMatrix * rot1 = new CLHEP::HepRotation(-90.0*deg, 0, 0);
 
     new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ1}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ2}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ3}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ4}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ1}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ2}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ3}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
-    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ4}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 0);
+    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ2}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 1);
+    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ3}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 2);
+    new G4PVPlacement(rot, {0, 0, SM.CopperBoxZ4}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 3);
+    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ1}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 4);
+    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ2}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 5);
+    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ3}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 6);
+    new G4PVPlacement(rot1, {0, 0, SM.CopperBoxZ4}, logicCopperPipeHolder, "CopperPipeHolder_PV", logicWorld, false, 7);
 
     //Water that crosses the copper holder:
     G4Tubs * solidWaterPipe   = new G4Tubs("WaterPipe", SM.WaterRmin, SM.WaterRmax, 0.5 * SM.WaterHeight, SM.Angle0 - 9.5 * deg, SM.CoolingSegment);

@@ -54,8 +54,8 @@ int main(int argc, char** argv)
         SM.WorkingDirectory  = "/media/andr/HDD/work";
 
         // Phantom
-        //SM.Phantom = new PhantomNone;
-        SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomNone;
+        //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
 //        SM.Phantom = new PhantomCylinder(25.4, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_POLYETHYLENE");
         //SM.Phantom = new PhantomMarekCompartments();
@@ -66,6 +66,8 @@ int main(int argc, char** argv)
         // Detector components
         SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add(DetComp::DetComp::SIPM);
+        //SM.DetectorComposition.add(DetComp::PCB);
+        //SM.DetectorComposition.add(DetComp::CoolingAssemblies);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger

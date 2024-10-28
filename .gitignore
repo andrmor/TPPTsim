@@ -27,3 +27,11 @@ build/Desktop_Qt_6_7_2-Debug/
 build/Desktop_Qt_5_15_2_GCC_64bit-Release/
 
 build/Desktop_Qt_5_15_2_GCC_64bit-Debug/
+
+build/Desktop_Qt_6_7_2-Release/.ninja_deps
+
+build/Desktop_Qt_6_7_2-Release/.ninja_log
+
+*.conan
+
+build/Desktop_Qt_6_7_2-Release/
