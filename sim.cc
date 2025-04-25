@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/tmp2/Scanner4heads3mm";
         //SM.WorkingDirectory  = "/media/andr/HDD/work";
         //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/johnTest/tpptsim_tmp";
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/Sphere";
+        SM.WorkingDirectory  = "/home/andr/tmp/sim";
 
         // Beam collimator (optional)
         //SM.BeamCollimator = new BeamCollimatorMarek(BeamCollimatorMarek::Holes369, {0,0,-75*mm}, 90*deg);

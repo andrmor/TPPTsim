@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 class PhantomModeBase;
 class G4LogicalVolume;
