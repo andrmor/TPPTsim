@@ -106,3 +106,71 @@ G4ParticleDefinition *Proton::getParticleDefinition() const
     G4ParticleTable * ptab = G4ParticleTable::GetParticleTable();
     return ptab->FindParticle("proton");
 }
+
+// ---
+
+#include "G4ParticleGun.hh"
+#include "TimeGenerator.hh"
+#include "SourceMode.hh"
+#include "G4Gamma.hh"
+#include "Randomize.hh"
+#include "G4HadDecayGenerator.hh"
+#include "G4Positron.hh"
+#include "G4NeutrinoE.hh"
+Na22_decay::Na22_decay() :
+    Isotope(11,22)
+{
+    StandardPrimaryGeneration = false;
+}
+
+void Na22_decay::customInit()
+{
+    if (!Generator)
+    {
+        Generator = new G4HadDecayGenerator();
+        G4IonTable * ionTable = G4IonTable::GetIonTable();
+        Sodium_ion = ionTable->GetIon(11, 22);
+        G4ParticleDefinition * neon_ion = ionTable->GetIon(10, 22, 1274.537*keV);
+
+        Na22Mass = Sodium_ion->GetPDGMass();
+
+        Masses.push_back( G4Positron::Definition()->GetPDGMass() );
+        Masses.push_back( G4NeutrinoE::Definition()->GetPDGMass() );
+        Masses.push_back( neon_ion->GetPDGMass() );
+
+        //Generator->SetVerboseLevel(3);
+    }
+}
+
+//#include <QDebug>
+void Na22_decay::generatePrimaries(G4ParticleGun *particleGun, TimeGeneratorBase *timeGenerator, G4Event *anEvent)
+{
+    particleGun->SetParticleTime(timeGenerator->generateTime());
+
+    particleGun->SetParticleDefinition( G4Gamma::Definition() );
+    particleGun->SetParticleMomentumDirection(SourceModeBase::generateDirectionIsotropic());
+    particleGun->SetParticleEnergy(1274.537*keV);
+    particleGun->GeneratePrimaryVertex(anEvent);
+
+    if (G4UniformRand() < 0.096) return; // no beta+
+
+    //qDebug() << "Beta+ decay:";
+
+    //bool ok = Generator->Generate(Na22Mass, Masses, FinalState);
+    bool ok = Generator->Generate(Sodium_ion, Masses, FinalState);
+    //qDebug() << ok;
+    if (!ok)
+    {
+        out("Decay generation failed!");
+        exit(1234);
+    }
+
+    //for (size_t i = 0; i < FinalState.size(); i++)
+    //    qDebug() << (FinalState[i].e()-Masses[i])/keV << "mom:" << FinalState[i].px() << FinalState[i].py() << FinalState[i].pz();
+
+    particleGun->SetParticleDefinition( G4Positron::Definition() );
+    particleGun->SetParticleMomentumDirection(SourceModeBase::generateDirectionIsotropic());
+    particleGun->SetParticleEnergy( FinalState[0].e() - Masses[0] );
+    particleGun->GeneratePrimaryVertex(anEvent);
+
+}

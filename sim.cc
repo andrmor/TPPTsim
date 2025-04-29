@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomSphere(5.0*mm, 4.0*mm, {0,0,0}, "G4_PLEXIGLASS");
 
         // Detector components
-        SM.DetectorComposition.add(DetComp::Scintillators);
+        //SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
@@ -87,9 +87,10 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::PLoggerMicroPET);
 
         // Source
+        SM.SourceMode = new SourcePoint(new Na22_decay(), new ConstantTime(0), {0*mm, 0*mm, 0*mm});
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
-        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 10*s), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
+        //SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 10*s), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");
         //SM.SourceMode = new SourceCylinder(new Positronium(1.0, true, "gammas.txt"), new UniformTime(0, 0.1*s),  10.0, {0,0,-50.0}, {0,0,50.0}, "positions.txt");

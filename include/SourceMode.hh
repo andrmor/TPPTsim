@@ -56,8 +56,9 @@ protected:
 
     bool bGeneratePair  = false;    // for second gamma
 
+public:
+    static G4ThreeVector generateDirectionIsotropic();
 protected:
-    G4ThreeVector generateDirectionIsotropic();
     void generateSecondGamma(G4Event * anEvent);
 };
 

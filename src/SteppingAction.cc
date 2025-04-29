@@ -107,16 +107,17 @@ void SteppingAction_Tracing::UserSteppingAction(const G4Step *step)
     if (bStart)
     {
         physVol = preP->GetPhysicalVolume();
+        std::string pname = step->GetTrack()->GetParticleDefinition()->GetParticleName();
         if (physVol)
         {
             physVolName = preP->GetPhysicalVolume()->GetName();
             logVolName  = preP->GetPhysicalVolume()->GetLogicalVolume()->GetName();
             copyNum = preP->GetPhysicalVolume()->GetCopyNo();
             matName = preP->GetMaterial()->GetName();
-            out("Created at (", prePos[0], ",",prePos[1],",", prePos[2],")", physVolName, "/", logVolName, "(",copyNum, ")", matName);
+            out(pname + " created at (", prePos[0], ",",prePos[1],",", prePos[2],")", physVolName, "/", logVolName, "(",copyNum, ")", matName, "  ", preP->GetGlobalTime()/ps, "ps");
         }
         else
-            out("Created at (", prePos[0], ",",prePos[1],",", prePos[2],") - seems to be outside the World!" );
+            out(pname + " created at (", prePos[0], ",",prePos[1],",", prePos[2],") - seems to be outside the World!" );
     }
 
     const G4VProcess  * proc = postP->GetProcessDefinedStep();

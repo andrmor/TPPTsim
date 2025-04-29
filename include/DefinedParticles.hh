@@ -142,4 +142,25 @@ public:
     std::string getTypeName() const override {return "Proton";}
 };
 
+// ---
+class G4HadDecayGenerator;
+#include "G4LorentzVector.hh"
+class Na22_decay : public Isotope
+{
+public:
+    Na22_decay();
+
+    std::string getTypeName() const override {return "Na22_decay";}
+
+    void customInit() override;
+    void generatePrimaries(G4ParticleGun * particleGun, TimeGeneratorBase * timeGenerator, G4Event * anEvent) override;
+
+protected:
+    G4HadDecayGenerator * Generator = nullptr;
+    double Na22Mass = 0;
+    G4ParticleDefinition * Sodium_ion = nullptr;
+    std::vector<double> Masses;
+    std::vector<G4LorentzVector> FinalState;
+};
+
 #endif // definedparticles_h
