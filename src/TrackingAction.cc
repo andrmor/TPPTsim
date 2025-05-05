@@ -29,3 +29,15 @@ void AnnihilationLoggerTrackingAction::PostUserTrackingAction(const G4Track * tr
     ModeAnnihilationLogger * mode = static_cast<ModeAnnihilationLogger*>(SM.SimMode);
     mode->fillPosition(track->GetPosition());
 }
+
+void SourceTester_TrackingAction::PreUserTrackingAction(const G4Track *track)
+{
+    if (track->GetParentID() == 0)
+    {
+        SessionManager & SM = SessionManager::getInstance();
+        SourceTester * Mode = static_cast<SourceTester*>(SM.SimMode);
+
+        Mode->registerParticle(track->GetParticleDefinition()->GetParticleName(), track->GetGlobalTime());
+    }
+    const_cast<G4Track*>(track)->SetTrackStatus(fStopAndKill);
+}

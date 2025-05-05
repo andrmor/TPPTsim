@@ -29,6 +29,9 @@ public:
     void setTimeGenerator(TimeGeneratorBase * generator);
     G4ThreeVector Position = {0,0,0};
 
+    void setParaLifetime(double halftime) {ParaLifetime = halftime;}
+    void setOrtoLifetime(double halftime) {OrthoLifetime = halftime;}
+
     void setNa22Origin();
 
 protected:
@@ -44,8 +47,8 @@ protected:
 
     std::string GammaOutputFileName;
 
-    const G4double ParaLifetime  = 0.1244*ns;
-    const G4double OrthoLifetime = 138.6*ns;
+    G4double ParaLifetime  = 0.1244*ns;
+    G4double OrthoLifetime = 138.6*ns;
 
     PositroniumDecayChannel * OrthoDecayChannel = nullptr; // 3 annihilation gammas
     PositroniumDecayChannel * ParaDecayChannel  = nullptr; // 2 annihilation gammas

@@ -7,6 +7,7 @@
 #include "ModePesGenerator_Prob.hh"
 #include "ModeAnnihilationLogger.hh"
 #include "Hist1D.hh"
+#include "TrackingAction.hh"
 #include "out.hh"
 #include "jstools.hh"
 
@@ -1650,4 +1651,58 @@ void ModeScintDepoLogger::addDepo(int iScint, double depo, double time)
 
     Depo[iScint] += depo;
     NoDepoThisEvent = false;
+}
+
+// --------
+
+SourceTester::SourceTester(int numEvents, int numBins, double timeFrom, double duration, const std::string & timeFileName) :
+    NumEvents(numEvents)
+{
+    bNeedOutput = false;
+
+    SessionManager & SM = SessionManager::getInstance();
+    SM.FileName   = timeFileName;
+
+    delete TimeHist; TimeHist = new Hist1DRegular(numBins, timeFrom, timeFrom + duration);
+}
+
+void SourceTester::run()
+{
+    SessionManager & SM = SessionManager::getInstance();
+    SM.runManager->BeamOn(NumEvents);
+
+    out("\n\nNumber of events:", NumEvents);
+    out("Particles per event:");
+    for (size_t i = 0; i < NumParticles.size(); i++)
+        out(i, " --> ", NumParticles[i]);
+
+    out("\nParticles seen:");
+    for (const auto & it : Particles)
+        out (it.first, it.second);
+
+    out("\nTiming info, saved to file:", SM.WorkingDirectory + '/' + SM.FileName);
+    TimeHist->report();
+    TimeHist->save(SM.WorkingDirectory + '/' + SM.FileName);
+}
+
+G4UserTrackingAction * SourceTester::getTrackingAction()
+{
+    return new SourceTester_TrackingAction();
+}
+
+void SourceTester::onEventEnded()
+{
+    //out("\n\nEvent ended", ParticlesThisEvent);
+
+    if (ParticlesThisEvent > 4) NumParticles[5]++;
+    else NumParticles[ParticlesThisEvent]++;
+
+    ParticlesThisEvent = 0;
+}
+
+void SourceTester::registerParticle(const std::string & particle, double time)
+{
+    Particles[particle]++;
+    TimeHist->fill(time);
+    ParticlesThisEvent++;
 }

@@ -553,4 +553,31 @@ protected:
 
 };
 
+// ---
+
+class SourceTester : public SimModeBase
+{
+public:
+    SourceTester(int numEvents, int numBins, double timeFrom, double duration, const std::string & timeFileName);
+
+    void run() override;
+
+    std::string getTypeName() const override {return "SourceTester";}
+
+    G4UserTrackingAction * getTrackingAction() override;
+
+    void onEventEnded() override;
+
+    void registerParticle(const std::string & particle, double time);
+
+protected:
+    int NumEvents = 0;
+
+    int ParticlesThisEvent = 0;
+
+    Hist1DRegular * TimeHist = nullptr;
+    std::map<std::string, int> Particles;
+    std::array<int, 6> NumParticles = {0,0,0,0,0,0};
+};
+
 #endif // SimulationMode_h

@@ -108,7 +108,7 @@ G4PrimaryVertex * SourcePositronium::GetPrimaryVertexFromPositroniumAnnihilation
     else if (OrthoFraction == 0.0) ThreeGammas = false;
     else ThreeGammas = (G4UniformRand() < OrthoFraction);
 
-    double lifetime = (ThreeGammas ? OrthoLifetime : ParaLifetime);
+    double lifetime = (ThreeGammas ? OrthoLifetime : ParaLifetime) / log(2); // from halftime to decay time
     G4double shifted_particle_time = particle_time + G4RandExponential::shoot(lifetime);
 
     G4PrimaryVertex * vertex = new G4PrimaryVertex(particle_position, shifted_particle_time);
