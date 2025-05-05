@@ -94,6 +94,7 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,30*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
 
         SourcePositronium * source = new SourcePositronium(0.5, new ConstantTime(0));
+        source->Position = {0,0,35};
         source->setNa22Origin(); // adds deexcitation gamma of Na22
         source->setParaLifetime(0*ns);
         source->setOrtoLifetime(138.6*ns);
@@ -133,7 +134,8 @@ int main(int argc, char** argv)
 
         // Simulation mode
        //SM.SimMode          = new ModeGui();
-        SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
+       SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
+
         //SM.SimMode = new ModeScintDepoLogger(1e8, 1e10*ns, "DepoTester_100keV_2cubes.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e8, 0.1*s, "Depo_PartLog_400_2Cubes.txt");
