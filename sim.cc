@@ -52,14 +52,15 @@ int main(int argc, char** argv)
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
         //SM.ShowEventNumber  = true; SM.EvNumberInterval = 10;
 
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT_DerRods";
+        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_DerRods";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DerenzoRods";
 
         // Beam collimator (optional)
         //SM.BeamCollimator = new BeamCollimatorMarek(BeamCollimatorMarek::Holes369, {0,0,-75*mm}, 90*deg);
 
         // Phantom
         //SM.Phantom = new PhantomNone;
-        SM.Phantom = new PhantomDerenzoRods(2*mm, 3, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomDerenzoRods(2*mm, 2, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomBox(2*1.5*25.4, 100.0, 2*1.5*25.4, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(30.0, 50.0, "G4_PLEXIGLASS");
@@ -99,7 +100,8 @@ int main(int argc, char** argv)
         */
 
         //SM.SourceMode = new SourcePoint(new Na22_decay(), new ConstantTime(0), {0*mm, 0*mm, 0*mm});
-        SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
+        //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
+        SM.SourceMode = new SourceBeam(new Proton(75.0*MeV), new UniformTime(0, 45*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
         //SM.SourceMode = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 10*s), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
@@ -133,8 +135,9 @@ int main(int argc, char** argv)
 
         // Simulation mode
         //SM.SimMode          = new ModeGui();
-        SM.SimMode          = new ModeTracing();
+        //SM.SimMode          = new ModeTracing();
         //SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
+        SM.SimMode          = new ModeActivityGenerator(1e5, {0.2, 0.2, 0.5}, {50, 50, 118*2}, {-5, -5, -59.0}, { {60.1*s, 14*60.0*s} }, "Activity.dat");
 
         //SM.SimMode = new ModeScintDepoLogger(1e8, 1e10*ns, "DepoTester_100keV_2cubes.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
