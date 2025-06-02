@@ -783,3 +783,65 @@ void PhantomSphere::doWriteToJson(json11::Json::object & json) const
 
     MatBuilder->writeToJson(json);
 }
+
+// -----------------
+
+PhantomDerenzoRods::PhantomDerenzoRods(double rodDiameter, int maxNumber, std::string g4_material_name) :
+    RodDiameter(rodDiameter), MaxNumber(maxNumber),
+    MatBuilder(new MaterialBuilder(g4_material_name)) {}
+
+G4LogicalVolume *PhantomDerenzoRods::definePhantom(G4LogicalVolume * logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    G4Material * mat = MatBuilder->build();
+
+    G4NistManager * matMan = G4NistManager::Instance();
+    G4Material * matAir  = matMan->FindOrBuildMaterial("G4_AIR");
+
+    const double Diameter   = 100.0*mm;
+    const double Height     = 120.0*mm;
+    const double DiskHeight = 1.0*mm;
+
+    G4VSolid          * solidPh = new G4Tubs("Sol_PhDerRods", 0, 0.5*Diameter, 0.5*Height, 0, 360.0*deg);
+    G4LogicalVolume   * logicPh = new G4LogicalVolume(solidPh, mat, "Log_PhDerRods");
+    new G4PVPlacement(new CLHEP::HepRotation(90.0*deg, 0, 0), {0, 0, SM.GlobalZ0}, logicPh, "Phys_PhDerRods", logicWorld, false, 0);
+
+    const double rodHeight = 0.5*(Height - 2*DiskHeight);
+    G4VSolid          * solidAir = new G4Tubs("Sol_Air", 0, 0.5*Diameter, rodHeight, 0, 360.0*deg);
+    G4LogicalVolume   * logicAir = new G4LogicalVolume(solidAir, matAir, "Log_Air");
+    new G4PVPlacement(nullptr, {0, 0, 0}, logicAir, "Phys_Air", logicPh, false, 0);
+
+    G4VSolid          * solidRod = new G4Tubs("Sol_Rod", 0, 0.5*RodDiameter, rodHeight, 0, 360.0*deg);
+    G4LogicalVolume   * logicRod = new G4LogicalVolume(solidRod, mat, "Log_Rod");
+
+    const double stepX = 2*RodDiameter;
+    const double stepY = 2*RodDiameter*sin(M_PI/3.0);  // 180/3 = 60deg
+    const double y0 = -0.5*(MaxNumber - 1);
+    for (int iY = MaxNumber; iY > 0; iY--)
+    {
+        double y = y0 + (MaxNumber - iY);
+        y *= stepY;
+        for (int iX = 0; iX < iY; iX++)
+        {
+            const double x0 = -0.5*(iY - 1);
+            double x =  x0 + iX;
+            x *= stepX;
+            new G4PVPlacement(nullptr, {y, x, 0}, logicRod, "Phys_Rod", logicAir, false, 0);
+        }
+    }
+
+    logicPh->SetVisAttributes(G4VisAttributes(G4Colour(1.0, 1.0, 0)));
+
+    return logicPh;
+}
+
+void PhantomDerenzoRods::readFromJson(const json11::Json &json)
+{
+
+}
+
+void PhantomDerenzoRods::doWriteToJson(json11::Json::object &json) const
+{
+
+}

@@ -232,5 +232,25 @@ public:
     G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
 };
 
+// ---
+
+class PhantomDerenzoRods : public PhantomModeBase
+{
+public:
+    PhantomDerenzoRods(double rodDiameter, int maxNumber, std::string g4_material_name);
+
+    std::string getTypeName() const override {return "PhantomDerenzoRods";}
+    G4LogicalVolume * definePhantom(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    double RodDiameter = 2.0;
+    int    MaxNumber   = 2;
+
+    MaterialBuilder * MatBuilder = nullptr;
+
+    void doWriteToJson(json11::Json::object & json) const override;
+};
 
 #endif // PhantomMode_h

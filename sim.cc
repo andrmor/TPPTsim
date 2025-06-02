@@ -52,18 +52,15 @@ int main(int argc, char** argv)
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
         //SM.ShowEventNumber  = true; SM.EvNumberInterval = 10;
 
-        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/tmp2/Scanner4heads3mm";
-        //SM.WorkingDirectory  = "/media/andr/HDD/work";
-        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_summer2024/johnTest/tpptsim_tmp";
-        //SM.WorkingDirectory  = "/home/andr/WORK/UsProposalSim";
-        SM.WorkingDirectory  = "/home/andr/WORK/Na22sourcePosi";
+        SM.WorkingDirectory  = "/home/andr/WORK/TPPT_DerRods";
 
         // Beam collimator (optional)
         //SM.BeamCollimator = new BeamCollimatorMarek(BeamCollimatorMarek::Holes369, {0,0,-75*mm}, 90*deg);
 
         // Phantom
         //SM.Phantom = new PhantomNone;
-        SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomDerenzoRods(2*mm, 3, "G4_PLEXIGLASS");
+        //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomBox(2*1.5*25.4, 100.0, 2*1.5*25.4, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(30.0, 50.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(40.0, 50.0, "G4_PLEXIGLASS");
@@ -84,7 +81,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::MicroPET);
         //SM.DetectorComposition.add(DetComp::DoiPET);
         //SM.DetectorComposition.add(DetComp::FlatPanelPET);
-    //    SM.DetectorComposition.add(DetComp::TungstenCubes2);
+        //SM.DetectorComposition.add(DetComp::TungstenCubes2);
         //SM.DetectorComposition.add(DetComp::PLoggerMicroPET);
 
         // Source
@@ -92,16 +89,17 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{89.6*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,30*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
-
+        /*
         SourcePositronium * source = new SourcePositronium(0.5, new ConstantTime(0));
         source->Position = {0,0,35};
         source->setNa22Origin(); // adds deexcitation gamma of Na22
         source->setParaLifetime(0*ns);
         source->setOrtoLifetime(138.6*ns);
         SM.SourceMode = source;
+        */
 
         //SM.SourceMode = new SourcePoint(new Na22_decay(), new ConstantTime(0), {0*mm, 0*mm, 0*mm});
-        //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
+        SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 10*s), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
@@ -130,16 +128,17 @@ int main(int argc, char** argv)
    //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog.txt", false);
         //SM.SourceMode = new SourceParticleListFile("/media/andr/HDD/work/PartLog.txt", false);
         //SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog_400.txt", false, 30*mm);
+        //SM.SourceMode       = new SourcePesHistogramFiles("/home/andr/WORK/tmp", 1000, true);
 
 
         // Simulation mode
-       //SM.SimMode          = new ModeGui();
-       SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
+        //SM.SimMode          = new ModeGui();
+        SM.SimMode          = new ModeTracing();
+        //SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
 
         //SM.SimMode = new ModeScintDepoLogger(1e8, 1e10*ns, "DepoTester_100keV_2cubes.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e8, 0.1*s, "Depo_PartLog_400_2Cubes.txt");
-        //SM.SimMode          = new ModeTracing();
         //SM.SimMode          = new ModeDummy(1e5);
         //SM.SimMode          = new ModeRadHard(1e6);
         //SM.SimMode          = new ModeActivityGenerator(1e6, {1000.0, 1.0, 1.0}, {1, 101, 100}, {-500, -50.5, -50.0}, { {0.1*s, 155.0*s} }, "Activity.dat");
