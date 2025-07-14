@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     }
     else
     {
-     // --- START of user init ---
+        // --- START of user init ---
 
         // General settings
         SM.Seed = 1000;                // WARNING: the seed can be overriden with a command line argument, e.g. sim -s 123456
@@ -52,11 +52,12 @@ int main(int argc, char** argv)
         SM.ShowEventNumber  = true; SM.EvNumberInterval = 10000;
         //SM.ShowEventNumber  = true; SM.EvNumberInterval = 10;
 
-        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT_DerRods";
-        SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DerenzoRods";
+        SM.WorkingDirectory  = "/home/andr/tmp";
+        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT/DerenzoRods/3rods/NoEntranceDisk/2mm/100MeV";
+        //SM.WorkingDirectory  = "/home/andr/WORK/TPPT/CastorTests/3rods/InterRodStopper/2mm/100MeV";
 
         // Beam collimator (optional)
-        //SM.BeamCollimator = new BeamCollimatorMarek(BeamCollimatorMarek::Holes369, {0,0,-75*mm}, 90*deg);
+        SM.BeamCollimator = new BeamCollimatorDerenzo(2*mm, 2, {0,0,-75*mm});
 
         // Phantom
         //SM.Phantom = new PhantomNone;
@@ -90,18 +91,17 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{89.6*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,30*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
-        /*
-        SourcePositronium * source = new SourcePositronium(0.5, new ConstantTime(0));
-        source->Position = {0,0,35};
-        source->setNa22Origin(); // adds deexcitation gamma of Na22
-        source->setParaLifetime(0*ns);
-        source->setOrtoLifetime(138.6*ns);
-        SM.SourceMode = source;
-        */
-
         //SM.SourceMode = new SourcePoint(new Na22_decay(), new ConstantTime(0), {0*mm, 0*mm, 0*mm});
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
-        SM.SourceMode = new SourceBeam(new Proton(75.0*MeV), new UniformTime(0, 45*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
+        //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, -10*mm, -65.0*mm}, {0,1.0,1.0});
+
+        SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
+
+        //SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
+        //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT/DerenzoRods/Activity.dat", 1e3, true);
+        //SM.SourceMode = new SourcePesHistogramFiles("/home/andr/WORK/TPPT/DerenzoRods", 1000, true);
+        //SM.SourceMode = new SourcePesHistogramFiles(SM.WorkingDirectory, 1000, true);
+
         //SM.SourceMode = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 10*s), 0.5*24*mm, {0,0,-25*mm}, {0,0,25*mm});
         //SM.SourceMode = new SourcePoint(new Positronium(1.0, "gammas.txt"), new UniformTime(0, 0.1*s), {0,0,0});
@@ -111,33 +111,46 @@ int main(int argc, char** argv)
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -15.0*mm}, {0,0,1.0}, 1, new RoundProfile(20.0*mm));
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/Flat.txt", true) );
         //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", true) );
-       //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );
-       //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );
+        //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -55.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );
+        //SM.SourceMode       = new SourceBeam(new Proton(75.8*MeV), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new CustomRaidalProfile("/home/andr/WORK/TPPT/FlashBeamProfile.txt", false) );
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6.dat", 3.5e4, true);
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true);
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2.dat", 3.5e4, true, {50.0*mm, 50.0*mm, 25.0*mm});
         //SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity123vert_1e7.dat", 3.5e3, true, {50.0*mm, 50.0*mm, 0.0*mm});
         //SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity123hor_1e7.dat", 3.5e3, true, {50.0*mm, 50.0*mm, 0.0*mm});
         //SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_ph3inv.dat", 3.5e4, true, {50.0*mm, 50.0*mm, 0.0*mm});
-//        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 1000*s), 0.5*mm, {50.0,50.0,-50.0}, {50.0,50.0,50.0});
-//        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2inv_a.dat", 3.5e4, true);
+        //        SM.SourceMode = new SourceCylinder(new GammaPair(), new UniformTime(0, 1000*s), 0.5*mm, {50.0,50.0,-50.0}, {50.0,50.0,50.0});
+        //        SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/tmp/Activity1e6_ph2inv_a.dat", 3.5e4, true);
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT_summer2024/Sphere/ActivitySphereRad5i4_1e7.dat", 3.5e3, true, {50.0*mm, 50.0*mm, 0.0*mm});
-//       SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_MarekCross.dat", 3.5e4, true);
-    //    SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Marek3holes.dat", 3.5e4, true);
-    //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_ph3inv.dat", 3.5e4, true);
-    //    SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Micro3holes.dat", 3.5e4, true);
-   //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Ring.dat", 3.5e4, true);
-   //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog.txt", false);
+        //       SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_MarekCross.dat", 3.5e4, true);
+        //    SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Marek3holes.dat", 3.5e4, true);
+        //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_ph3inv.dat", 3.5e4, true);
+        //    SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Micro3holes.dat", 3.5e4, true);
+        //     SM.SourceMode = new SourceAnnihilHistFile("/media/andr/HDD/work/Activity1e6_Ring.dat", 3.5e4, true);
+        //     SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog.txt", false);
         //SM.SourceMode = new SourceParticleListFile("/media/andr/HDD/work/PartLog.txt", false);
         //SM.SourceMode = new SourceParticleListFileMicroPET("/media/andr/HDD/work/PartLog_400.txt", false, 30*mm);
         //SM.SourceMode       = new SourcePesHistogramFiles("/home/andr/WORK/tmp", 1000, true);
+        /*
+        SourcePositronium * source = new SourcePositronium(0.5, new ConstantTime(0));
+            source->Position = {0,0,35*mm};
+            source->setNa22Origin();
+            source->setParaLifetime(0*ns);
+            source->setOrtoLifetime(138.6*ns);
+        SM.SourceMode = source;
+        */
 
 
         // Simulation mode
-        //SM.SimMode          = new ModeGui();
+        SM.SimMode          = new ModeGui();
         //SM.SimMode          = new ModeTracing();
         //SM.SimMode          = new SourceTester(100000, 100,0,1000*ns, "time.dat");
-        SM.SimMode          = new ModeActivityGenerator(1e5, {0.2, 0.2, 0.5}, {50, 50, 118*2}, {-5, -5, -59.0}, { {60.1*s, 14*60.0*s} }, "Activity.dat");
+
+        //SM.SimMode          = new ModeActivityGenerator(1e8, {0.2, 0.2, 0.5}, {50, 50, 118*2}, {-5, -5, -59.0}, { {60.1*s, 14*60.0*s} }, "Activity.dat");
+        //SM.SimMode          = new ModePesGenerator_Prob(1e8, {0.2, 0.2, 0.5}, {50, 50, 118*2}, {-5, -5, -59.0}, { {30.1*s, 15*60.0*s} });
+        //SM.SimMode          = new ModePesGenerator_Prob(1e8, {0.2, 0.2, 0.5}, {100, 100, 118*2}, {-10, -10, -59.0}, { {30.1*s, 15*60.0*s} });
+        //SM.SimMode          = new ModeDepositionScint(SM.SourceMode->CountEvents(), "SimOutputActivity.bin", true);
+        //SM.SimMode          = new ModeDepositionScint(SM.SourceMode->CountEvents(), "SimOutputHists.bin", true);
 
         //SM.SimMode = new ModeScintDepoLogger(1e8, 1e10*ns, "DepoTester_100keV_2cubes.txt");
         //SM.SimMode = new ModeScintDepoLogger(1e7, 1e10*ns, "DepoTester_Rotated.txt");
@@ -159,23 +172,23 @@ int main(int argc, char** argv)
         //SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 40}, {-20.0, -20.0, -20.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph2_a.dat");
         //SM.SimMode = new ModeDepositionScint(200, "DepoFromActivityFlash_v2_doi_50_50_25.dat", true);
         //SM.SimMode = new ModeDepositionScint(5e7, "DepoLine_5e7_3mmScanner.dat", true);
-//        SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph2inv_a.dat");
-//        SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_Marek3holes.dat");
-   //    SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph3inv.dat");
-   //    SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_Micro3holes.dat");
-   //    SM.SimMode = new ModeActivityGenerator(1e7, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity123hor_1e7.dat");
-//     SM.SimMode = new ModeActivityGenerator(1e7, {0.2, 0.2, 0.2}, {50, 50, 50}, {-5.0, -5.0, -5.0}, { {0.1*s, 1000.0*s} }, "ActivitySphereRad5i4_1e7.dat");
-//     SM.SimMode = new ModeActivityGenerator(1, {0.2, 0.2, 0.2}, {50, 50, 50}, {-5.0, -5.0, -5.0}, { {0.1*s, 1000.0*s} }, "Test.dat");
-//        SM.SimMode = new ModeDepositionScint(5e7, "Depo_Activity_ph2inv_a.dat", true);
-//       SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_MarekCross.dat", true);
- //       SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Marek3holes.dat", true);
-    //    SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv.dat", true);
-    //     SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Micro3holes.dat", true);
-       //    SM.SimMode = new ModeParticleLogger(1e8, "1PartLog_400.txt", false);
-      //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123vert_1e7_to3i5e10_xyz50_50_0.dat", true);
-      //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123hor_1e7_to3i5e10_xyz50_50_0.dat", true);
-      //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv_to3i5e10_xyz50_50_0.dat", true);
-//      SM.SimMode = new ModeDepositionScint(50, "Depo_ActivitySphereRad5i4_1e7_to3i5e10_xyz50_50_0.dat", true);
+        //        SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph2inv_a.dat");
+        //        SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_Marek3holes.dat");
+        //    SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_ph3inv.dat");
+        //    SM.SimMode = new ModeActivityGenerator(1e6, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity1e6_Micro3holes.dat");
+        //    SM.SimMode = new ModeActivityGenerator(1e7, {0.2, 0.2, 1.0}, {200, 200, 50}, {-20.0, -20.0, -25.0}, { {0.1*s, 1000.0*s} }, "Activity123hor_1e7.dat");
+        //     SM.SimMode = new ModeActivityGenerator(1e7, {0.2, 0.2, 0.2}, {50, 50, 50}, {-5.0, -5.0, -5.0}, { {0.1*s, 1000.0*s} }, "ActivitySphereRad5i4_1e7.dat");
+        //     SM.SimMode = new ModeActivityGenerator(1, {0.2, 0.2, 0.2}, {50, 50, 50}, {-5.0, -5.0, -5.0}, { {0.1*s, 1000.0*s} }, "Test.dat");
+        //        SM.SimMode = new ModeDepositionScint(5e7, "Depo_Activity_ph2inv_a.dat", true);
+        //       SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_MarekCross.dat", true);
+        //       SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Marek3holes.dat", true);
+        //    SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv.dat", true);
+        //     SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_Micro3holes.dat", true);
+        //    SM.SimMode = new ModeParticleLogger(1e8, "1PartLog_400.txt", false);
+        //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123vert_1e7_to3i5e10_xyz50_50_0.dat", true);
+        //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity123hor_1e7_to3i5e10_xyz50_50_0.dat", true);
+        //SM.SimMode = new ModeDepositionScint(200, "Depo_Activity1e6_ph3inv_to3i5e10_xyz50_50_0.dat", true);
+        //      SM.SimMode = new ModeDepositionScint(50, "Depo_ActivitySphereRad5i4_1e7_to3i5e10_xyz50_50_0.dat", true);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.5, 0.5, 0.5}, {200, 200, 200}, {-50, -50, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {0.25, 0.25, 0.25}, {201, 201, 400}, {-25.125, -25.125, -50}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e6, {0.5, 0.5, 0.5}, {101, 101, 200}, {-25.25, -25.25, -50}, "Dose.txt", false);
@@ -183,7 +196,7 @@ int main(int argc, char** argv)
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.325}, {1, 1, 350}, {-50.0, -50.0, -52.1}, "Dose.txt", false);
         //SM.SimMode          = new ModeDoseExtractor(1e5, {100.0, 100.0, 0.25}, {1, 1, 410}, {-50.0, -50.0, -10.0}, "Dose.txt", false);
 
-    // --- END of user init ---
+        // --- END of user init ---
     }
 
     SM.startSession(); // warning: automatically saves config in working directory as SimConfig.json
@@ -229,6 +242,12 @@ int main(int argc, char** argv)
 //    SM.SourceMode       = new SourceBeam(new Proton(125.67*MeV), new UniformTime(0, 207.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E2
 //    SM.SourceMode       = new SourceBeam(new Proton(176.75*MeV), new UniformTime(0, 203.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // Gel-E4
 //    SM.SourceMode       = new SourceBeam(new Proton(125.67*MeV), new UniformTime(0, 194.0*s), {0, -200.0, 0}, {0,1.0,0}, 100);   // PMMA-E2
+        SourcePositronium * source = new SourcePositronium(0.5, new ConstantTime(0));
+        source->Position = {0,0,35};
+        source->setNa22Origin(); // adds deexcitation gamma of Na22
+        source->setParaLifetime(0*ns);
+        source->setOrtoLifetime(138.6*ns);
+        SM.SourceMode = source;
 
 // Examples of simulation modes
 //    SM.SimMode          = new ModeTestScintPositions();
