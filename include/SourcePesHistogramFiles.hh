@@ -48,7 +48,7 @@ protected:
 
     GeantParticleGenerator ParticleGenerator;
 
-    static constexpr double TimeSpan = 10e9; // in ns
+    static constexpr double TimeSpan = 30e9; // in ns
 };
 
 #endif // peshistogramsource_h
