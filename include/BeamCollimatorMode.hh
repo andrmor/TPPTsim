@@ -56,5 +56,26 @@ protected:
     G4ThreeVector   FacePosition = {0,0,-100.0};
     double          Angle = 0;
 
-    void doWriteToJson(json11::Json::object & /*json*/) const override;
+    void doWriteToJson(json11::Json::object & json) const override;
+};
+
+// ---
+
+class BeamCollimatorDerenzo : public BeamCollimatorBase
+{
+public:
+    BeamCollimatorDerenzo(double rodDiameter, int maxNumber, const G4ThreeVector & innerFacePosition, double rotationAngle = 0);
+
+    std::string getTypeName() const override {return "BeamCollimatorDerenzo";}
+    void defineBeamCollimator(G4LogicalVolume * logicWorld) override;
+
+    void readFromJson(const json11::Json & json) override;
+
+protected:
+    double          RodDiameter = 2.0;
+    int             MaxNumber = 2;
+    G4ThreeVector   FacePosition = {0,0,-100.0};
+    double          Angle = 0;
+
+    void doWriteToJson(json11::Json::object & json) const override;
 };

@@ -27,8 +27,9 @@ BeamCollimatorBase * BeamCollimatorFactory::makeBeamCollimatorInstance(const jso
 
     BeamCollimatorBase * bc = nullptr;
 
-    if      (Type == "BeamCollimatorNone")  bc = new BeamCollimatorNone();
-    else if (Type == "BeamCollimatorMarek") bc = new BeamCollimatorMarek(BeamCollimatorMarek::Blind, {0,0,-75*mm});
+    if      (Type == "BeamCollimatorNone")    bc = new BeamCollimatorNone();
+    else if (Type == "BeamCollimatorMarek")   bc = new BeamCollimatorMarek(BeamCollimatorMarek::Blind, {0,0,-75*mm});
+    else if (Type == "BeamCollimatorDerenzo") bc = new BeamCollimatorDerenzo(2.0*mm, 2, {0,0,-75*mm});
     else
     {
         out("Unknown beam collimator type!");
@@ -220,6 +221,82 @@ void BeamCollimatorMarek::doWriteToJson(json11::Json::object & json) const
     }
 
     json["OpeningType"] = sType;
+
+    json11::Json::array ar;
+    for (size_t i = 0; i < 3; i++)
+        ar.push_back(FacePosition[i]);
+    json["FacePosition"] = ar;
+}
+
+// ------------------
+
+BeamCollimatorDerenzo::BeamCollimatorDerenzo(double rodDiameter, int maxNumber, const G4ThreeVector &innerFacePosition, double rotationAngle) :
+    RodDiameter(rodDiameter), MaxNumber(maxNumber),
+    FacePosition(innerFacePosition), Angle(rotationAngle) {}
+
+void BeamCollimatorDerenzo::defineBeamCollimator(G4LogicalVolume *logicWorld)
+{
+    SessionManager & SM = SessionManager::getInstance();
+
+    double cylLength    = 30.0*mm;
+    double cylDiameter  = 30.0*mm;
+    double ringLength   = 10.0*mm;
+    double ringDiameter = 45.0*mm;
+
+    G4NistManager * man = G4NistManager::Instance();
+    G4Material * matBrass = man->FindOrBuildMaterial("G4_BRASS");
+    G4Material * matAir  = man->FindOrBuildMaterial("G4_AIR");
+
+    G4Tubs          * sCyl = new G4Tubs("sCyl", 0, 0.5*cylDiameter,0.5*cylLength, 0, 360.0*deg);
+    G4LogicalVolume * lCyl = new G4LogicalVolume(sCyl, matBrass, "lCyl");
+    lCyl->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
+
+    G4Tubs          * sRing = new G4Tubs("sRing", 0.5*cylDiameter, 0.5*ringDiameter, 0.5*ringLength, 0, 360.0*deg);
+    G4LogicalVolume * lRing = new G4LogicalVolume(sRing, matBrass, "lRing");
+    lRing->SetVisAttributes(G4VisAttributes({1.0, 0, 0}));
+
+    G4VSolid          * solidRod = new G4Tubs("Sol_Rod", 0, 0.5*RodDiameter, 0.5*cylLength, 0, 360.0*deg);
+    G4LogicalVolume   * logicRod = new G4LogicalVolume(solidRod, matAir, "Log_Rod");
+
+    const double stepX = 2*RodDiameter;
+    const double stepY = 2*RodDiameter*sin(M_PI/3.0);  // 180/3 = 60deg
+    const double y0 = -0.5*(MaxNumber - 1);
+    for (int iY = MaxNumber; iY > 0; iY--)
+    {
+        double y = y0 + (MaxNumber - iY);
+        y *= stepY;
+        for (int iX = 0; iX < iY; iX++)
+        {
+            const double x0 = -0.5*(iY - 1);
+            double x =  x0 + iX;
+            x *= stepX;
+            new G4PVPlacement(nullptr, {y, x, 0}, logicRod, "Phys_Rod", lCyl, false, 0);
+        }
+    }
+
+    double rotAngle = 90.0*deg + Angle;
+    double zPosCyl = -0.5*cylLength + FacePosition[2] + SM.GlobalZ0;
+    new G4PVPlacement(new CLHEP::HepRotation(rotAngle, 0, 0), {FacePosition[0], FacePosition[1], zPosCyl},  lCyl,  "pCyl",  logicWorld, false, 0);
+    double zPosRing = -0.5*ringLength + FacePosition[2] + SM.GlobalZ0;
+    new G4PVPlacement(new CLHEP::HepRotation(rotAngle, 0, 0), {FacePosition[0], FacePosition[1], zPosRing}, lRing, "pRing", logicWorld, false, 0);
+}
+
+void BeamCollimatorDerenzo::readFromJson(const json11::Json & json)
+{
+    jstools::readDouble(json, "RodDiameter", RodDiameter);
+    jstools::readInt(json, "MaxNumber", MaxNumber);
+
+    json11::Json::array ar;
+    jstools::readArray(json, "FacePosition", ar);
+    if (ar.size() >= 3)
+        for (size_t i = 0; i < 3; i++)
+            FacePosition[i] = ar[i].number_value();
+}
+
+void BeamCollimatorDerenzo::doWriteToJson(json11::Json::object & json) const
+{
+    json["RodDiameter"] = RodDiameter;
+    json["MaxNumber"] = MaxNumber;
 
     json11::Json::array ar;
     for (size_t i = 0; i < 3; i++)
