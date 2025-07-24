@@ -260,7 +260,7 @@ class SourceBeam : public SourceModeBase
 public:
     SourceBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                const G4ThreeVector & origin, const G4ThreeVector & direction,
-               int numParticles = 1, ProfileBase * spread = nullptr, double energySigma = 0);
+               int numParticles = 1, ProfileBase * spread = nullptr, double energySigma = 0, double divergenceSigma = 0); // direction deviation: gauss with mean 0 and this sigma
     SourceBeam(const json11::Json & json);
     ~SourceBeam();
 
@@ -277,6 +277,7 @@ protected:
     int           NumParticles = 1;
     ProfileBase * Profile      = nullptr;
     double        EnergySigma  = 0;
+    double        DivergenceSigma = 0;
 
     //runtime
     Hist1DRegular * HistEnergy = nullptr;

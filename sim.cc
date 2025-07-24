@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomSphere(5.0*mm, 4.0*mm, {0,0,0}, "G4_PLEXIGLASS");
 
         // Detector components
-        SM.DetectorComposition.add(DetComp::Scintillators);
+        //SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, -10*mm, -65.0*mm}, {0,1.0,1.0});
 
-        SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
+        SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm), 0, 10*deg);
 
         //SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT/DerenzoRods/Activity.dat", 1e3, true);

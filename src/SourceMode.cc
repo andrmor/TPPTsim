@@ -208,8 +208,8 @@ void SourcePoint::doReadFromJson(const json11::Json & json)
 
 SourceBeam::SourceBeam(ParticleBase * particle, TimeGeneratorBase * timeGenerator,
                        const G4ThreeVector & origin, const G4ThreeVector & direction,
-                       int numParticles, ProfileBase * spread, double energySigma) :
-    SourceModeBase(particle, timeGenerator), Origin(origin), NumParticles(numParticles), Profile(spread), EnergySigma(energySigma)
+                       int numParticles, ProfileBase * spread, double energySigma, double divergenceSigma) :
+    SourceModeBase(particle, timeGenerator), Origin(origin), NumParticles(numParticles), Profile(spread), EnergySigma(energySigma), DivergenceSigma(divergenceSigma)
 {
     Direction = direction;
     update();
@@ -239,13 +239,27 @@ void SourceBeam::GeneratePrimaries(G4Event * anEvent)
             //out(pos);
             ParticleGun->SetParticlePosition(pos);
         }
+
         if (EnergySigma != 0)
         {
             const double energy = G4RandGauss::shoot(Particle->Energy, EnergySigma);
             if (HistEnergy) HistEnergy->fill(energy, 1);
             ParticleGun->SetParticleEnergy(energy);
         }
-        SourceModeBase::GeneratePrimaries(anEvent);
+
+        //SourceModeBase::GeneratePrimaries(anEvent); // cannot use because of the possible divergence
+        if (DivergenceSigma == 0) ParticleGun->SetParticleMomentumDirection(Direction);
+        else
+        {
+            const G4ThreeVector orto = Direction.orthogonal();
+            G4ThreeVector newDirection(Direction);
+            newDirection.rotate(G4RandGauss::shoot(0, DivergenceSigma), orto);
+            newDirection.rotate(2 * 3.1415926535 * G4UniformRand(), Direction);
+            //out(newDirection);
+            ParticleGun->SetParticleMomentumDirection(newDirection);
+        }
+        ParticleGun->SetParticleTime(TimeGenerator->generateTime());
+        ParticleGun->GeneratePrimaryVertex(anEvent);
     }
 
     if (HistEnergy) HistEnergy->save(SessionManager::getInstance().WorkingDirectory + "/EnergyDistribution.txt");
@@ -277,6 +291,7 @@ void SourceBeam::doWriteToJson(json11::Json::object & json) const
     json["Profile"] = js;
 
     json["EnergySigma"] = EnergySigma;
+    json["DivergenceSigma"] = DivergenceSigma;
 }
 
 void SourceBeam::doReadFromJson(const json11::Json &json)
@@ -309,6 +324,7 @@ void SourceBeam::doReadFromJson(const json11::Json &json)
     }
 
     jstools::readDouble(json, "EnergySigma", EnergySigma);
+    jstools::readDouble(json, "DivergenceSigma", DivergenceSigma);
 }
 
 // ---
