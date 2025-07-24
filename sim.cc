@@ -57,11 +57,11 @@ int main(int argc, char** argv)
         //SM.WorkingDirectory  = "/home/andr/WORK/TPPT/CastorTests/3rods/InterRodStopper/2mm/100MeV";
 
         // Beam collimator (optional)
-        SM.BeamCollimator = new BeamCollimatorDerenzo(2*mm, 2, {0,0,-75*mm});
+        //SM.BeamCollimator = new BeamCollimatorDerenzo(3*mm, 3, {0,0,-60*mm});
 
         // Phantom
         //SM.Phantom = new PhantomNone;
-        SM.Phantom = new PhantomDerenzoRods(2*mm, 2, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomDerenzoRods(3*mm, 3, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomBox(2*1.5*25.4, 100.0, 2*1.5*25.4, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(30.0, 50.0, "G4_PLEXIGLASS");
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomSphere(5.0*mm, 4.0*mm, {0,0,0}, "G4_PLEXIGLASS");
 
         // Detector components
-        //SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger

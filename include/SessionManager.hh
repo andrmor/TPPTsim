@@ -26,6 +26,7 @@ class G4ParticleGun;
 class G4ParticleDefinition;
 class G4Region;
 class G4VModularPhysicsList;
+
 namespace CLHEP { class RanecuEngine; }
 
 class SessionManager
@@ -296,6 +297,7 @@ class SessionManager
         std::ofstream       * outStream  = nullptr;
         G4Region            * regPhantom  = nullptr;
         G4Region            * regScint    = nullptr;
+        //G4LogicalVolume     * tmpRod      = nullptr;
 
      // External resources
         G4Material          * WorldMat    = nullptr;

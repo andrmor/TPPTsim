@@ -345,3 +345,26 @@ void SteppingAction_ScintDepoLogger::UserSteppingAction(const G4Step *step)
     ModeScintDepoLogger * Mode = static_cast<ModeScintDepoLogger*>(SM.SimMode);
     Mode->addDepo(iScint, depo, postP->GetGlobalTime());
 }
+
+void SteppingAction_ParticleStopper::UserSteppingAction(const G4Step * step)
+{
+    const G4StepPoint * postP  = step->GetPostStepPoint();
+    const G4StepPoint * preP   = step->GetPreStepPoint();
+
+    bool bTransport = false;
+    const G4VProcess  * proc = postP->GetProcessDefinedStep();
+    if (proc) bTransport = ( (proc->GetProcessType() == fTransportation) );
+
+    if (!bTransport) return;
+
+    SessionManager & SM = SessionManager::getInstance();
+
+    /*
+    if (preP->GetPhysicalVolume()->GetLogicalVolume() ==  SM.tmpRod)
+    {
+        //out("Stopping this particle");
+        step->GetTrack()->SetTrackStatus(fStopAndKill);
+    }
+    */
+
+}

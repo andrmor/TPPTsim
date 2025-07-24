@@ -46,6 +46,7 @@ SessionManager::SessionManager()
     runManager = new G4RunManager;
 }
 
+//#include "SteppingAction.hh"
 void SessionManager::startSession()
 {
     if (!isDirExist(WorkingDirectory))
@@ -88,6 +89,7 @@ void SessionManager::startSession()
 
     G4UserSteppingAction * StepAct = SimMode->getSteppingAction();
     if (StepAct) runManager->SetUserAction(StepAct);
+    //runManager->SetUserAction(new SteppingAction_ParticleStopper());
 
     G4UserStackingAction * StackAct = SimMode->getStackingAction();
     if (StackAct) runManager->SetUserAction(StackAct);

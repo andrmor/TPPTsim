@@ -814,6 +814,7 @@ G4LogicalVolume *PhantomDerenzoRods::definePhantom(G4LogicalVolume * logicWorld)
 
     G4VSolid          * solidRod = new G4Tubs("Sol_Rod", 0, 0.5*RodDiameter, rodHeight, 0, 360.0*deg);
     G4LogicalVolume   * logicRod = new G4LogicalVolume(solidRod, mat, "Log_Rod");
+    //SM.tmpRod = logicRod;
 
     const double stepX = 2*RodDiameter;
     const double stepY = 2*RodDiameter*sin(M_PI/3.0);  // 180/3 = 60deg
