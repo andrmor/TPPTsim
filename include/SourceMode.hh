@@ -303,8 +303,10 @@ struct BeamRecord
 class SourceMultiBeam : public SourceModeBase
 {
 public:
-    SourceMultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles);
-    SourceMultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
+    enum BeamDirectionEnum {AlongX, AlongY, AlongZ};
+
+    SourceMultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles, BeamDirectionEnum beamDirection = AlongY);
+    SourceMultiBeam(ParticleBase * particle, const std::string & beamletFileName,   double totalParticles, BeamDirectionEnum beamDirection = AlongY); // NomEnergy[MeV] XIso[mm] ZIso[mm] Time0[ns] TimeSpan[ns] StatWeight
     SourceMultiBeam(const json11::Json & json);
 
     double CountEvents() override {return NumParticles;}
@@ -313,6 +315,8 @@ public:
     void GeneratePrimaries(G4Event * anEvent) override;
 
     std::vector<std::pair<double,double>> getTimeWindows(double delayAfter, double marginBefore) const; // only for beamlets consecutive in time; returns vector of pairs[from, duration]
+
+    BeamDirectionEnum BeamDirection = AlongY;
 
 protected:
     void doWriteToJson(json11::Json::object & json) const override;

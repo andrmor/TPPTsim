@@ -354,15 +354,15 @@ void BeamRecord::print() const
     out("NominalEnergy", Energy/MeV, "MeV; Xiso", XIsoCenter/mm, "mm; Ziso", ZIsoCenter/mm, "mm; Time0", TimeStart/ns, "ns; Tspan", TimeSpan/ns, "ns; StatWeight", StatWeight);
 }
 
-SourceMultiBeam::SourceMultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles) :
-    SourceModeBase(particle, nullptr), Beams(beams), NumParticles(totalParticles)
+SourceMultiBeam::SourceMultiBeam(ParticleBase * particle, const std::vector<BeamRecord> & beams, double totalParticles, BeamDirectionEnum beamDirection) :
+    SourceModeBase(particle, nullptr), Beams(beams), NumParticles(totalParticles), BeamDirection(beamDirection)
 {
     loadCalibration();
     calculateParticlesPerStatWeightUnit();
 }
 
-SourceMultiBeam::SourceMultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles) :
-    SourceModeBase(particle, nullptr), NumParticles(totalParticles)
+SourceMultiBeam::SourceMultiBeam(ParticleBase * particle, const std::string & beamletFileName, double totalParticles, BeamDirectionEnum beamDirection) :
+    SourceModeBase(particle, nullptr), NumParticles(totalParticles), BeamDirection(beamDirection)
 {
     loadCalibration();
     loadBeamletData(beamletFileName);
@@ -505,12 +505,24 @@ void SourceMultiBeam::GeneratePrimaries(G4Event * anEvent)  // optimize! do inte
     //out(Beam.XIsoCenter, Beam.PositionSigma, X); out(Beam.ZIsoCenter, Beam.PositionSigma, Z); exit(111);
     G4ThreeVector dir = G4ThreeVector(X, 0, Z) - Origin;
     dir = dir.unit();
+    switch (BeamDirection)
+    {
+    case AlongX : std::swap(dir[1], dir[0]); break;  // Y <-> X
+    case AlongY : break;                             // default
+    case AlongZ : std::swap(dir[1], dir[2]); break;  // Y <-> Z
+    };
     ParticleGun->SetParticleMomentumDirection(dir);
     //out("  Direction:", dir);
 
     //position
     const double fraction = (Origin[1] - StartBeamFromY) / Origin[1];
-    const G4ThreeVector xyz = {X * fraction, StartBeamFromY, Z * fraction};
+    G4ThreeVector xyz = {X * fraction, StartBeamFromY, Z * fraction};
+    switch (BeamDirection)
+    {
+    case AlongX : std::swap(xyz[1], xyz[0]); break;  // Y <-> X
+    case AlongY : break;                             // default
+    case AlongZ : std::swap(xyz[1], xyz[2]); break;  // Y <-> Z
+    };
     ParticleGun->SetParticlePosition(xyz);
     //out("  Position:", xyz, "  [mm]");
 
@@ -543,6 +555,7 @@ void SourceMultiBeam::doWriteToJson(json11::Json::object & json) const
     }
     json["Beams"] = ar;
     json["NumParticles"] = NumParticles;
+    json["BeamDirection"] = (int)BeamDirection;
 }
 
 void SourceMultiBeam::doReadFromJson(const json11::Json & json)
@@ -558,6 +571,11 @@ void SourceMultiBeam::doReadFromJson(const json11::Json & json)
         Beams.push_back(rec);
     }
     jstools::readDouble(json, "NumParticles", NumParticles);
+
+    int beamDir = 1;
+    jstools::readInt(json, "BeamDirection", beamDir);
+    if (beamDir < 0 || beamDir > 2) beamDir = 1;
+    BeamDirection = static_cast<BeamDirectionEnum>(beamDir);
 }
 
 // ---

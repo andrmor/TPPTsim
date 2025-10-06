@@ -60,8 +60,8 @@ int main(int argc, char** argv)
         //SM.BeamCollimator = new BeamCollimatorDerenzo(3*mm, 3, {0,0,-60*mm});
 
         // Phantom
-        //SM.Phantom = new PhantomNone;
-        SM.Phantom = new PhantomDerenzoRods(3*mm, 3, "G4_PLEXIGLASS");
+        SM.Phantom = new PhantomNone;
+        //SM.Phantom = new PhantomDerenzoRods(3*mm, 3, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(25.4, 100.0, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomBox(2*1.5*25.4, 100.0, 2*1.5*25.4, "G4_PLEXIGLASS");
         //SM.Phantom = new PhantomCylinder(30.0, 50.0, "G4_PLEXIGLASS");
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         //SM.Phantom = new PhantomSphere(5.0*mm, 4.0*mm, {0,0,0}, "G4_PLEXIGLASS");
 
         // Detector components
-        //SM.DetectorComposition.add(DetComp::Scintillators);
+        SM.DetectorComposition.add(DetComp::Scintillators);
         //SM.DetectorComposition.add({DetComp::Base, DetComp::ClosedStructure, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add({DetComp::Base, DetComp::SIPM, DetComp::PCB, DetComp::CopperStructure, DetComp::CoolingAssemblies});
         //SM.DetectorComposition.add(DetComp::ParticleLogger); // required only for ModeParticleLogger
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
         //SM.DetectorComposition.add(DetComp::PLoggerMicroPET);
 
         // Source
-        //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{72.5*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
+        SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{72.5*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6, SourceMultiBeam::AlongZ); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{89.6*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,0.1*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
         //SM.SourceMode = new SourceMultiBeam(new Proton(), {BeamRecord{103.8*MeV, 0,0, 0,30*s, 1.0}}, 1e6); // Energy XIsoCenter ZIsoCenter TimeStart TimeSpan StatWeight
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0});
         //SM.SourceMode = new SourceBeam(new Geantino(), new UniformTime(0, 0.1*s), {0*mm, -10*mm, -65.0*mm}, {0,1.0,1.0});
 
-        SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm), 0, 10*deg);
+        //SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -110.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm), 0, 10*deg);
 
         //SM.SourceMode = new SourceBeam(new Proton(100*MeV), new UniformTime(0, 30*s), {0*mm, 0*mm, -65.0*mm}, {0,0,1.0}, 1, new RoundProfile(30*mm));
         //SM.SourceMode = new SourceAnnihilHistFile("/home/andr/WORK/TPPT/DerenzoRods/Activity.dat", 1e3, true);
